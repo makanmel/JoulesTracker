@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  foods       Food[]
+  meals       MealEntry[]
+  dailyTargets DailyTarget[]
+}
+
+model Food {
+  id              String  @id @default(uuid())
+  name            String
+  caloriesPer100g Float
+  proteinPer100g  Float   @default(0)
+  carbsPer100g    Float   @default(0)
+  fatPer100g      Float   @default(0)
+  isDefault       Boolean @default(false)
+
+  createdById String?
+  createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meals MealEntry[]
+
+  @@index([isDefault])
+}
+
+model MealEntry {
+  id                 String @id @default(uuid())
+  userId             String
+  user               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  foodId             String
+  food               Food   @relation(fields: [foodId], references: [id], onDelete: Restrict)
+  quantityGrams      Float
+  mealDate           String
+  mealType           String // breakfast | lunch | dinner | snack
+  calculatedCalories Float
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId, mealDate])
+}
+
+model DailyTarget {
+  id             String @id @default(uuid())
+  userId         String
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetDate     String
+  targetCalories Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, targetDate])
+}
