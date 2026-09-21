@@ -31,8 +31,16 @@ jobs:
       - name: Run Linter
         run: npm run lint
 
+      - name: Run Database Migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: file:./test.db
+
       - name: Run Unit Tests
         run: npm test
+        env:
+          DATABASE_URL: file:./test.db
+          JWT_SECRET: test-secret
 
   # ------------------------------------------------------------------
   # JOB 2: AI Automated Code Review on Pull Requests
