@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JoulesTracker</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>JoulesTracker</h1>
+      <p class="subtitle">Calorie &amp; macronutrient tracker</p>
+    </header>
+
+    <main>
+      <section id="auth-section" class="card">
+        <div class="tabs">
+          <button type="button" id="tab-login" class="tab active">Login</button>
+          <button type="button" id="tab-register" class="tab">Register</button>
+        </div>
+
+        <form id="login-form" class="auth-form">
+          <label>Email <input type="email" name="email" required /></label>
+          <label>Password <input type="password" name="password" required /></label>
+          <button type="submit" class="btn-primary">Login</button>
+        </form>
+
+        <form id="register-form" class="auth-form hidden">
+          <label>Email <input type="email" name="email" required /></label>
+          <label>Password <input type="password" name="password" minlength="8" required /></label>
+          <button type="submit" class="btn-primary">Register</button>
+        </form>
+      </section>
+
+      <section id="dashboard-section" class="hidden">
+        <div class="dashboard-header">
+          <p id="user-email"></p>
+          <button type="button" id="logout-btn" class="btn-secondary">Logout</button>
+        </div>
+
+        <section class="card">
+          <h2>Daily Target</h2>
+          <form id="target-form" class="inline-form">
+            <label>Date <input type="date" id="target-date" required /></label>
+            <label>Target kcal <input type="number" id="target-calories" min="0" step="1" required /></label>
+            <button type="submit" class="btn-primary">Set target</button>
+          </form>
+          <p id="target-display" class="muted"></p>
+        </section>
+
+        <section class="card">
+          <h2>Today's Summary</h2>
+          <form id="summary-date-form" class="inline-form">
+            <label>Date <input type="date" id="summary-date" required /></label>
+            <button type="button" id="refresh-summary" class="btn-secondary">Refresh</button>
+          </form>
+          <div id="summary" class="summary-grid">
+            <div><strong>Calories</strong><span id="total-calories">0</span></div>
+            <div><strong>Protein</strong><span id="total-protein">0 g</span></div>
+            <div><strong>Carbs</strong><span id="total-carbs">0 g</span></div>
+            <div><strong>Fat</strong><span id="total-fat">0 g</span></div>
+          </div>
+          <div class="progress-bar"><div id="progress-fill"></div></div>
+          <p id="progress-text" class="muted"></p>
+        </section>
+
+        <section class="card">
+          <h2>Add Meal</h2>
+          <form id="meal-form" class="grid-form">
+            <label>Food
+              <select id="meal-food" required>
+                <option value="">Loading foods...</option>
+              </select>
+            </label>
+            <label>Quantity (g) <input type="number" id="meal-quantity" min="1" step="1" required /></label>
+            <label>Date <input type="date" id="meal-date" required /></label>
+            <label>Type
+              <select id="meal-type" required>
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+                <option value="snack">Snack</option>
+              </select>
+            </label>
+            <button type="submit" class="btn-primary">Add meal</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>Meals</h2>
+          <div id="meals-list" class="list">
+            <p class="muted">No meals for selected date.</p>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-header">
+            <h2>Foods</h2>
+            <button type="button" id="toggle-food-form" class="btn-secondary">+ New food</button>
+          </div>
+          <form id="food-form" class="grid-form hidden">
+            <label>Name <input type="text" id="food-name" required /></label>
+            <label>kcal / 100g <input type="number" id="food-calories" min="0" step="0.1" required /></label>
+            <label>Protein / 100g <input type="number" id="food-protein" min="0" step="0.1" value="0" /></label>
+            <label>Carbs / 100g <input type="number" id="food-carbs" min="0" step="0.1" value="0" /></label>
+            <label>Fat / 100g <input type="number" id="food-fat" min="0" step="0.1" value="0" /></label>
+            <button type="submit" class="btn-primary">Create food</button>
+          </form>
+          <input type="search" id="food-search" placeholder="Search foods..." />
+          <ul id="food-list" class="list"></ul>
+        </section>
+      </section>
+
+      <div id="toast" class="toast hidden"></div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
