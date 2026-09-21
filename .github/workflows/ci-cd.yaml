@@ -74,11 +74,12 @@ jobs:
           # GitHub token automatically provided by Actions
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # Provider configuration (Choose one model provider below)
-          # Example using Google's Gemini (Free Tier available):
-          OPENAI.KEY: ${{ secrets.GEMINI_API_KEY }}
-          OPENAI.API_BASE: "https://generativelanguage.googleapis.com/v1beta/openai/"
-          OPENAI.MODEL: "gemini-2.5-flash"
+          # Provider configuration: Google Gemini via PR-Agent's native provider.
+          # PR-Agent reads the model from CONFIG.MODEL / CONFIG.FALLBACK_MODELS
+          # (not OPENAI.MODEL), otherwise it falls back to its default GPT models.
+          GOOGLE_AI_STUDIO.GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CONFIG.MODEL: "gemini/gemini-2.5-flash"
+          CONFIG.FALLBACK_MODELS: '["gemini/gemini-2.5-flash"]'
 
           # PR-Agent specific commands to run on creation
           PR_COMMANDS: "[\"/review\", \"/describe\", \"/improve\"]"
