@@ -30,6 +30,11 @@ body {
   padding: 24px 16px;
 }
 
+#auth-section {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
 header {
   text-align: center;
   margin-bottom: 24px;
@@ -279,6 +284,46 @@ button {
   background: var(--danger);
 }
 
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-col {
+  display: contents;
+}
+
+.dashboard-grid .card {
+  margin-bottom: 0;
+}
+
+.area-target {
+  order: 1;
+}
+
+.area-summary {
+  order: 2;
+}
+
+.area-add-meal {
+  order: 3;
+}
+
+.area-meals {
+  order: 4;
+}
+
+.area-foods {
+  order: 5;
+}
+
+.area-meals .list,
+.area-foods #food-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
 @media (max-width: 600px) {
   .summary-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -287,5 +332,38 @@ button {
   .inline-form {
     flex-direction: column;
     align-items: stretch;
+  }
+}
+
+@media (min-width: 900px) {
+  .container {
+    max-width: 1200px;
+    padding: 32px 24px;
+  }
+
+  header {
+    text-align: left;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .dashboard-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1440px;
   }
 }
