@@ -1,2 +1,7 @@
 # JoulesTracker
-Calorie and macronutrient tracker
+
+Calorie and macronutrient tracker.
+
+## Development workflow
+
+All changes go through Pull Requests. CI runs tests and lint on every PR and on every push to `main`. See `CONTRIBUTING.md` for details.
