@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm' # Automatically caches dependencies if package-lock.json exists
@@ -53,9 +53,22 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Check for Gemini API key
+        id: key-check
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+            echo "Gemini API key not configured — skipping AI review."
+          else
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Run AI PR-Agent
+        if: steps.key-check.outputs.has_key == 'true'
         uses: qodo-ai/pr-agent@main
         env:
           # GitHub token automatically provided by Actions

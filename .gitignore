@@ -33,3 +33,5 @@ Thumbs.db
 *.db-journal
 .idea/
 *.iml
+vitest.config.js.timestamp-*
+.vite/
