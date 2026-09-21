@@ -76,8 +76,6 @@ jobs:
 
           # Provider configuration: Google Gemini via PR-Agent's native provider.
           # PR-Agent reads the model from CONFIG.MODEL / CONFIG.FALLBACK_MODELS
-          # Context size for models PR-Agent does not have in its built-in table.
-          CONFIG.CUSTOM_MODEL_MAX_TOKENS: "1000000"
           # (not OPENAI.MODEL), otherwise it falls back to its default GPT models.
           GOOGLE_AI_STUDIO.GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CONFIG.MODEL: "gemini/gemini-3.6-flash"
