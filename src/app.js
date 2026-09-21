@@ -18,6 +18,8 @@ export function createApp() {
   app.use('/api/v1/meals', authenticate, mealRoutes);
   app.use('/api/v1/daily-target', authenticate, dailyTargetRoutes);
 
+  app.use(express.static('public'));
+
   app.use(errorHandler);
 
   return app;
