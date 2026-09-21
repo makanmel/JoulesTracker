@@ -13,6 +13,10 @@ export function createApp() {
   app.use(cors());
   app.use(express.json());
 
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+  });
+
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/foods', authenticate, foodRoutes);
   app.use('/api/v1/meals', authenticate, mealRoutes);
