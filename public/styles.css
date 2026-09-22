@@ -38,6 +38,43 @@ body {
 header {
   text-align: center;
   margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.language-switcher {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.lang-btn {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.lang-btn.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+button,
+label,
+h1,
+h2,
+p,
+.list-item {
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
 }
 
 header h1 {
@@ -343,6 +380,13 @@ button {
 
   header {
     text-align: left;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .header-text {
     display: flex;
     align-items: baseline;
     gap: 16px;
