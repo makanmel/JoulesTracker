@@ -85,7 +85,7 @@ export function renderThemeSelector() {
     button.addEventListener('click', () => setTheme(theme.id));
     selector.appendChild(button);
   });
-};
+}
 
 applyTheme(localStorage.getItem(STORAGE_KEY));
 

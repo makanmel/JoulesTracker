@@ -1,5 +1,5 @@
-import { t, initI18n, onLanguageChange, applyTranslations } from './i18n.js';
-import { initTheme, renderThemeSelector } from './theme.js';
+import { t, initI18n, onLanguageChange } from './i18n.js';
+import { initTheme } from './theme.js';
 
 const API_BASE = '/api/v1';
 
@@ -292,11 +292,7 @@ function refreshDashboard() {
 async function init() {
   initTheme();
   await initI18n();
-  onLanguageChange(() => {
-    renderThemeSelector();
-    applyTranslations();
-    refreshDashboard();
-  });
+  onLanguageChange(refreshDashboard);
 
   tabLogin.addEventListener('click', () => switchTab('login'));
   tabRegister.addEventListener('click', () => switchTab('register'));
