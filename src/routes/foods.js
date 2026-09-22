@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
 
     const where = {
       AND: [
-        { name: { contains: q } },
+        { name: { contains: q, mode: 'insensitive' } },
         { OR: [{ isDefault: true }, { createdById: req.user.id }] },
       ],
     };
