@@ -4,6 +4,18 @@
     "subtitle": "Calorie & macronutrient tracker",
     "language": "Language"
   },
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "themeHint": "Choose a visual theme for the app."
+  },
+  "themes": {
+    "default": "Default",
+    "dark": "Dark",
+    "forest": "Forest",
+    "neon": "Neon",
+    "sunset": "Sunset"
+  },
   "auth": {
     "login": "Login",
     "register": "Register",

@@ -2,6 +2,10 @@
 
 Calorie and macronutrient tracker.
 
+## Themes
+
+Choose a visual preset from Settings. To add a preset, append a theme object with the documented schema to `public/themes.js` and add its translated `nameKey` to both locale files.
+
 ## Development workflow
 
 All changes go through Pull Requests. CI runs tests and lint on every PR and on every push to `main`. See `CONTRIBUTING.md` for details.
