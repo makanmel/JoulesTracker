@@ -1,4 +1,5 @@
 import { t, initI18n, onLanguageChange } from './i18n.js';
+import { initTheme } from './theme.js';
 
 const API_BASE = '/api/v1';
 
@@ -289,11 +290,17 @@ function refreshDashboard() {
 }
 
 async function init() {
+  initTheme();
   await initI18n();
   onLanguageChange(refreshDashboard);
 
   tabLogin.addEventListener('click', () => switchTab('login'));
   tabRegister.addEventListener('click', () => switchTab('register'));
+  $('#settings-toggle').addEventListener('click', (event) => {
+    const expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';
+    event.currentTarget.setAttribute('aria-expanded', String(!expanded));
+    $('#settings-section').classList.toggle('hidden', expanded);
+  });
   loginForm.addEventListener('submit', handleLogin);
   registerForm.addEventListener('submit', handleRegister);
   $('#logout-btn').addEventListener('click', () => {

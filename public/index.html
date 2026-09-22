@@ -13,13 +13,22 @@
         <h1 data-i18n="app.title">JoulesTracker</h1>
         <p class="subtitle" data-i18n="app.subtitle">Calorie &amp; macronutrient tracker</p>
       </div>
-      <div id="language-switcher" class="language-switcher" role="group" aria-label="Language" data-i18n-aria-label="app.language">
-        <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
-        <button type="button" class="lang-btn" data-lang="uk" aria-pressed="false">UKR</button>
+      <div class="header-controls">
+        <div id="language-switcher" class="language-switcher" role="group" aria-label="Language" data-i18n-aria-label="app.language">
+          <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" class="lang-btn" data-lang="uk" aria-pressed="false">UKR</button>
+        </div>
+        <button type="button" id="settings-toggle" class="btn-secondary" data-i18n="settings.title" aria-expanded="false" aria-controls="settings-section">Settings</button>
       </div>
     </header>
 
     <main>
+      <section id="settings-section" class="card hidden">
+        <h2 data-i18n="settings.title">Settings</h2>
+        <p class="muted" data-i18n="settings.themeHint">Choose a visual theme for the app.</p>
+        <div id="theme-selector" class="theme-selector" role="group" aria-label="Theme" data-i18n-aria-label="settings.theme"></div>
+      </section>
+
       <section id="auth-section" class="card">
         <div class="tabs">
           <button type="button" id="tab-login" class="tab active" data-i18n="auth.login">Login</button>
