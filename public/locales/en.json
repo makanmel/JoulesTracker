@@ -4,6 +4,14 @@
     "subtitle": "Calorie & macronutrient tracker",
     "language": "Language"
   },
+  "nav": {
+    "sections": "Sections",
+    "summary": "Summary",
+    "meals": "Meals",
+    "addMeal": "Add",
+    "target": "Target",
+    "foods": "Foods"
+  },
   "settings": {
     "title": "Settings",
     "theme": "Theme",
