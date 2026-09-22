@@ -15,6 +15,24 @@ jobs:
     name: Test & Lint Code
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: joules_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/joules_test
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -33,13 +51,10 @@ jobs:
 
       - name: Run Database Migrations
         run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: file:./test.db
 
       - name: Run Unit Tests
         run: npm test
         env:
-          DATABASE_URL: file:./test.db
           JWT_SECRET: test-secret
 
   # ------------------------------------------------------------------

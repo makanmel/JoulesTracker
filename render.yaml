@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: joulestracker
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeployTrigger: checksPass
+    buildCommand: npm ci && npx prisma generate
+    startCommand: npx prisma migrate deploy && npm run db:seed && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
