@@ -70,7 +70,8 @@ export function renderThemeSelector() {
 
     const preview = document.createElement('div');
     preview.className = 'theme-preview';
-    preview.style.background = theme.background.image === 'none' ? theme.background.color : theme.background.image;
+    preview.style.backgroundColor = theme.background.color;
+    preview.style.backgroundImage = theme.background.image;
     [theme.colors.primary, theme.colors.accent, theme.surface.color].forEach((color) => {
       const swatch = document.createElement('span');
       swatch.className = 'theme-swatch';
