@@ -1,0 +1,78 @@
+{
+  "app": {
+    "title": "JoulesTracker",
+    "subtitle": "Calorie & macronutrient tracker",
+    "language": "Language"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "logout": "Logout",
+    "loggedIn": "Logged in",
+    "loggedOut": "Logged out",
+    "registered": "Registered",
+    "defaultUser": "User"
+  },
+  "summary": {
+    "title": "Today's Summary",
+    "date": "Date",
+    "refresh": "Refresh",
+    "calories": "Calories",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat",
+    "progress": "{{calories}} / {{target}} kcal ({{pct}}%)",
+    "noTarget": "Set a daily target to see progress."
+  },
+  "meals": {
+    "title": "Meals",
+    "empty": "No meals for selected date.",
+    "delete": "Delete",
+    "added": "Meal added",
+    "deleted": "Meal deleted",
+    "entry": "{{grams}} g · {{calories}} kcal",
+    "types": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    }
+  },
+  "target": {
+    "title": "Daily Target",
+    "date": "Date",
+    "kcal": "Target kcal",
+    "set": "Set target",
+    "updated": "Target updated",
+    "display": "Target for {{date}}: {{calories}} kcal",
+    "none": "No target set for {{date}}"
+  },
+  "addMeal": {
+    "title": "Add Meal",
+    "food": "Food",
+    "loading": "Loading foods...",
+    "select": "Select food...",
+    "quantity": "Quantity (g)",
+    "date": "Date",
+    "type": "Type",
+    "submit": "Add meal"
+  },
+  "foods": {
+    "title": "Foods",
+    "new": "+ New food",
+    "name": "Name",
+    "kcal": "kcal / 100g",
+    "protein": "Protein / 100g",
+    "carbs": "Carbs / 100g",
+    "fat": "Fat / 100g",
+    "create": "Create food",
+    "created": "Food created",
+    "search": "Search foods...",
+    "per100g": "{{calories}} kcal/100g"
+  },
+  "errors": {
+    "requestFailed": "Request failed ({{status}})"
+  }
+}

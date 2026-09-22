@@ -1,3 +1,5 @@
+import { t, initI18n, onLanguageChange } from './i18n.js';
+
 const API_BASE = '/api/v1';
 
 const $ = (sel) => document.querySelector(sel);
@@ -26,7 +28,7 @@ async function api(path, options = {}) {
   const res = await fetch(url, { ...options, headers });
   if (res.status === 204) return null;
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  if (!res.ok) throw new Error(data.error || t('errors.requestFailed', { status: res.status }));
   return data;
 }
 
@@ -87,7 +89,7 @@ async function handleLogin(e) {
     });
     setToken(data.accessToken);
     showDashboard(form.email.value);
-    showToast('Logged in');
+    showToast(t('auth.loggedIn'));
     form.reset();
   } catch (err) {
     showToast(err.message, 'error');
@@ -107,7 +109,7 @@ async function handleRegister(e) {
     });
     setToken(data.accessToken);
     showDashboard(data.email);
-    showToast('Registered');
+    showToast(t('auth.registered'));
     form.reset();
   } catch (err) {
     showToast(err.message, 'error');
@@ -120,16 +122,17 @@ async function loadFoods(query = '') {
     const list = $('#food-list');
     const select = $('#meal-food');
     list.innerHTML = '';
-    select.innerHTML = '<option value="">Select food...</option>';
+    select.innerHTML = `<option value="">${t('addMeal.select')}</option>`;
     data.items.forEach((food) => {
+      const per100g = t('foods.per100g', { calories: food.caloriesPer100g });
       const li = document.createElement('li');
       li.className = 'list-item';
-      li.innerHTML = `<span>${food.name}</span><span class="muted">${food.caloriesPer100g} kcal/100g</span>`;
+      li.innerHTML = `<span>${food.name}</span><span class="muted">${per100g}</span>`;
       list.appendChild(li);
 
       const option = document.createElement('option');
       option.value = food.id;
-      option.textContent = `${food.name} (${food.caloriesPer100g} kcal/100g)`;
+      option.textContent = `${food.name} (${per100g})`;
       select.appendChild(option);
     });
   } catch (err) {
@@ -148,7 +151,7 @@ async function handleCreateFood(e) {
   };
   try {
     await api('/foods', { method: 'POST', body: JSON.stringify(body) });
-    showToast('Food created');
+    showToast(t('foods.created'));
     e.target.reset();
     $('#toggle-food-form').click();
     loadFoods($('#food-search').value);
@@ -162,8 +165,8 @@ async function loadTarget(date) {
     const data = await api(`/daily-target?date=${encodeURIComponent(date)}`);
     $('#target-calories').value = data.targetCalories ?? '';
     $('#target-display').textContent = data.targetCalories
-      ? `Target for ${date}: ${data.targetCalories} kcal`
-      : `No target set for ${date}`;
+      ? t('target.display', { date, calories: data.targetCalories })
+      : t('target.none', { date });
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -178,7 +181,7 @@ async function handleSetTarget(e) {
       method: 'PUT',
       body: JSON.stringify({ targetDate: date, targetCalories }),
     });
-    showToast('Target updated');
+    showToast(t('target.updated'));
     loadTarget(date);
     loadSummary($('#summary-date').value);
   } catch (err) {
@@ -201,11 +204,15 @@ async function loadSummary(date) {
     if (target && target > 0) {
       const pct = Math.min((data.totals.calories / target) * 100, 100);
       fill.style.width = `${pct}%`;
-      text.textContent = `${data.totals.calories.toFixed(1)} / ${target} kcal (${pct.toFixed(0)}%)`;
+      text.textContent = t('summary.progress', {
+        calories: data.totals.calories.toFixed(1),
+        target,
+        pct: pct.toFixed(0),
+      });
       fill.className = pct > 100 ? 'over' : '';
     } else {
       fill.style.width = '0%';
-      text.textContent = 'Set a daily target to see progress.';
+      text.textContent = t('summary.noTarget');
       fill.className = '';
     }
   } catch (err) {
@@ -218,7 +225,7 @@ async function loadMeals(date) {
     const data = await api(`/meals?date=${encodeURIComponent(date)}`);
     const container = $('#meals-list');
     if (data.items.length === 0) {
-      container.innerHTML = '<p class="muted">No meals for selected date.</p>';
+      container.innerHTML = `<p class="muted">${t('meals.empty')}</p>`;
       return;
     }
     container.innerHTML = '';
@@ -227,10 +234,10 @@ async function loadMeals(date) {
       div.className = 'list-item';
       div.innerHTML = `
         <div>
-          <strong>${meal.mealType}</strong>: ${meal.food.name}<br />
-          <span class="muted">${meal.quantityGrams} g · ${meal.calculatedCalories.toFixed(1)} kcal</span>
+          <strong>${t(`meals.types.${meal.mealType}`)}</strong>: ${meal.food.name}<br />
+          <span class="muted">${t('meals.entry', { grams: meal.quantityGrams, calories: meal.calculatedCalories.toFixed(1) })}</span>
         </div>
-        <button class="btn-danger" data-id="${meal.id}">Delete</button>
+        <button class="btn-danger" data-id="${meal.id}">${t('meals.delete')}</button>
       `;
       div.querySelector('button').addEventListener('click', () => deleteMeal(meal.id, date));
       container.appendChild(div);
@@ -243,7 +250,7 @@ async function loadMeals(date) {
 async function deleteMeal(id, date) {
   try {
     await api(`/meals/${id}`, { method: 'DELETE' });
-    showToast('Meal deleted');
+    showToast(t('meals.deleted'));
     loadSummary(date);
     loadMeals(date);
   } catch (err) {
@@ -261,7 +268,7 @@ async function handleCreateMeal(e) {
   };
   try {
     await api('/meals', { method: 'POST', body: JSON.stringify(body) });
-    showToast('Meal added');
+    showToast(t('meals.added'));
     e.target.reset();
     $('#meal-date').value = body.mealDate;
     const date = $('#summary-date').value;
@@ -272,14 +279,26 @@ async function handleCreateMeal(e) {
   }
 }
 
+function refreshDashboard() {
+  if (dashboardSection.classList.contains('hidden')) return;
+  const date = $('#summary-date').value;
+  loadTarget($('#target-date').value);
+  loadSummary(date);
+  loadFoods($('#food-search').value);
+  loadMeals(date);
+}
+
 async function init() {
+  await initI18n();
+  onLanguageChange(refreshDashboard);
+
   tabLogin.addEventListener('click', () => switchTab('login'));
   tabRegister.addEventListener('click', () => switchTab('register'));
   loginForm.addEventListener('submit', handleLogin);
   registerForm.addEventListener('submit', handleRegister);
   $('#logout-btn').addEventListener('click', () => {
     showAuth();
-    showToast('Logged out');
+    showToast(t('auth.loggedOut'));
   });
 
   $('#target-form').addEventListener('submit', handleSetTarget);
@@ -303,7 +322,7 @@ async function init() {
   if (accessToken) {
     try {
       await api('/auth/logout', { method: 'POST' });
-      showDashboard(localStorage.getItem('joulesEmail') || 'User');
+      showDashboard(localStorage.getItem('joulesEmail') || t('auth.defaultUser'));
     } catch {
       showAuth();
     }

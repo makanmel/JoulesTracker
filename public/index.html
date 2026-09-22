@@ -9,109 +9,115 @@
 <body>
   <div class="container">
     <header>
-      <h1>JoulesTracker</h1>
-      <p class="subtitle">Calorie &amp; macronutrient tracker</p>
+      <div class="header-text">
+        <h1 data-i18n="app.title">JoulesTracker</h1>
+        <p class="subtitle" data-i18n="app.subtitle">Calorie &amp; macronutrient tracker</p>
+      </div>
+      <div id="language-switcher" class="language-switcher" role="group" aria-label="Language" data-i18n-aria-label="app.language">
+        <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" class="lang-btn" data-lang="uk" aria-pressed="false">UKR</button>
+      </div>
     </header>
 
     <main>
       <section id="auth-section" class="card">
         <div class="tabs">
-          <button type="button" id="tab-login" class="tab active">Login</button>
-          <button type="button" id="tab-register" class="tab">Register</button>
+          <button type="button" id="tab-login" class="tab active" data-i18n="auth.login">Login</button>
+          <button type="button" id="tab-register" class="tab" data-i18n="auth.register">Register</button>
         </div>
 
         <form id="login-form" class="auth-form">
-          <label>Email <input type="email" name="email" required /></label>
-          <label>Password <input type="password" name="password" required /></label>
-          <button type="submit" class="btn-primary">Login</button>
+          <label><span data-i18n="auth.email">Email</span> <input type="email" name="email" required /></label>
+          <label><span data-i18n="auth.password">Password</span> <input type="password" name="password" required /></label>
+          <button type="submit" class="btn-primary" data-i18n="auth.login">Login</button>
         </form>
 
         <form id="register-form" class="auth-form hidden">
-          <label>Email <input type="email" name="email" required /></label>
-          <label>Password <input type="password" name="password" minlength="8" required /></label>
-          <button type="submit" class="btn-primary">Register</button>
+          <label><span data-i18n="auth.email">Email</span> <input type="email" name="email" required /></label>
+          <label><span data-i18n="auth.password">Password</span> <input type="password" name="password" minlength="8" required /></label>
+          <button type="submit" class="btn-primary" data-i18n="auth.register">Register</button>
         </form>
       </section>
 
       <section id="dashboard-section" class="hidden">
         <div class="dashboard-header">
           <p id="user-email"></p>
-          <button type="button" id="logout-btn" class="btn-secondary">Logout</button>
+          <button type="button" id="logout-btn" class="btn-secondary" data-i18n="auth.logout">Logout</button>
         </div>
 
         <div class="dashboard-grid">
           <div class="dashboard-col dashboard-col-main">
             <section class="card area-summary">
-              <h2>Today's Summary</h2>
+              <h2 data-i18n="summary.title">Today's Summary</h2>
               <form id="summary-date-form" class="inline-form">
-                <label>Date <input type="date" id="summary-date" required /></label>
-                <button type="button" id="refresh-summary" class="btn-secondary">Refresh</button>
+                <label><span data-i18n="summary.date">Date</span> <input type="date" id="summary-date" required /></label>
+                <button type="button" id="refresh-summary" class="btn-secondary" data-i18n="summary.refresh">Refresh</button>
               </form>
               <div id="summary" class="summary-grid">
-                <div><strong>Calories</strong><span id="total-calories">0</span></div>
-                <div><strong>Protein</strong><span id="total-protein">0 g</span></div>
-                <div><strong>Carbs</strong><span id="total-carbs">0 g</span></div>
-                <div><strong>Fat</strong><span id="total-fat">0 g</span></div>
+                <div><strong data-i18n="summary.calories">Calories</strong><span id="total-calories">0</span></div>
+                <div><strong data-i18n="summary.protein">Protein</strong><span id="total-protein">0 g</span></div>
+                <div><strong data-i18n="summary.carbs">Carbs</strong><span id="total-carbs">0 g</span></div>
+                <div><strong data-i18n="summary.fat">Fat</strong><span id="total-fat">0 g</span></div>
               </div>
               <div class="progress-bar"><div id="progress-fill"></div></div>
               <p id="progress-text" class="muted"></p>
             </section>
 
             <section class="card area-meals">
-              <h2>Meals</h2>
+              <h2 data-i18n="meals.title">Meals</h2>
               <div id="meals-list" class="list">
-                <p class="muted">No meals for selected date.</p>
+                <p class="muted" data-i18n="meals.empty">No meals for selected date.</p>
               </div>
             </section>
           </div>
 
           <div class="dashboard-col dashboard-col-side">
             <section class="card area-target">
-              <h2>Daily Target</h2>
+              <h2 data-i18n="target.title">Daily Target</h2>
               <form id="target-form" class="inline-form">
-                <label>Date <input type="date" id="target-date" required /></label>
-                <label>Target kcal <input type="number" id="target-calories" min="0" step="1" required /></label>
-                <button type="submit" class="btn-primary">Set target</button>
+                <label><span data-i18n="target.date">Date</span> <input type="date" id="target-date" required /></label>
+                <label><span data-i18n="target.kcal">Target kcal</span> <input type="number" id="target-calories" min="0" step="1" required /></label>
+                <button type="submit" class="btn-primary" data-i18n="target.set">Set target</button>
               </form>
               <p id="target-display" class="muted"></p>
             </section>
 
             <section class="card area-add-meal">
-              <h2>Add Meal</h2>
+              <h2 data-i18n="addMeal.title">Add Meal</h2>
               <form id="meal-form" class="grid-form">
-                <label>Food
+                <label><span data-i18n="addMeal.food">Food</span>
                   <select id="meal-food" required>
-                    <option value="">Loading foods...</option>
+                    <option value="" data-i18n="addMeal.loading">Loading foods...</option>
                   </select>
                 </label>
-                <label>Quantity (g) <input type="number" id="meal-quantity" min="1" step="1" required /></label>
-                <label>Date <input type="date" id="meal-date" required /></label>
-                <label>Type
+                <label><span data-i18n="addMeal.quantity">Quantity (g)</span> <input type="number" id="meal-quantity" min="1" step="1" required /></label>
+                <label><span data-i18n="addMeal.date">Date</span> <input type="date" id="meal-date" required /></label>
+                <label><span data-i18n="addMeal.type">Type</span>
                   <select id="meal-type" required>
-                    <option value="breakfast">Breakfast</option>
-                    <option value="lunch">Lunch</option>
-                    <option value="dinner">Dinner</option>
-                    <option value="snack">Snack</option>
+                    <option value="breakfast" data-i18n="meals.types.breakfast">Breakfast</option>
+                    <option value="lunch" data-i18n="meals.types.lunch">Lunch</option>
+                    <option value="dinner" data-i18n="meals.types.dinner">Dinner</option>
+                    <option value="snack" data-i18n="meals.types.snack">Snack</option>
                   </select>
                 </label>
-                <button type="submit" class="btn-primary">Add meal</button>
+                <button type="submit" class="btn-primary" data-i18n="addMeal.submit">Add meal</button>
               </form>
             </section>
 
             <section class="card area-foods">
               <div class="section-header">
-                <h2>Foods</h2>
-                <button type="button" id="toggle-food-form" class="btn-secondary">+ New food</button>
+                <h2 data-i18n="foods.title">Foods</h2>
+                <button type="button" id="toggle-food-form" class="btn-secondary" data-i18n="foods.new">+ New food</button>
               </div>
               <form id="food-form" class="grid-form hidden">
-                <label>Name <input type="text" id="food-name" required /></label>
-                <label>kcal / 100g <input type="number" id="food-calories" min="0" step="0.1" required /></label>
-                <label>Protein / 100g <input type="number" id="food-protein" min="0" step="0.1" value="0" /></label>
-                <label>Carbs / 100g <input type="number" id="food-carbs" min="0" step="0.1" value="0" /></label>
-                <label>Fat / 100g <input type="number" id="food-fat" min="0" step="0.1" value="0" /></label>
-                <button type="submit" class="btn-primary">Create food</button>
+                <label><span data-i18n="foods.name">Name</span> <input type="text" id="food-name" required /></label>
+                <label><span data-i18n="foods.kcal">kcal / 100g</span> <input type="number" id="food-calories" min="0" step="0.1" required /></label>
+                <label><span data-i18n="foods.protein">Protein / 100g</span> <input type="number" id="food-protein" min="0" step="0.1" value="0" /></label>
+                <label><span data-i18n="foods.carbs">Carbs / 100g</span> <input type="number" id="food-carbs" min="0" step="0.1" value="0" /></label>
+                <label><span data-i18n="foods.fat">Fat / 100g</span> <input type="number" id="food-fat" min="0" step="0.1" value="0" /></label>
+                <button type="submit" class="btn-primary" data-i18n="foods.create">Create food</button>
               </form>
-              <input type="search" id="food-search" placeholder="Search foods..." />
+              <input type="search" id="food-search" placeholder="Search foods..." data-i18n-placeholder="foods.search" />
               <ul id="food-list" class="list"></ul>
             </section>
           </div>
@@ -122,6 +128,6 @@
     </main>
   </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
