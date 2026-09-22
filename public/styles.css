@@ -15,14 +15,29 @@
   --border: #e5e7eb;
   --radius: 12px;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --touch-target: 44px;
+  --mobile-nav-height: 64px;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
+  -webkit-tap-highlight-color: transparent;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg);
   background-image: var(--bg-image);
@@ -67,9 +82,12 @@ header {
 
 .lang-btn {
   border: none;
+  border-radius: 0;
   background: transparent;
   color: var(--muted);
-  padding: 4px 12px;
+  padding: 4px 14px;
+  min-height: var(--touch-target);
+  min-width: var(--touch-target);
   font: inherit;
   font-size: 0.85rem;
   cursor: pointer;
@@ -86,9 +104,10 @@ h1,
 h2,
 p,
 .list-item {
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   word-break: normal;
   hyphens: auto;
+  min-width: 0;
 }
 
 header h1 {
@@ -126,7 +145,9 @@ header h1 {
 .tab {
   background: none;
   border: none;
+  border-radius: 0;
   padding: 8px 16px;
+  min-height: var(--touch-target);
   cursor: pointer;
   font-weight: 600;
   color: var(--muted);
@@ -149,6 +170,9 @@ label {
 input,
 select {
   padding: 8px 12px;
+  min-height: var(--touch-target);
+  width: 100%;
+  max-width: 100%;
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 1rem;
@@ -162,7 +186,10 @@ button {
   border: none;
   border-radius: 8px;
   padding: 10px 16px;
+  min-height: var(--touch-target);
+  min-width: var(--touch-target);
   font-size: 0.95rem;
+  touch-action: manipulation;
 }
 
 .btn-primary {
@@ -188,6 +215,7 @@ button {
   background: var(--danger);
   color: var(--text-on-primary);
   padding: 6px 12px;
+  flex-shrink: 0;
 }
 
 .btn-danger:hover {
@@ -229,6 +257,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
@@ -240,7 +270,15 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 16px;
+}
+
+.dashboard-header p {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .summary-grid {
@@ -297,9 +335,14 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   background: var(--bg);
   border-radius: 8px;
   padding: 12px;
+}
+
+.list-item > * {
+  min-width: 0;
 }
 
 #food-search {
@@ -326,11 +369,13 @@ button {
   position: fixed;
   bottom: 16px;
   right: 16px;
+  max-width: calc(100vw - 32px);
   padding: 12px 20px;
   border-radius: 8px;
   background: var(--text);
   color: var(--text-on-primary);
   box-shadow: var(--shadow);
+  z-index: 20;
 }
 
 .toast.error {
@@ -348,6 +393,7 @@ button {
   border: 2px solid var(--border);
   border-radius: var(--radius);
   padding: 8px;
+  min-height: var(--touch-target);
   color: var(--text);
   text-align: left;
   display: flex;
@@ -416,9 +462,19 @@ button {
 .area-foods #food-list {
   max-height: 60vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
-@media (max-width: 600px) {
+.mobile-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 16px);
+  }
+
   .summary-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -426,6 +482,95 @@ button {
   .inline-form {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .grid-form {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-form button,
+  .inline-form button,
+  .auth-form button,
+  .section-header button {
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .section-header button {
+    flex-basis: 100%;
+  }
+
+  .list-item {
+    flex-wrap: wrap;
+  }
+
+  .list-item .btn-danger {
+    flex-basis: 100%;
+  }
+
+  .area-meals .list,
+  .area-foods #food-list {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .toast {
+    left: 16px;
+    right: 16px;
+    bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 12px);
+    max-width: none;
+    text-align: center;
+  }
+
+  html {
+    scroll-padding-top: 12px;
+  }
+
+  .mobile-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    min-height: var(--mobile-nav-height);
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
+    background: var(--card);
+    backdrop-filter: blur(var(--card-blur));
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  .mobile-nav-link {
+    flex: 1 1 0;
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    padding: 4px 2px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-nav-link:hover,
+  .mobile-nav-link:focus-visible {
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .mobile-nav-link.active {
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
   }
 }
 

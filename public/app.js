@@ -289,8 +289,38 @@ function refreshDashboard() {
   loadMeals(date);
 }
 
+function initMobileNav() {
+  const links = [...document.querySelectorAll('.mobile-nav-link')];
+  if (!links.length) return;
+  const setActive = (id) => links.forEach((link) => link.classList.toggle('active', link.hash === `#${id}`));
+
+  links.forEach((link) => {
+    link.addEventListener('click', (event) => {
+      const target = document.querySelector(link.hash);
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActive(target.id);
+    });
+  });
+
+  if (!('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible.length) setActive(visible[0].target.id);
+    },
+    { rootMargin: '-20% 0px -60% 0px', threshold: [0, 0.25, 0.5] },
+  );
+  links.forEach((link) => {
+    const target = document.querySelector(link.hash);
+    if (target) observer.observe(target);
+  });
+}
+
 async function init() {
   initTheme();
+  initMobileNav();
   await initI18n();
   onLanguageChange(refreshDashboard);
 
