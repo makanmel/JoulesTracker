@@ -1,0 +1,12 @@
+-- AlterTable
+ALTER TABLE "Food" ADD COLUMN     "barcode" TEXT,
+ADD COLUMN     "brand" TEXT,
+ADD COLUMN     "category" TEXT,
+ADD COLUMN     "fiberPer100g" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "saltPer100g" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "saturatedFatPer100g" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "source" TEXT NOT NULL DEFAULT 'local',
+ADD COLUMN     "sugarPer100g" DOUBLE PRECISION NOT NULL DEFAULT 0;
+
+-- CreateIndex
+CREATE INDEX "Food_barcode_idx" ON "Food"("barcode");
