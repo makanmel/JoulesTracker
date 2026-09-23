@@ -90,7 +90,23 @@
     "create": "Create food",
     "created": "Food created",
     "search": "Search foods...",
-    "per100g": "{{calories}} kcal/100g"
+    "per100g": "{{calories}} kcal/100g",
+    "saturatedFat": "Saturated fat / 100g",
+    "sugar": "Sugar / 100g",
+    "fiber": "Fiber / 100g",
+    "salt": "Salt / 100g",
+    "brand": "Brand",
+    "category": "Category",
+    "barcode": "Barcode",
+    "lookupBarcode": "Look up barcode",
+    "externalTitle": "OpenFoodFacts (Ukraine)",
+    "externalHint": "Type at least 2 characters to search local store products.",
+    "externalLoading": "Searching OpenFoodFacts...",
+    "externalEmpty": "Nothing found in OpenFoodFacts. Create the product as a custom food.",
+    "import": "Import",
+    "imported": "Product imported",
+    "barcodeFound": "Found in your foods: {{name}}",
+    "barcodeNotFound": "Product not found. Fill in the details to create it as a custom food."
   },
   "errors": {
     "requestFailed": "Request failed ({{status}})"

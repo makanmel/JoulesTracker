@@ -14,19 +14,27 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  foods       Food[]
-  meals       MealEntry[]
+  foods        Food[]
+  meals        MealEntry[]
   dailyTargets DailyTarget[]
 }
 
 model Food {
-  id              String  @id @default(uuid())
-  name            String
-  caloriesPer100g Float
-  proteinPer100g  Float   @default(0)
-  carbsPer100g    Float   @default(0)
-  fatPer100g      Float   @default(0)
-  isDefault       Boolean @default(false)
+  id                  String  @id @default(uuid())
+  name                String
+  caloriesPer100g     Float
+  proteinPer100g      Float   @default(0)
+  carbsPer100g        Float   @default(0)
+  fatPer100g          Float   @default(0)
+  fiberPer100g        Float   @default(0)
+  sugarPer100g        Float   @default(0)
+  saturatedFatPer100g Float   @default(0)
+  saltPer100g         Float   @default(0)
+  barcode             String?
+  brand               String?
+  category            String?
+  source              String  @default("local") // local | openfoodfacts
+  isDefault           Boolean @default(false)
 
   createdById String?
   createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
@@ -37,14 +45,15 @@ model Food {
   meals MealEntry[]
 
   @@index([isDefault])
+  @@index([barcode])
 }
 
 model MealEntry {
-  id                 String @id @default(uuid())
+  id                 String   @id @default(uuid())
   userId             String
-  user               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   foodId             String
-  food               Food   @relation(fields: [foodId], references: [id], onDelete: Restrict)
+  food               Food     @relation(fields: [foodId], references: [id], onDelete: Restrict)
   quantityGrams      Float
   mealDate           String
   mealType           String // breakfast | lunch | dinner | snack

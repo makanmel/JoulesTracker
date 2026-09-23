@@ -6,6 +6,10 @@ Calorie and macronutrient tracker.
 
 Choose a visual preset from Settings. To add a preset, append a theme object with the documented schema to `public/themes.js` and add its translated `nameKey` to both locale files.
 
+## Food database
+
+Foods store per-100g calories, protein, carbs, fat plus fiber, sugar, saturated fat and salt, and may carry a barcode, brand and category. Besides the local catalog, the Foods panel searches the Ukrainian [OpenFoodFacts](https://ua.openfoodfacts.org) dataset (`GET /api/v1/foods/external/search?q=`), looks products up by barcode (`GET /api/v1/foods/barcode/:barcode`, local catalog first) and imports them into the user's catalog (`POST /api/v1/foods/import`). When a product is not found, the custom-food form is prefilled so the user can create it manually. Set `OPENFOODFACTS_BASE_URL` to point at a different OpenFoodFacts instance.
+
 ## Development workflow
 
 All changes go through Pull Requests. CI runs tests and lint on every PR and on every push to `main`. See `CONTRIBUTING.md` for details.

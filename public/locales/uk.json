@@ -90,7 +90,23 @@
     "create": "Створити продукт",
     "created": "Продукт створено",
     "search": "Пошук продуктів...",
-    "per100g": "{{calories}} ккал/100 г"
+    "per100g": "{{calories}} ккал/100 г",
+    "saturatedFat": "Насичені жири / 100 г",
+    "sugar": "Цукор / 100 г",
+    "fiber": "Клітковина / 100 г",
+    "salt": "Сіль / 100 г",
+    "brand": "Бренд",
+    "category": "Категорія",
+    "barcode": "Штрихкод",
+    "lookupBarcode": "Знайти за штрихкодом",
+    "externalTitle": "OpenFoodFacts (Україна)",
+    "externalHint": "Введіть щонайменше 2 символи, щоб шукати продукти з місцевих магазинів.",
+    "externalLoading": "Пошук в OpenFoodFacts...",
+    "externalEmpty": "В OpenFoodFacts нічого не знайдено. Створіть продукт як власний.",
+    "import": "Імпортувати",
+    "imported": "Продукт імпортовано",
+    "barcodeFound": "Знайдено серед ваших продуктів: {{name}}",
+    "barcodeNotFound": "Продукт не знайдено. Заповніть дані, щоб створити власний продукт."
   },
   "errors": {
     "requestFailed": "Помилка запиту ({{status}})"

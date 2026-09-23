@@ -125,10 +125,25 @@
                 <label><span data-i18n="foods.protein">Protein / 100g</span> <input type="number" id="food-protein" min="0" step="0.1" value="0" /></label>
                 <label><span data-i18n="foods.carbs">Carbs / 100g</span> <input type="number" id="food-carbs" min="0" step="0.1" value="0" /></label>
                 <label><span data-i18n="foods.fat">Fat / 100g</span> <input type="number" id="food-fat" min="0" step="0.1" value="0" /></label>
+                <label><span data-i18n="foods.saturatedFat">Saturated fat / 100g</span> <input type="number" id="food-saturated-fat" min="0" step="0.1" value="0" /></label>
+                <label><span data-i18n="foods.sugar">Sugar / 100g</span> <input type="number" id="food-sugar" min="0" step="0.1" value="0" /></label>
+                <label><span data-i18n="foods.fiber">Fiber / 100g</span> <input type="number" id="food-fiber" min="0" step="0.1" value="0" /></label>
+                <label><span data-i18n="foods.salt">Salt / 100g</span> <input type="number" id="food-salt" min="0" step="0.01" value="0" /></label>
+                <label><span data-i18n="foods.brand">Brand</span> <input type="text" id="food-brand" /></label>
+                <label><span data-i18n="foods.category">Category</span> <input type="text" id="food-category" /></label>
+                <label><span data-i18n="foods.barcode">Barcode</span> <input type="text" id="food-barcode" inputmode="numeric" pattern="[0-9]{8,14}" /></label>
                 <button type="submit" class="btn-primary" data-i18n="foods.create">Create food</button>
+              </form>
+              <form id="barcode-form" class="inline-form">
+                <label><span data-i18n="foods.barcode">Barcode</span> <input type="text" id="barcode-input" inputmode="numeric" pattern="[0-9]{8,14}" placeholder="4820000000000" required /></label>
+                <button type="submit" class="btn-secondary" data-i18n="foods.lookupBarcode">Look up barcode</button>
               </form>
               <input type="search" id="food-search" placeholder="Search foods..." data-i18n-placeholder="foods.search" />
               <ul id="food-list" class="list"></ul>
+              <h3 data-i18n="foods.externalTitle">OpenFoodFacts (Ukraine)</h3>
+              <ul id="external-food-list" class="list">
+                <p class="muted" data-i18n="foods.externalHint">Type at least 2 characters to search local store products.</p>
+              </ul>
             </section>
           </div>
         </div>

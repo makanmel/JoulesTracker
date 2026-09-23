@@ -2,6 +2,8 @@ import { t, initI18n, onLanguageChange } from './i18n.js';
 import { initTheme } from './theme.js';
 
 const API_BASE = '/api/v1';
+const SEARCH_DEBOUNCE_MS = 300;
+const MIN_EXTERNAL_QUERY = 2;
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -29,8 +31,28 @@ async function api(path, options = {}) {
   const res = await fetch(url, { ...options, headers });
   if (res.status === 204) return null;
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || t('errors.requestFailed', { status: res.status }));
+  if (!res.ok) {
+    const error = new Error(data.error || t('errors.requestFailed', { status: res.status }));
+    error.status = res.status;
+    throw error;
+  }
   return data;
+}
+
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+function foodLabel(food) {
+  return food.brand ? `${food.name} · ${food.brand}` : food.name;
 }
 
 function formatDate(date) {
@@ -128,15 +150,107 @@ async function loadFoods(query = '') {
       const per100g = t('foods.per100g', { calories: food.caloriesPer100g });
       const li = document.createElement('li');
       li.className = 'list-item';
-      li.innerHTML = `<span>${food.name}</span><span class="muted">${per100g}</span>`;
+      li.innerHTML = `<span>${escapeHtml(foodLabel(food))}</span><span class="muted">${escapeHtml(per100g)}</span>`;
       list.appendChild(li);
 
       const option = document.createElement('option');
       option.value = food.id;
-      option.textContent = `${food.name} (${per100g})`;
+      option.textContent = `${foodLabel(food)} (${per100g})`;
       select.appendChild(option);
     });
   } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+let externalSearchSeq = 0;
+
+async function loadExternalFoods(query) {
+  const list = $('#external-food-list');
+  const q = query.trim();
+  if (q.length < MIN_EXTERNAL_QUERY) {
+    list.innerHTML = `<p class="muted">${t('foods.externalHint')}</p>`;
+    return;
+  }
+  const seq = ++externalSearchSeq;
+  list.innerHTML = `<p class="muted">${t('foods.externalLoading')}</p>`;
+  try {
+    const data = await api(`/foods/external/search?q=${encodeURIComponent(q)}&limit=20`);
+    if (seq !== externalSearchSeq) return;
+    if (data.items.length === 0) {
+      list.innerHTML = `<p class="muted">${t('foods.externalEmpty')}</p>`;
+      return;
+    }
+    list.innerHTML = '';
+    data.items.forEach((food) => {
+      const li = document.createElement('li');
+      li.className = 'list-item';
+      const meta = [food.category, t('foods.per100g', { calories: food.caloriesPer100g })].filter(Boolean).join(' · ');
+      li.innerHTML = `
+        <div>
+          ${escapeHtml(foodLabel(food))}<br />
+          <span class="muted">${escapeHtml(meta)}</span>
+        </div>
+        <button type="button" class="btn-secondary">${t('foods.import')}</button>
+      `;
+      li.querySelector('button').addEventListener('click', () => importExternalFood(food));
+      list.appendChild(li);
+    });
+  } catch (err) {
+    if (seq !== externalSearchSeq) return;
+    list.innerHTML = `<p class="muted">${escapeHtml(err.message)}</p>`;
+  }
+}
+
+async function importExternalFood(food) {
+  try {
+    if (food.barcode) {
+      await api('/foods/import', { method: 'POST', body: JSON.stringify({ barcode: food.barcode }) });
+    } else {
+      await api('/foods', { method: 'POST', body: JSON.stringify(food) });
+    }
+    showToast(t('foods.imported'));
+    loadFoods($('#food-search').value);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function prefillFoodForm(food) {
+  $('#food-name').value = food.name || '';
+  $('#food-calories').value = food.caloriesPer100g ?? '';
+  $('#food-protein').value = food.proteinPer100g ?? 0;
+  $('#food-carbs').value = food.carbsPer100g ?? 0;
+  $('#food-fat').value = food.fatPer100g ?? 0;
+  $('#food-saturated-fat').value = food.saturatedFatPer100g ?? 0;
+  $('#food-sugar').value = food.sugarPer100g ?? 0;
+  $('#food-fiber').value = food.fiberPer100g ?? 0;
+  $('#food-salt').value = food.saltPer100g ?? 0;
+  $('#food-brand').value = food.brand || '';
+  $('#food-category').value = food.category || '';
+  $('#food-barcode').value = food.barcode || '';
+  $('#food-form').classList.remove('hidden');
+  $('#food-name').focus();
+}
+
+async function handleBarcodeLookup(e) {
+  e.preventDefault();
+  const barcode = $('#barcode-input').value.trim();
+  try {
+    const data = await api(`/foods/barcode/${encodeURIComponent(barcode)}`);
+    if (data.saved) {
+      showToast(t('foods.barcodeFound', { name: data.food.name }));
+      $('#food-search').value = data.food.name;
+      loadFoods(data.food.name);
+      return;
+    }
+    await importExternalFood(data.food);
+  } catch (err) {
+    if (err.status === 404) {
+      showToast(t('foods.barcodeNotFound'), 'error');
+      prefillFoodForm({ barcode });
+      return;
+    }
     showToast(err.message, 'error');
   }
 }
@@ -149,12 +263,19 @@ async function handleCreateFood(e) {
     proteinPer100g: parseFloat($('#food-protein').value) || 0,
     carbsPer100g: parseFloat($('#food-carbs').value) || 0,
     fatPer100g: parseFloat($('#food-fat').value) || 0,
+    saturatedFatPer100g: parseFloat($('#food-saturated-fat').value) || 0,
+    sugarPer100g: parseFloat($('#food-sugar').value) || 0,
+    fiberPer100g: parseFloat($('#food-fiber').value) || 0,
+    saltPer100g: parseFloat($('#food-salt').value) || 0,
+    brand: $('#food-brand').value.trim() || null,
+    category: $('#food-category').value.trim() || null,
+    barcode: $('#food-barcode').value.trim() || null,
   };
   try {
     await api('/foods', { method: 'POST', body: JSON.stringify(body) });
     showToast(t('foods.created'));
     e.target.reset();
-    $('#toggle-food-form').click();
+    $('#food-form').classList.add('hidden');
     loadFoods($('#food-search').value);
   } catch (err) {
     showToast(err.message, 'error');
@@ -354,7 +475,12 @@ async function init() {
   $('#meal-form').addEventListener('submit', handleCreateMeal);
   $('#food-form').addEventListener('submit', handleCreateFood);
   $('#toggle-food-form').addEventListener('click', () => $('#food-form').classList.toggle('hidden'));
-  $('#food-search').addEventListener('input', (e) => loadFoods(e.target.value));
+  const searchFoods = debounce((query) => {
+    loadFoods(query);
+    loadExternalFoods(query);
+  }, SEARCH_DEBOUNCE_MS);
+  $('#food-search').addEventListener('input', (e) => searchFoods(e.target.value));
+  $('#barcode-form').addEventListener('submit', handleBarcodeLookup);
 
   if (accessToken) {
     try {
