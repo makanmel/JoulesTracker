@@ -58,6 +58,20 @@ describe('OpenFoodFacts mapper', () => {
     expect(food.caloriesPer100g).toBe(250);
   });
 
+  it('decodes HTML entities in imported text fields', () => {
+    const food = mapProduct({
+      code: '4008713702804',
+      product_name_uk: 'Пластівці вівсяні &quot;Haferflocken extrazarte&quot;',
+      brands: 'Br&#252;ggen &amp; Co',
+      categories: '&#x412;&#x456;&#x432;&#x441;&#x44F;&#x43D;&#x456; пластівці',
+      nutriments: {},
+    });
+
+    expect(food.name).toBe('Пластівці вівсяні "Haferflocken extrazarte"');
+    expect(food.brand).toBe('Brüggen & Co');
+    expect(food.category).toBe('Вівсяні пластівці');
+  });
+
   it('returns null for products without a name', () => {
     expect(mapProduct({ code: '1', nutriments: {} })).toBeNull();
     expect(mapProduct(null)).toBeNull();
