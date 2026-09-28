@@ -27,6 +27,18 @@ describe('Static frontend', () => {
     expect(favicon.body.toString()).toContain('<svg');
   });
 
+  it('serves dashboard section icons and visual accents', async () => {
+    const [page, styles] = await Promise.all([request(app).get('/index.html'), request(app).get('/styles.css')]);
+
+    expect(page.text.match(/class="section-icon"/g)).toHaveLength(5);
+    for (const section of ['summary', 'target', 'add-meal', 'meals', 'foods']) {
+      expect(page.text).toMatch(new RegExp(`id="${section}-section"[\\s\\S]*?<svg class="section-icon"`));
+    }
+    expect(styles.text).toContain('.section-icon');
+    expect(styles.text).toContain('--section-accent');
+    expect(styles.text).toContain('radial-gradient');
+  });
+
   it('serves a stylesheet with desktop breakpoints', async () => {
     const res = await request(app).get('/styles.css');
     const css = res.text.replace(/\r\n/g, '\n');
