@@ -38,7 +38,19 @@ describe('Auth endpoints', () => {
       .send({ email: 'auth3@test.com', password: 'password123' });
 
     expect(res.status).toBe(200);
+    expect(res.body.email).toBe('auth3@test.com');
     expect(res.body.accessToken).toBeDefined();
+  });
+
+  it('returns the authenticated current user', async () => {
+    const reg = await request(app)
+      .post('/api/v1/auth/register')
+      .send({ email: 'auth-current@test.com', password: 'password123' });
+
+    const res = await request(app).get('/api/v1/auth/me').set('Authorization', `Bearer ${reg.body.accessToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ id: reg.body.id, email: 'auth-current@test.com' });
   });
 
   it('returns 401 for wrong password', async () => {

@@ -4,8 +4,15 @@ import { prisma } from '../lib/prisma.js';
 import { parseRequest, registerSchema, loginSchema } from '../lib/validation.js';
 import { AppError } from '../lib/errors.js';
 import { authenticate } from '../middleware/auth.js';
+import { rateLimit } from 'express-rate-limit';
 
 const router = Router();
+const currentUserLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+});
 
 router.post('/register', async (req, res, next) => {
   try {
@@ -42,10 +49,14 @@ router.post('/login', async (req, res, next) => {
       throw new AppError('Invalid credentials', 401);
     }
     const accessToken = signToken({ userId: user.id });
-    res.json({ accessToken });
+    res.json({ email: user.email, accessToken });
   } catch (err) {
     next(err);
   }
+});
+
+router.get('/me', currentUserLimiter, authenticate, (req, res) => {
+  res.json({ id: req.user.id, email: req.user.email });
 });
 
 router.post('/logout', authenticate, (req, res) => {

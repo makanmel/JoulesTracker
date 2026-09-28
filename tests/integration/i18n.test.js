@@ -72,6 +72,20 @@ describe('Internationalization', () => {
     }
   });
 
+  it('restores and localizes the authenticated user email', async () => {
+    const [app, en, uk] = await Promise.all([
+      request(createApp()).get('/app.js'),
+      request(createApp()).get('/locales/en.json'),
+      request(createApp()).get('/locales/uk.json'),
+    ]);
+
+    expect(app.text).toContain("const user = await api('/auth/me')");
+    expect(app.text).toContain("t('auth.currentUser', { email: currentUserEmail })");
+    expect(app.text).toMatch(/function refreshDashboard\(\) \{[\s\S]*?renderCurrentUser\(\)/);
+    expect(en.body.auth.currentUser).toBe('User: {{email}}');
+    expect(uk.body.auth.currentUser).toBe('Користувач: {{email}}');
+  });
+
   it('serves the i18n module with localStorage persistence, browser detection, and locale fallback', async () => {
     const res = await request(app).get('/i18n.js');
 

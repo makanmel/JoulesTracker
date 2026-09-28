@@ -33,7 +33,7 @@
     "loggedIn": "Logged in",
     "loggedOut": "Logged out",
     "registered": "Registered",
-    "defaultUser": "User"
+    "currentUser": "User: {{email}}"
   },
   "summary": {
     "title": "Today's Summary",
