@@ -17,6 +17,16 @@ describe('Static frontend', () => {
     }
   });
 
+  it('serves the application favicon', async () => {
+    const page = await request(app).get('/index.html');
+    const favicon = await request(app).get('/favicon.svg');
+
+    expect(page.text).toContain('<link rel="icon" href="/favicon.svg" type="image/svg+xml" />');
+    expect(favicon.status).toBe(200);
+    expect(favicon.headers['content-type']).toMatch(/image\/svg\+xml/);
+    expect(favicon.body.toString()).toContain('<svg');
+  });
+
   it('serves a stylesheet with desktop breakpoints', async () => {
     const res = await request(app).get('/styles.css');
     const css = res.text.replace(/\r\n/g, '\n');
