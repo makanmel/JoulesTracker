@@ -17,6 +17,7 @@ const tabRegister = $('#tab-register');
 const toast = $('#toast');
 
 let accessToken = localStorage.getItem('joulesToken');
+let currentUserEmail = null;
 
 function showToast(message, type = 'info') {
   toast.textContent = message;
@@ -65,21 +66,26 @@ function setToken(token) {
   else localStorage.removeItem('joulesToken');
 }
 
+function renderCurrentUser() {
+  $('#user-email').textContent = currentUserEmail ? t('auth.currentUser', { email: currentUserEmail }) : '';
+}
+
 function showDashboard(email) {
+  currentUserEmail = email;
   authSection.classList.add('hidden');
   dashboardSection.classList.remove('hidden');
-  $('#user-email').textContent = email;
-  const today = formatDate(new Date());
-  $('#target-date').value = today;
-  $('#summary-date').value = today;
-  $('#meal-date').value = today;
-  loadTarget(today);
-  loadSummary(today);
+  renderCurrentUser();
+  $('#target-date').value = formatDate(new Date());
+  $('#summary-date').value = formatDate(new Date());
+  $('#meal-date').value = formatDate(new Date());
+  loadTarget(formatDate(new Date()));
+  loadSummary(formatDate(new Date()));
   loadFoods();
-  loadMeals(today);
+  loadMeals(formatDate(new Date()));
 }
 
 function showAuth() {
+  currentUserEmail = null;
   authSection.classList.remove('hidden');
   dashboardSection.classList.add('hidden');
   setToken(null);
@@ -111,7 +117,7 @@ async function handleLogin(e) {
       }),
     });
     setToken(data.accessToken);
-    showDashboard(form.email.value);
+    showDashboard(data.email);
     showToast(t('auth.loggedIn'));
     form.reset();
   } catch (err) {
@@ -403,6 +409,7 @@ async function handleCreateMeal(e) {
 
 function refreshDashboard() {
   if (dashboardSection.classList.contains('hidden')) return;
+  renderCurrentUser();
   const date = $('#summary-date').value;
   loadTarget($('#target-date').value);
   loadSummary(date);
@@ -484,8 +491,8 @@ async function init() {
 
   if (accessToken) {
     try {
-      await api('/auth/logout', { method: 'POST' });
-      showDashboard(localStorage.getItem('joulesEmail') || t('auth.defaultUser'));
+      const user = await api('/auth/me');
+      showDashboard(user.email);
     } catch {
       showAuth();
     }

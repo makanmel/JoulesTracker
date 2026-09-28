@@ -42,10 +42,14 @@ router.post('/login', async (req, res, next) => {
       throw new AppError('Invalid credentials', 401);
     }
     const accessToken = signToken({ userId: user.id });
-    res.json({ accessToken });
+    res.json({ email: user.email, accessToken });
   } catch (err) {
     next(err);
   }
+});
+
+router.get('/me', authenticate, (req, res) => {
+  res.json({ id: req.user.id, email: req.user.email });
 });
 
 router.post('/logout', authenticate, (req, res) => {

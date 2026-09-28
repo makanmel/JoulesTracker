@@ -33,7 +33,7 @@
     "loggedIn": "Вхід виконано",
     "loggedOut": "Вихід виконано",
     "registered": "Реєстрацію завершено",
-    "defaultUser": "Користувач"
+    "currentUser": "Користувач: {{email}}"
   },
   "summary": {
     "title": "Підсумок за день",
