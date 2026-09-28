@@ -72,12 +72,14 @@ describe('Internationalization', () => {
     }
   });
 
-  it('serves the i18n module with localStorage persistence and browser detection', async () => {
+  it('serves the i18n module with localStorage persistence, browser detection, and locale fallback', async () => {
     const res = await request(app).get('/i18n.js');
 
     expect(res.status).toBe(200);
     expect(res.text).toContain("localStorage.getItem(STORAGE_KEY)");
     expect(res.text).toContain('localStorage.setItem(STORAGE_KEY');
     expect(res.text).toContain('navigator.language');
+    expect(res.text).toContain('await loadMessages(lang, true)');
+    expect(res.text).toContain('preferredMessages ? lang : DEFAULT_LANGUAGE');
   });
 });
