@@ -24,7 +24,7 @@ describe('Static frontend', () => {
     expect(page.text).toContain('<link rel="icon" href="/favicon.svg" type="image/svg+xml" />');
     expect(favicon.status).toBe(200);
     expect(favicon.headers['content-type']).toMatch(/image\/svg\+xml/);
-    expect(favicon.text).toContain('<svg');
+    expect(favicon.body.toString()).toContain('<svg');
   });
 
   it('serves a stylesheet with desktop breakpoints', async () => {
