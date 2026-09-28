@@ -222,6 +222,13 @@ async function importExternalFood(food) {
   }
 }
 
+function setFoodFormVisible(visible) {
+  const form = $('#food-form');
+  if (!visible) form.reset();
+  form.classList.toggle('hidden', !visible);
+  if (visible) $('#food-name').focus();
+}
+
 function prefillFoodForm(food) {
   $('#food-name').value = food.name || '';
   $('#food-calories').value = food.caloriesPer100g ?? '';
@@ -235,8 +242,7 @@ function prefillFoodForm(food) {
   $('#food-brand').value = food.brand || '';
   $('#food-category').value = food.category || '';
   $('#food-barcode').value = food.barcode || '';
-  $('#food-form').classList.remove('hidden');
-  $('#food-name').focus();
+  setFoodFormVisible(true);
 }
 
 async function handleBarcodeLookup(e) {
@@ -280,8 +286,7 @@ async function handleCreateFood(e) {
   try {
     await api('/foods', { method: 'POST', body: JSON.stringify(body) });
     showToast(t('foods.created'));
-    e.target.reset();
-    $('#food-form').classList.add('hidden');
+    setFoodFormVisible(false);
     loadFoods($('#food-search').value);
   } catch (err) {
     showToast(err.message, 'error');
@@ -481,7 +486,8 @@ async function init() {
 
   $('#meal-form').addEventListener('submit', handleCreateMeal);
   $('#food-form').addEventListener('submit', handleCreateFood);
-  $('#toggle-food-form').addEventListener('click', () => $('#food-form').classList.toggle('hidden'));
+  $('#toggle-food-form').addEventListener('click', () => setFoodFormVisible($('#food-form').classList.contains('hidden')));
+  $('#cancel-food-form').addEventListener('click', () => setFoodFormVisible(false));
   const searchFoods = debounce((query) => {
     loadFoods(query);
     loadExternalFoods(query);

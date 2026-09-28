@@ -113,6 +113,27 @@ describe('OpenFoodFacts client', () => {
     expect(result.items[0].name).toBe('Молоко Яготинське 2.6%');
   });
 
+  it('matches every word in multi-word searches regardless of order or field', async () => {
+    const matching = {
+      ...product,
+      code: 'multi-word-match',
+      product_name_uk: 'Пластівці вівсяні',
+      brands: 'Brüggen',
+    };
+    const partial = { ...product, code: 'partial-match', product_name_uk: 'Пластівці кукурудзяні', brands: 'Other' };
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ products: [matching, partial] }))
+      .mockResolvedValueOnce(jsonResponse({ products: [matching] }));
+
+    const result = await searchProducts('Brüggen пластівці', { limit: 10, fetchImpl });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl.mock.calls.map(([url]) => new URL(url).searchParams.get('search_terms'))).toEqual(['bruggen', 'пластівці']);
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatchObject({ barcode: 'multi-word-match', name: 'Пластівці вівсяні', brand: 'Brüggen' });
+  });
+
   it('retries transient upstream failures', async () => {
     const fetchImpl = vi
       .fn()

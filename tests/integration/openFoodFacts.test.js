@@ -239,4 +239,20 @@ describe('Frontend product search', () => {
     expect(html.text).toContain('id="food-saturated-fat"');
     expect(html.text).toContain('<meta charset="UTF-8" />');
   });
+
+  it('allows users to cancel custom food entry without refreshing', async () => {
+    const [html, js, en, uk] = await Promise.all([
+      request(app).get('/index.html'),
+      request(app).get('/app.js'),
+      request(app).get('/locales/en.json'),
+      request(app).get('/locales/uk.json'),
+    ]);
+
+    expect(html.text).toContain('id="cancel-food-form"');
+    expect(html.text).toContain('data-i18n="foods.cancel"');
+    expect(js.text).toContain("$('#cancel-food-form').addEventListener('click', () => setFoodFormVisible(false))");
+    expect(js.text).toMatch(/function setFoodFormVisible\(visible\) \{[\s\S]*?form\.reset\(\)[\s\S]*?classList\.toggle\('hidden', !visible\)/);
+    expect(en.body.foods.cancel).toBe('Cancel');
+    expect(uk.body.foods.cancel).toBe('Скасувати');
+  });
 });
