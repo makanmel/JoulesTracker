@@ -1,6 +1,9 @@
 import dotenv from 'dotenv';
+import { assertSafeTestDatabase } from './helpers/databaseSafety.js';
 
-dotenv.config({ path: '.env.test' });
+process.env.NODE_ENV = 'test';
+dotenv.config({ path: '.env.test', override: true });
+assertSafeTestDatabase(process.env.DATABASE_URL, process.env.NODE_ENV);
 
 import { prisma } from '../src/lib/prisma.js';
 

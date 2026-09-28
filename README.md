@@ -14,6 +14,17 @@ Foods store per-100g calories, protein, carbs, fat plus fiber, sugar, saturated 
 
 All changes go through Pull Requests. CI runs tests and lint on every PR and on every push to `main`. See `CONTRIBUTING.md` for details.
 
+### Test database safety
+
+Tests delete database records before each case. Never point `.env.test` at a development or production database.
+
+1. Create a dedicated PostgreSQL database whose name ends with `_test`, such as `joules_test`.
+2. Copy `.env.test.example` to `.env.test` and update its connection details.
+3. Apply migrations with `npx prisma migrate deploy` using the test database URL.
+4. Run `npm test`.
+
+The test setup overrides inherited environment values and refuses destructive cleanup unless `NODE_ENV` is `test`, the URL uses PostgreSQL, and the database name ends with `_test`. CI uses the dedicated `joules_test` database.
+
 ## Deployment
 
 The app is deployed on [Render](https://render.com) as a free web service defined in `render.yaml`, backed by a free [Neon](https://neon.tech) Postgres database. Every merge to `main` is deployed automatically once CI checks pass; on startup the service runs `prisma migrate deploy` and the idempotent seed, so schema migrations and default foods are applied with each release.
