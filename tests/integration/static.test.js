@@ -19,11 +19,12 @@ describe('Static frontend', () => {
 
   it('serves a stylesheet with desktop breakpoints', async () => {
     const res = await request(app).get('/styles.css');
+    const css = res.text.replace(/\r\n/g, '\n');
 
     expect(res.status).toBe(200);
-    expect(res.text).toContain('@media (min-width: 900px)');
-    expect(res.text).toContain('@media (min-width: 1280px)');
-    expect(res.text).toContain('.dashboard-grid {\n    display: grid;');
+    expect(css).toContain('@media (min-width: 900px)');
+    expect(css).toContain('@media (min-width: 1280px)');
+    expect(css).toContain('.dashboard-grid {\n    display: grid;');
   });
 
   it('uses a mobile viewport that prevents auto-zoom on inputs', async () => {
@@ -51,13 +52,15 @@ describe('Static frontend', () => {
 
   it('serves mobile styles with a < 768px breakpoint and 44px touch targets', async () => {
     const res = await request(app).get('/styles.css');
+    const css = res.text.replace(/\r\n/g, '\n');
 
-    expect(res.text).toContain('--touch-target: 44px;');
-    expect(res.text).toContain('@media (max-width: 767px)');
-    expect(res.text).toMatch(/\.mobile-nav \{\n\s+display: none;/);
-    expect(res.text).toMatch(/\.mobile-nav \{\n\s+position: fixed;/);
-    expect(res.text).toMatch(/button \{[^}]*min-height: var\(--touch-target\);/);
-    expect(res.text).toMatch(/input,\nselect \{[^}]*min-height: var\(--touch-target\);/);
-    expect(res.text).toMatch(/html,\nbody \{[^}]*overflow-x: hidden;/);
+    expect(res.status).toBe(200);
+    expect(css).toContain('--touch-target: 44px;');
+    expect(css).toContain('@media (max-width: 767px)');
+    expect(css).toMatch(/\.mobile-nav \{\n\s+display: none;/);
+    expect(css).toMatch(/\.mobile-nav \{\n\s+position: fixed;/);
+    expect(css).toMatch(/button \{[^}]*min-height: var\(--touch-target\);/);
+    expect(css).toMatch(/input,\nselect \{[^}]*min-height: var\(--touch-target\);/);
+    expect(css).toMatch(/html,\nbody \{[^}]*overflow-x: hidden;/);
   });
 });
