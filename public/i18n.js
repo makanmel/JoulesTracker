@@ -23,11 +23,25 @@ function detectLanguage() {
   return DEFAULT_LANGUAGE;
 }
 
-async function loadMessages(lang) {
+async function loadMessages(lang, optional = false) {
   if (messages[lang]) return messages[lang];
-  const res = await fetch(`locales/${lang}.json`);
-  if (!res.ok) throw new Error(`Failed to load locale "${lang}"`);
-  messages[lang] = await res.json();
+  const res = await fetch(`locales/${lang}.json`).then(
+    (response) => response,
+    () => null,
+  );
+  if (!res || !res.ok) {
+    if (optional) return null;
+    throw new Error(`Failed to load locale "${lang}"`);
+  }
+  const loaded = await res.json().then(
+    (data) => data,
+    () => null,
+  );
+  if (!loaded) {
+    if (optional) return null;
+    throw new Error(`Failed to parse locale "${lang}"`);
+  }
+  messages[lang] = loaded;
   return messages[lang];
 }
 
@@ -83,8 +97,8 @@ export function onLanguageChange(fn) {
 export async function initI18n() {
   await loadMessages(DEFAULT_LANGUAGE);
   const lang = detectLanguage();
-  if (lang !== DEFAULT_LANGUAGE) await loadMessages(lang);
-  currentLanguage = lang;
+  const preferredMessages = lang === DEFAULT_LANGUAGE ? messages[DEFAULT_LANGUAGE] : await loadMessages(lang, true);
+  currentLanguage = preferredMessages ? lang : DEFAULT_LANGUAGE;
   applyTranslations();
   document.querySelectorAll('[data-lang]').forEach((btn) => {
     btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
