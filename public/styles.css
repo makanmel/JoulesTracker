@@ -121,6 +121,8 @@ header h1 {
 }
 
 .card {
+  position: relative;
+  overflow: hidden;
   background: var(--card);
   backdrop-filter: blur(var(--card-blur));
   border: 1px solid var(--border);
@@ -131,8 +133,65 @@ header h1 {
 }
 
 .card h2 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-top: 0;
   font-size: 1.25rem;
+}
+
+.section-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  padding: 6px;
+  border-radius: 9px;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 13%, transparent);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.area-summary,
+.area-target,
+.area-add-meal,
+.area-meals,
+.area-foods {
+  border-top: 3px solid var(--section-accent, var(--primary));
+  background-image: radial-gradient(circle at 100% 0, color-mix(in srgb, var(--section-accent, var(--primary)) 12%, transparent), transparent 38%);
+}
+
+.area-summary {
+  --section-accent: #3b82f6;
+}
+
+.area-target {
+  --section-accent: #8b5cf6;
+}
+
+.area-add-meal {
+  --section-accent: #10b981;
+}
+
+.area-meals {
+  --section-accent: #f59e0b;
+}
+
+.area-foods {
+  --section-accent: #ec4899;
+}
+
+.area-summary .section-icon,
+.area-target .section-icon,
+.area-add-meal .section-icon,
+.area-meals .section-icon,
+.area-foods .section-icon {
+  color: var(--section-accent);
+  background: color-mix(in srgb, var(--section-accent) 14%, transparent);
 }
 
 .tabs {
