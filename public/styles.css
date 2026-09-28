@@ -312,6 +312,17 @@ button {
   justify-self: start;
 }
 
+.grid-form .form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.grid-form .form-actions button {
+  grid-column: auto;
+}
+
 .section-header {
   display: flex;
   align-items: center;

@@ -133,7 +133,10 @@
                 <label><span data-i18n="foods.brand">Brand</span> <input type="text" id="food-brand" /></label>
                 <label><span data-i18n="foods.category">Category</span> <input type="text" id="food-category" /></label>
                 <label><span data-i18n="foods.barcode">Barcode</span> <input type="text" id="food-barcode" inputmode="numeric" pattern="[0-9]{8,14}" /></label>
-                <button type="submit" class="btn-primary" data-i18n="foods.create">Create food</button>
+                <div class="form-actions">
+                  <button type="submit" class="btn-primary" data-i18n="foods.create">Create food</button>
+                  <button type="button" id="cancel-food-form" class="btn-secondary" data-i18n="foods.cancel">Cancel</button>
+                </div>
               </form>
               <form id="barcode-form" class="inline-form">
                 <label><span data-i18n="foods.barcode">Barcode</span> <input type="text" id="barcode-input" inputmode="numeric" pattern="[0-9]{8,14}" placeholder="4820000000000" required /></label>

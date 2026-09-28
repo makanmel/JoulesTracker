@@ -88,6 +88,7 @@
     "carbs": "Carbs / 100g",
     "fat": "Fat / 100g",
     "create": "Create food",
+    "cancel": "Cancel",
     "created": "Food created",
     "search": "Search foods...",
     "per100g": "{{calories}} kcal/100g",

@@ -108,6 +108,7 @@ async function fetchJson(url, fetchImpl, attempt = 0) {
 function normalizeSearchText(value) {
   return String(value || '')
     .normalize('NFKD')
+    .replace(/\p{M}+/gu, '')
     .toLocaleLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
@@ -122,18 +123,25 @@ function matchesQuery(product, query) {
 }
 
 export async function searchProducts(query, { limit = 20, page = 1, fetchImpl = fetch } = {}) {
-  const params = new URLSearchParams({
-    action: 'process',
-    search_terms: query,
-    countries_tags_en: 'ukraine',
-    fields: PRODUCT_FIELDS,
-    page_size: String(limit),
-    page: String(page),
-    json: '1',
-  });
-  const data = await fetchJson(`${BASE_URL}/cgi/search.pl?${params}`, fetchImpl);
-  const products = Array.isArray(data?.products) ? data.products.filter((product) => matchesQuery(product, query)) : [];
-  const items = products.map(mapProduct).filter(Boolean);
+  const terms = normalizeSearchText(query).split(/\s+/).filter(Boolean);
+  const searches = terms.length > 1 ? terms : [query];
+  const responses = await Promise.all(
+    searches.map((searchTerms) => {
+      const params = new URLSearchParams({
+        action: 'process',
+        search_terms: searchTerms,
+        countries_tags_en: 'ukraine',
+        fields: PRODUCT_FIELDS,
+        page_size: String(limit),
+        page: String(page),
+        json: '1',
+      });
+      return fetchJson(`${BASE_URL}/cgi/search.pl?${params}`, fetchImpl);
+    }),
+  );
+  const products = responses.flatMap((data) => (Array.isArray(data?.products) ? data.products : []));
+  const uniqueProducts = [...new Map(products.map((product) => [product.code || JSON.stringify(product), product])).values()];
+  const items = uniqueProducts.filter((product) => matchesQuery(product, query)).map(mapProduct).filter(Boolean).slice(0, limit);
   return {
     items,
     total: items.length,
