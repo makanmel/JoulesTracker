@@ -17,13 +17,30 @@ const PRODUCT_FIELDS = [
   'nutriments',
 ].join(',');
 
+const HTML_ENTITIES = new Map([
+  ['amp', '&'],
+  ['apos', "'"],
+  ['gt', '>'],
+  ['lt', '<'],
+  ['quot', '"'],
+]);
+
+function decodeHtmlEntities(value) {
+  return value.replace(/&(?:#(\d+)|#x([\da-f]+)|(amp|apos|gt|lt|quot));/gi, (entity, decimal, hexadecimal, named) => {
+    if (decimal) return String.fromCodePoint(Number.parseInt(decimal, 10));
+    if (hexadecimal) return String.fromCodePoint(Number.parseInt(hexadecimal, 16));
+    return HTML_ENTITIES.get(named.toLowerCase()) ?? entity;
+  });
+}
+
 function num(value) {
   const n = Number(value);
   return Number.isFinite(n) && n >= 0 ? n : 0;
 }
 
 function first(...values) {
-  return values.find((v) => typeof v === 'string' && v.trim().length > 0)?.trim() || null;
+  const value = values.find((candidate) => typeof candidate === 'string' && candidate.trim().length > 0);
+  return value ? decodeHtmlEntities(value.trim()) : null;
 }
 
 export function isValidBarcode(value) {
