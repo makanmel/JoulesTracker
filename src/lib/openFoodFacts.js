@@ -3,6 +3,8 @@ import { AppError } from './errors.js';
 const BASE_URL = (process.env.OPENFOODFACTS_BASE_URL || 'https://ua.openfoodfacts.org').replace(/\/$/, '');
 const USER_AGENT = 'JoulesTracker/0.1.0 (https://github.com/makanmel/JoulesTracker)';
 const TIMEOUT_MS = 8000;
+const MAX_RETRIES = 2;
+const RETRYABLE_STATUSES = new Set([429, 502, 503, 504]);
 const BARCODE_REGEX = /^\d{8,14}$/;
 
 const PRODUCT_FIELDS = [
@@ -55,40 +57,69 @@ export function mapProduct(product) {
   };
 }
 
-async function fetchJson(url, fetchImpl) {
+async function fetchResponse(url, fetchImpl) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  try {
-    const res = await fetchImpl(url, {
-      headers: { Accept: 'application/json', 'User-Agent': USER_AGENT },
-      signal: controller.signal,
-    });
-    if (res.status === 404) return null;
-    if (!res.ok) {
-      throw new AppError(`OpenFoodFacts request failed (${res.status})`, 502);
-    }
-    return await res.json();
-  } catch (err) {
-    if (err instanceof AppError) throw err;
-    throw new AppError('OpenFoodFacts is unavailable', 502);
-  } finally {
-    clearTimeout(timer);
+  return fetchImpl(url, {
+    headers: { Accept: 'application/json', 'User-Agent': USER_AGENT },
+    signal: controller.signal,
+  })
+    .then(
+      (response) => response,
+      () => null,
+    )
+    .finally(() => clearTimeout(timer));
+}
+
+async function fetchJson(url, fetchImpl, attempt = 0) {
+  const response = await fetchResponse(url, fetchImpl);
+  if (!response || RETRYABLE_STATUSES.has(response.status)) {
+    if (attempt < MAX_RETRIES) return fetchJson(url, fetchImpl, attempt + 1);
+    throw new AppError('OpenFoodFacts is temporarily unavailable', 502);
   }
+  if (response.status === 404) return null;
+  if (!response.ok) throw new AppError(`OpenFoodFacts request failed (${response.status})`, 502);
+
+  const data = await response.json().then(
+    (value) => value,
+    () => null,
+  );
+  if (!data) throw new AppError('OpenFoodFacts returned an invalid response', 502);
+  return data;
+}
+
+function normalizeSearchText(value) {
+  return String(value || '')
+    .normalize('NFKD')
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+}
+
+function matchesQuery(product, query) {
+  const terms = normalizeSearchText(query).split(/\s+/).filter(Boolean);
+  const searchable = normalizeSearchText(
+    [product.product_name_uk, product.product_name, product.brands, product.categories].filter(Boolean).join(' '),
+  );
+  return terms.every((term) => searchable.includes(term));
 }
 
 export async function searchProducts(query, { limit = 20, page = 1, fetchImpl = fetch } = {}) {
   const params = new URLSearchParams({
+    action: 'process',
     search_terms: query,
     countries_tags_en: 'ukraine',
     fields: PRODUCT_FIELDS,
     page_size: String(limit),
     page: String(page),
+    json: '1',
   });
-  const data = await fetchJson(`${BASE_URL}/api/v2/search?${params}`, fetchImpl);
-  const products = Array.isArray(data?.products) ? data.products : [];
+  const data = await fetchJson(`${BASE_URL}/cgi/search.pl?${params}`, fetchImpl);
+  const products = Array.isArray(data?.products) ? data.products.filter((product) => matchesQuery(product, query)) : [];
+  const items = products.map(mapProduct).filter(Boolean);
   return {
-    items: products.map(mapProduct).filter(Boolean),
-    total: Number(data?.count) || 0,
+    items,
+    total: items.length,
     page,
     limit,
   };

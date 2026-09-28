@@ -120,7 +120,7 @@ describe('OpenFoodFacts endpoints', () => {
       fiberPer100g: 3.1,
       saltPer100g: 1.1,
     });
-    expect(fetchMock.mock.calls[0][0]).toMatch(/^https:\/\/ua\.openfoodfacts\.org\/api\/v2\/search\?/);
+    expect(fetchMock.mock.calls[0][0]).toMatch(/^https:\/\/ua\.openfoodfacts\.org\/cgi\/search\.pl\?/);
   });
 
   it('rejects too-short search queries without calling upstream', async () => {
