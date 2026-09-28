@@ -35,7 +35,8 @@ export function mapProduct(product) {
   const name = first(product.product_name_uk, product.product_name);
   if (!name) return null;
 
-  const calories = n['energy-kcal_100g'] !== undefined ? num(n['energy-kcal_100g']) : num(n.energy_100g) / 4.184;
+  const kcal = n['energy-kcal_100g'];
+  const calories = kcal != null && kcal !== '' ? num(kcal) : num(n.energy_100g) / 4.184;
 
   return {
     name,

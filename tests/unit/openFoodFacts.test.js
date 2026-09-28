@@ -49,6 +49,15 @@ describe('OpenFoodFacts mapper', () => {
     expect(food.proteinPer100g).toBe(0);
   });
 
+  it.each([null, ''])('converts kJ when kcal is %s', (kcal) => {
+    const food = mapProduct({
+      code: '1',
+      product_name: 'Bread',
+      nutriments: { 'energy-kcal_100g': kcal, energy_100g: 1046 },
+    });
+    expect(food.caloriesPer100g).toBe(250);
+  });
+
   it('returns null for products without a name', () => {
     expect(mapProduct({ code: '1', nutriments: {} })).toBeNull();
     expect(mapProduct(null)).toBeNull();
