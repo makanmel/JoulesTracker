@@ -63,21 +63,52 @@ describe('OpenFoodFacts mapper', () => {
 });
 
 describe('OpenFoodFacts client', () => {
-  it('searches the Ukrainian dataset via /api/v2/search', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ count: 1, products: [product, { code: '2' }] }));
+  it('searches and filters the Ukrainian dataset via the full-text endpoint', async () => {
+    const irrelevantProduct = {
+      ...product,
+      code: '2',
+      product_name: 'Chocolate',
+      product_name_uk: '',
+      brands: 'Other',
+      categories: 'Candy',
+    };
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ count: 2, products: [product, irrelevantProduct] }));
 
     const result = await searchProducts('Молоко', { limit: 5, fetchImpl });
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     const url = new URL(fetchImpl.mock.calls[0][0]);
     expect(url.origin).toBe('https://ua.openfoodfacts.org');
-    expect(url.pathname).toBe('/api/v2/search');
+    expect(url.pathname).toBe('/cgi/search.pl');
+    expect(url.searchParams.get('action')).toBe('process');
+    expect(url.searchParams.get('json')).toBe('1');
     expect(url.searchParams.get('search_terms')).toBe('Молоко');
     expect(url.searchParams.get('countries_tags_en')).toBe('ukraine');
     expect(url.searchParams.get('page_size')).toBe('5');
     expect(result.total).toBe(1);
     expect(result.items).toHaveLength(1);
     expect(result.items[0].name).toBe('Молоко Яготинське 2.6%');
+  });
+
+  it('retries transient upstream failures', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({}, 503))
+      .mockResolvedValueOnce(jsonResponse({}, 429))
+      .mockResolvedValue(jsonResponse({ count: 1, products: [product] }));
+
+    const result = await searchProducts('Молоко', { fetchImpl });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    expect(result.items).toHaveLength(1);
+  });
+
+  it('surfaces upstream failures as 502 errors', async () => {
+    const fetchImpl = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'));
+    await expect(searchProducts('Хліб', { fetchImpl })).rejects.toMatchObject({ statusCode: 502 });
+
+    fetchImpl.mockResolvedValue(jsonResponse({}, 500));
+    await expect(searchProducts('Хліб', { fetchImpl })).rejects.toMatchObject({ statusCode: 502 });
   });
 
   it('fetches a product by barcode via /api/v2/product/{barcode}', async () => {
@@ -96,13 +127,5 @@ describe('OpenFoodFacts client', () => {
 
     fetchImpl.mockResolvedValue(jsonResponse({ status: 0 }));
     expect(await getProductByBarcode('4820000000001', { fetchImpl })).toBeNull();
-  });
-
-  it('surfaces upstream failures as 502 errors', async () => {
-    const fetchImpl = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'));
-    await expect(searchProducts('Хліб', { fetchImpl })).rejects.toMatchObject({ statusCode: 502 });
-
-    fetchImpl.mockResolvedValue(jsonResponse({}, 500));
-    await expect(searchProducts('Хліб', { fetchImpl })).rejects.toMatchObject({ statusCode: 502 });
   });
 });
