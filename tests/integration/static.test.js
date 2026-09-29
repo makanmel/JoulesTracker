@@ -100,8 +100,8 @@ describe('Static frontend', () => {
     expect(html.text).toContain('id="target-suggestions"');
     expect(html.text).toContain('id="target-use-previous"');
     expect(html.text).toContain('id="target-use-tdee"');
-    expect(js.text).toContain('/api/v1/daily-target/suggest?date=');
-    expect(js.text).toContain('/api/v1/users/profile');
+    expect(js.text).toContain('/daily-target/suggest?date=');
+    expect(js.text).toContain('/users/profile');
     expect(en.body.profile.save).toBe('Save profile');
     expect(uk.body.profile.save).toBe('Зберегти профіль');
     expect(en.body.target.usePrevious).toBe('Use previous day');
