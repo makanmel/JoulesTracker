@@ -255,4 +255,22 @@ describe('Frontend product search', () => {
     expect(en.body.foods.cancel).toBe('Cancel');
     expect(uk.body.foods.cancel).toBe('Скасувати');
   });
+
+  it('exposes bilingual voice input controls near the meal form', async () => {
+    const [html, js, en, uk] = await Promise.all([
+      request(app).get('/index.html'),
+      request(app).get('/app.js'),
+      request(app).get('/locales/en.json'),
+      request(app).get('/locales/uk.json'),
+    ]);
+
+    expect(html.text).toContain('id="voice-toggle"');
+    expect(html.text).toContain('id="voice-results-form"');
+    expect(html.text).toContain('id="voice-confirm"');
+    expect(js.text).toContain('SpeechRecognition');
+    expect(js.text).toContain("/foods/parse-voice");
+    expect(en.body.voice.start).toBe('Voice input');
+    expect(uk.body.voice.start).toBe('Голосовий ввід');
+    expect(en.body.voice.unsupported).toBe('Voice input is not supported in this browser');
+  });
 });

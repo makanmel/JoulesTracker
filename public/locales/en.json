@@ -130,6 +130,19 @@
     "barcodeFound": "Found in your foods: {{name}}",
     "barcodeNotFound": "Product not found. Fill in the details to create it as a custom food."
   },
+  "voice": {
+    "start": "Voice input",
+    "hint": "Tap the microphone and say what you ate",
+    "listening": "Listening...",
+    "parsing": "Parsing...",
+    "review": "Review parsed items",
+    "empty": "No items recognized",
+    "added": "Items added",
+    "confirm": "Add selected",
+    "resultsTitle": "Parsed items",
+    "unsupported": "Voice input is not supported in this browser",
+    "error": "Voice input failed"
+  },
   "errors": {
     "requestFailed": "Request failed ({{status}})"
   }
