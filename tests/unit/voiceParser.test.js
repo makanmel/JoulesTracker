@@ -11,8 +11,9 @@ function jsonResponse(body, status = 200) {
 }
 
 function geminiModelListResponse(models = ['gemini-1.5-flash']) {
+  const names = Array.isArray(models) ? models : [models];
   return jsonResponse({
-    models: models.map((name) => ({
+    models: names.map((name) => ({
       name: `models/${name}`,
       supportedGenerationMethods: ['generateContent'],
     })),
