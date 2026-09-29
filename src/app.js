@@ -4,6 +4,7 @@ import authRoutes from './routes/auth.js';
 import foodRoutes from './routes/foods.js';
 import mealRoutes from './routes/meals.js';
 import dailyTargetRoutes from './routes/dailyTarget.js';
+import userRoutes from './routes/users.js';
 import { authenticate } from './middleware/auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -21,6 +22,7 @@ export function createApp() {
   app.use('/api/v1/foods', authenticate, foodRoutes);
   app.use('/api/v1/meals', authenticate, mealRoutes);
   app.use('/api/v1/daily-target', authenticate, dailyTargetRoutes);
+  app.use('/api/v1/users', authenticate, userRoutes);
 
   app.use(express.static('public'));
 

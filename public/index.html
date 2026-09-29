@@ -29,6 +29,32 @@
         <h2 data-i18n="settings.title">Settings</h2>
         <p class="muted" data-i18n="settings.themeHint">Choose a visual theme for the app.</p>
         <div id="theme-selector" class="theme-selector" role="group" aria-label="Theme" data-i18n-aria-label="settings.theme"></div>
+
+        <h3 data-i18n="profile.title">Profile</h3>
+        <form id="profile-form" class="grid-form">
+          <label><span data-i18n="profile.weight">Weight (kg)</span> <input type="number" id="profile-weight" min="1" step="0.1" required /></label>
+          <label><span data-i18n="profile.height">Height (cm)</span> <input type="number" id="profile-height" min="1" step="1" required /></label>
+          <label><span data-i18n="profile.age">Age</span> <input type="number" id="profile-age" min="1" step="1" required /></label>
+          <label><span data-i18n="profile.gender">Gender</span>
+            <select id="profile-gender" required>
+              <option value="male" data-i18n="profile.genderMale">Male</option>
+              <option value="female" data-i18n="profile.genderFemale">Female</option>
+            </select>
+          </label>
+          <label><span data-i18n="profile.activity">Activity</span>
+            <select id="profile-activity" required>
+              <option value="sedentary" data-i18n="profile.activitySedentary">Sedentary</option>
+              <option value="light" data-i18n="profile.activityLight">Light</option>
+              <option value="moderate" data-i18n="profile.activityModerate">Moderate</option>
+              <option value="active" data-i18n="profile.activityActive">Active</option>
+              <option value="very_active" data-i18n="profile.activityVeryActive">Very active</option>
+            </select>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" data-i18n="profile.save">Save profile</button>
+          </div>
+        </form>
+        <p id="profile-message" class="muted"></p>
       </section>
 
       <section id="auth-section" class="card">
@@ -90,6 +116,10 @@
                 <label><span data-i18n="target.kcal">Target kcal</span> <input type="number" id="target-calories" min="0" step="1" required /></label>
                 <button type="submit" class="btn-primary" data-i18n="target.set">Set target</button>
               </form>
+              <div id="target-suggestions" class="target-suggestions hidden">
+                <button type="button" id="target-use-previous" class="btn-secondary" data-i18n="target.usePrevious">Use previous day</button>
+                <button type="button" id="target-use-tdee" class="btn-secondary" data-i18n="target.useTdee">Use BMR/TDEE estimate</button>
+              </div>
               <p id="target-display" class="muted"></p>
             </section>
 
