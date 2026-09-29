@@ -34,6 +34,7 @@ One-time setup:
 1. Create a Neon project and copy its **direct** (non-pooled) connection string, e.g. `postgresql://user:pass@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require` (Prisma migrations do not run through the pooler).
 2. In Render, choose **New → Blueprint**, connect this repository and apply `render.yaml`.
 3. When prompted, set `DATABASE_URL` to the Neon connection string (`JWT_SECRET` is generated automatically).
+4. If your `DATABASE_URL` points to a pooled endpoint, also set `DATABASE_DIRECT_URL` to the same Neon direct connection string so `prisma migrate deploy` can acquire advisory locks.
 
 ## License
 
