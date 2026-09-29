@@ -4,6 +4,8 @@ import { initTheme } from './theme.js';
 const API_BASE = '/api/v1';
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_EXTERNAL_QUERY = 2;
+const AI_PROVIDER_KEY = 'joulesAiProvider';
+const AI_API_KEY_KEY = 'joulesAiApiKey';
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -60,6 +62,22 @@ function formatDate(date) {
   return date.toISOString().split('T')[0];
 }
 
+function loadVoiceSettings() {
+  const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
+  const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
+  const providerSelect = $('#voice-provider');
+  const apiKeyInput = $('#voice-api-key');
+  if (providerSelect) providerSelect.value = provider;
+  if (apiKeyInput) apiKeyInput.value = apiKey;
+}
+
+function saveVoiceSettings(e) {
+  e.preventDefault();
+  localStorage.setItem(AI_PROVIDER_KEY, $('#voice-provider').value);
+  localStorage.setItem(AI_API_KEY_KEY, $('#voice-api-key').value.trim());
+  showToast(t('voice.settingsSaved'));
+}
+
 function setToken(token) {
   accessToken = token;
   if (token) localStorage.setItem('joulesToken', token);
@@ -78,6 +96,7 @@ function showDashboard(email) {
   $('#target-date').value = formatDate(new Date());
   $('#summary-date').value = formatDate(new Date());
   $('#meal-date').value = formatDate(new Date());
+  loadVoiceSettings();
   loadTarget(formatDate(new Date()));
   loadSummary(formatDate(new Date()));
   loadFoods();
@@ -520,10 +539,19 @@ async function parseVoiceTranscript(transcript) {
   try {
     $('#voice-status').textContent = t('voice.parsing');
     const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
-    const data = await api('/foods/parse-voice', {
+    const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
+    const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
+    const options = {
       method: 'POST',
       body: JSON.stringify({ transcript, locale }),
-    });
+    };
+    if (apiKey) {
+      options.headers = {
+        'X-AI-Provider': provider,
+        'X-AI-Key': apiKey,
+      };
+    }
+    const data = await api('/foods/parse-voice', options);
     lastVoiceResults = data.items || [];
     renderVoiceResults();
   } catch (err) {
@@ -681,6 +709,7 @@ async function init() {
   $('#meal-form').addEventListener('submit', handleCreateMeal);
   $('#voice-toggle').addEventListener('click', toggleVoiceInput);
   $('#voice-confirm').addEventListener('click', confirmVoiceResults);
+  $('#voice-settings-form').addEventListener('submit', saveVoiceSettings);
   $('#food-form').addEventListener('submit', handleCreateFood);
   $('#toggle-food-form').addEventListener('click', () => setFoodFormVisible($('#food-form').classList.contains('hidden')));
   $('#cancel-food-form').addEventListener('click', () => setFoodFormVisible(false));

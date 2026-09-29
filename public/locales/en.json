@@ -141,7 +141,16 @@
     "confirm": "Add selected",
     "resultsTitle": "Parsed items",
     "unsupported": "Voice input is not supported in this browser",
-    "error": "Voice input failed"
+    "error": "Voice input failed",
+    "settingsTitle": "Voice input",
+    "settingsHint": "Choose the AI provider and enter your API key. The key is stored only in this browser.",
+    "provider": "Provider",
+    "providers": {
+      "gemini": "Gemini (free)",
+      "openai": "OpenAI"
+    },
+    "apiKey": "API key",
+    "saveSettings": "Save"
   },
   "errors": {
     "requestFailed": "Request failed ({{status}})"

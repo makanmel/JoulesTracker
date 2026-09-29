@@ -3,6 +3,9 @@ import { AppError } from './errors.js';
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+
 const SYSTEM_PROMPT = `You are a nutrition assistant for a calorie tracker. The user speaks in either Ukrainian or English.
 Parse the input into food items with estimated macros per the described portion.
 Respond ONLY with a JSON object in this exact shape, no markdown, no explanation:
@@ -20,12 +23,11 @@ Respond ONLY with a JSON object in this exact shape, no markdown, no explanation
 }
 Use standard USDA or similar reference data for estimates. If the portion is given in ml, assume 1 ml ≈ 1 g for liquids. If confidence is low, still provide the best estimate.`;
 
-export async function parseVoiceInput({ transcript, locale = 'en', fetchImpl = fetch } = {}) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new AppError('Voice parsing is not configured on this server', 503);
-  }
+function userPrompt(transcript, locale) {
+  return `Locale: ${locale}\nTranscript: ${transcript}`;
+}
 
+async function callOpenAI({ apiKey, transcript, locale, fetchImpl }) {
   const response = await fetchImpl(OPENAI_API_URL, {
     method: 'POST',
     headers: {
@@ -36,7 +38,7 @@ export async function parseVoiceInput({ transcript, locale = 'en', fetchImpl = f
       model: OPENAI_MODEL,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: `Locale: ${locale}\nTranscript: ${transcript}` },
+        { role: 'user', content: userPrompt(transcript, locale) },
       ],
       response_format: { type: 'json_object' },
       temperature: 0.2,
@@ -49,11 +51,65 @@ export async function parseVoiceInput({ transcript, locale = 'en', fetchImpl = f
   }
 
   const data = await response.json().catch(() => null);
-  if (!data || typeof data !== 'object') {
-    throw new AppError('AI parsing returned invalid JSON', 502);
+  return data?.choices?.[0]?.message?.content;
+}
+
+async function callGemini({ apiKey, transcript, locale, fetchImpl }) {
+  const url = `${GEMINI_API_URL}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const response = await fetchImpl(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      systemInstruction: {
+        role: 'user',
+        parts: [{ text: SYSTEM_PROMPT }],
+      },
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: userPrompt(transcript, locale) }],
+        },
+      ],
+      generationConfig: {
+        responseMimeType: 'application/json',
+        temperature: 0.2,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'unknown');
+    throw new AppError(`AI parsing failed (${response.status}): ${text}`, 502);
   }
 
-  const content = data.choices?.[0]?.message?.content;
+  const data = await response.json().catch(() => null);
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+}
+
+export async function parseVoiceInput({
+  transcript,
+  locale = 'en',
+  provider,
+  apiKey,
+  fetchImpl = fetch,
+} = {}) {
+  const resolvedProvider = provider
+    ? String(provider).toLowerCase()
+    : process.env.OPENAI_API_KEY
+      ? 'openai'
+      : process.env.GEMINI_API_KEY
+        ? 'gemini'
+        : null;
+  const resolvedKey = apiKey || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY;
+
+  if (!resolvedKey) {
+    throw new AppError('Voice parsing is not configured on this server', 503);
+  }
+
+  const content = resolvedProvider === 'openai'
+    ? await callOpenAI({ apiKey: resolvedKey, transcript, locale, fetchImpl })
+    : await callGemini({ apiKey: resolvedKey, transcript, locale, fetchImpl });
+
   if (!content) {
     throw new AppError('AI parsing returned an empty response', 502);
   }

@@ -389,6 +389,20 @@ button {
   margin-top: 12px;
 }
 
+.voice-settings {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.voice-settings h3 {
+  margin-bottom: 8px;
+}
+
+.voice-settings form {
+  margin-top: 12px;
+}
+
 #settings-section h3 {
   margin-top: 24px;
   margin-bottom: 12px;

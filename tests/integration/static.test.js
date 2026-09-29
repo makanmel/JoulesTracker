@@ -86,7 +86,7 @@ describe('Static frontend', () => {
     expect(css).toMatch(/html,\nbody \{[^}]*overflow-x: hidden;/);
   });
 
-  it('exposes the profile form and target suggestion UI', async () => {
+  it('exposes the profile form, target suggestion UI, and voice AI settings', async () => {
     const [html, js, en, uk] = await Promise.all([
       request(app).get('/index.html'),
       request(app).get('/app.js'),
@@ -100,11 +100,20 @@ describe('Static frontend', () => {
     expect(html.text).toContain('id="target-suggestions"');
     expect(html.text).toContain('id="target-use-previous"');
     expect(html.text).toContain('id="target-use-tdee"');
+    expect(html.text).toContain('id="voice-settings"');
+    expect(html.text).toContain('id="voice-provider"');
+    expect(html.text).toContain('id="voice-api-key"');
     expect(js.text).toContain('/daily-target/suggest?date=');
     expect(js.text).toContain('/users/profile');
+    expect(js.text).toContain('joulesAiProvider');
+    expect(js.text).toContain('joulesAiApiKey');
+    expect(js.text).toContain('X-AI-Provider');
+    expect(js.text).toContain('X-AI-Key');
     expect(en.body.profile.save).toBe('Save profile');
     expect(uk.body.profile.save).toBe('Зберегти профіль');
     expect(en.body.target.usePrevious).toBe('Use previous day');
     expect(uk.body.target.usePrevious).toBe('Використати попередній день');
+    expect(en.body.voice.settingsTitle).toBe('Voice input');
+    expect(uk.body.voice.settingsTitle).toBe('Голосовий ввід');
   });
 });
