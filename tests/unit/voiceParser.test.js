@@ -10,14 +10,13 @@ function jsonResponse(body, status = 200) {
   };
 }
 
-function geminiModelListResponse(modelName = 'gemini-1.5-flash') {
+function geminiModelListResponse(models = ['gemini-1.5-flash']) {
+  const names = Array.isArray(models) ? models : [models];
   return jsonResponse({
-    models: [
-      {
-        name: `models/${modelName}`,
-        supportedGenerationMethods: ['generateContent'],
-      },
-    ],
+    models: names.map((name) => ({
+      name: `models/${name}`,
+      supportedGenerationMethods: ['generateContent'],
+    })),
   });
 }
 
@@ -157,5 +156,53 @@ describe('voice parser', () => {
     const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ error: 'rate limit' }, 429));
 
     await expect(parseVoiceInput({ transcript: 'test', fetchImpl })).rejects.toMatchObject({ statusCode: 502 });
+  });
+
+  it('falls back to the next Gemini model when the first returns 404', async () => {
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(geminiModelListResponse(['gemini-2.5-flash', 'gemini-3.8-flash']));
+      }
+      if (url.includes('/models/gemini-2.5-flash:generateContent')) {
+        return Promise.resolve(jsonResponse({ error: { code: 404, message: 'no longer available' } }, 404));
+      }
+      return Promise.resolve(
+        jsonResponse({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: JSON.stringify({ items: [{ name: 'Apple', quantityGrams: 150, calories: 78, protein: 0, carbs: 21, fat: 0 }] }) }],
+              },
+            },
+          ],
+        }),
+      );
+    });
+
+    const items = await parseVoiceInput({
+      transcript: 'one apple',
+      provider: 'gemini',
+      apiKey: 'fallback-gemini-key',
+      fetchImpl,
+    });
+
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ name: 'Apple' });
+    const generateCalls = fetchImpl.mock.calls.filter(([callUrl]) => callUrl.includes(':generateContent'));
+    expect(generateCalls).toHaveLength(2);
+    expect(generateCalls[1][0]).toContain('gemini-3.8-flash');
+  });
+
+  it('throws 502 when all Gemini models return 404', async () => {
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(geminiModelListResponse(['gemini-2.5-flash']));
+      }
+      return Promise.resolve(jsonResponse({ error: { code: 404, message: 'no longer available' } }, 404));
+    });
+
+    await expect(
+      parseVoiceInput({ transcript: 'test', provider: 'gemini', apiKey: 'all-fail-gemini-key', fetchImpl }),
+    ).rejects.toMatchObject({ statusCode: 502 });
   });
 });

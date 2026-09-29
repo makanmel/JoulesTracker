@@ -66,7 +66,7 @@ async function listGeminiModels({ apiKey, fetchImpl }) {
   return data?.models || [];
 }
 
-async function resolveGeminiModel({ apiKey, requestedModel, fetchImpl }) {
+async function resolveGeminiModels({ apiKey, requestedModel, fetchImpl }) {
   const cached = GEMINI_MODEL_CACHE.get(apiKey);
   if (cached) return cached;
 
@@ -75,17 +75,19 @@ async function resolveGeminiModel({ apiKey, requestedModel, fetchImpl }) {
     .filter((model) => model.supportedGenerationMethods?.includes('generateContent'))
     .map((model) => model.name.replace(/^models\//, ''));
 
-  const selected = available.includes(requestedModel) ? requestedModel : available[0];
-  if (!selected) {
+  if (!available.length) {
     throw new AppError('No Gemini text-generation model available for this API key', 503);
   }
 
-  GEMINI_MODEL_CACHE.set(apiKey, selected);
-  return selected;
+  const preferred = available.includes(requestedModel)
+    ? [requestedModel, ...available.filter((name) => name !== requestedModel)]
+    : available;
+
+  GEMINI_MODEL_CACHE.set(apiKey, preferred);
+  return preferred;
 }
 
-async function callGemini({ apiKey, transcript, locale, fetchImpl }) {
-  const model = await resolveGeminiModel({ apiKey, requestedModel: GEMINI_MODEL, fetchImpl });
+async function generateGeminiContent({ apiKey, model, transcript, locale, fetchImpl }) {
   const url = `${GEMINI_API_BASE}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
   const response = await fetchImpl(url, {
     method: 'POST',
@@ -110,11 +112,27 @@ async function callGemini({ apiKey, transcript, locale, fetchImpl }) {
 
   if (!response.ok) {
     const text = await response.text().catch(() => 'unknown');
-    throw new AppError(`AI parsing failed (${response.status}): ${text}`, 502);
+    return { ok: false, status: response.status, text };
   }
 
   const data = await response.json().catch(() => null);
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  return { ok: true, content: data?.candidates?.[0]?.content?.parts?.[0]?.text };
+}
+
+async function callGemini({ apiKey, transcript, locale, fetchImpl }) {
+  const candidates = await resolveGeminiModels({ apiKey, requestedModel: GEMINI_MODEL, fetchImpl });
+  let lastError = 'unknown';
+
+  for (const model of candidates) {
+    const result = await generateGeminiContent({ apiKey, model, transcript, locale, fetchImpl });
+    if (result.ok) {
+      GEMINI_MODEL_CACHE.set(apiKey, [model]);
+      return result.content;
+    }
+    lastError = `${result.status}: ${result.text}`;
+  }
+
+  throw new AppError(`AI parsing failed (404): ${lastError}`, 502);
 }
 
 export async function parseVoiceInput({
