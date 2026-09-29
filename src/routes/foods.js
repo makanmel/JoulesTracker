@@ -179,7 +179,9 @@ router.post('/parse-voice', async (req, res, next) => {
       throw new AppError('Transcript must be at least 2 characters', 400);
     }
     const locale = req.body.locale === 'uk' ? 'uk' : 'en';
-    const items = await parseVoiceInput({ transcript, locale });
+    const provider = req.headers['x-ai-provider'];
+    const apiKey = req.headers['x-ai-key'];
+    const items = await parseVoiceInput({ transcript, locale, provider, apiKey });
     res.json({ items });
   } catch (err) {
     next(err);

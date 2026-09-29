@@ -55,6 +55,25 @@
           </div>
         </form>
         <p id="profile-message" class="muted"></p>
+
+        <div id="voice-settings" class="voice-settings">
+          <h3 data-i18n="voice.settingsTitle">Voice input</h3>
+          <p class="muted" data-i18n="voice.settingsHint">Choose the AI provider and enter your API key. The key is stored only in this browser.</p>
+          <form id="voice-settings-form" class="inline-form">
+            <label>
+              <span data-i18n="voice.provider">Provider</span>
+              <select id="voice-provider">
+                <option value="gemini" data-i18n="voice.providers.gemini">Gemini (free)</option>
+                <option value="openai" data-i18n="voice.providers.openai">OpenAI</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="voice.apiKey">API key</span>
+              <input type="password" id="voice-api-key" autocomplete="off" />
+            </label>
+            <button type="submit" class="btn-secondary" data-i18n="voice.saveSettings">Save</button>
+          </form>
+        </div>
       </section>
 
       <section id="auth-section" class="card">
