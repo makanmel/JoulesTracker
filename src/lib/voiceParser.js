@@ -3,8 +3,8 @@ import { AppError } from './errors.js';
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
 
 const SYSTEM_PROMPT = `You are a nutrition assistant for a calorie tracker. The user speaks in either Ukrainian or English.
 Parse the input into food items with estimated macros per the described portion.
