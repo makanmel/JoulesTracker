@@ -391,6 +391,120 @@ async function deleteMeal(id, date) {
   }
 }
 
+function createSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return null;
+  const recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = document.documentElement.lang === 'uk' ? 'uk-UA' : 'en-US';
+  return recognition;
+}
+
+let voiceRecognition = null;
+let lastVoiceResults = [];
+
+function toggleVoiceInput() {
+  if (voiceRecognition && voiceRecognition.listening) {
+    voiceRecognition.stop();
+    return;
+  }
+  const recognition = createSpeechRecognition();
+  if (!recognition) {
+    showToast(t('voice.unsupported'), 'error');
+    return;
+  }
+  voiceRecognition = recognition;
+  voiceRecognition.listening = true;
+  $('#voice-status').textContent = t('voice.listening');
+  $('#voice-toggle').classList.add('active');
+
+  recognition.onresult = async (event) => {
+    const transcript = event.results[0][0].transcript;
+    $('#voice-status').textContent = transcript;
+    await parseVoiceTranscript(transcript);
+  };
+
+  recognition.onerror = (event) => {
+    $('#voice-status').textContent = t('voice.error');
+    showToast(t('voice.error'), 'error');
+    voiceRecognition = null;
+    $('#voice-toggle').classList.remove('active');
+  };
+
+  recognition.onend = () => {
+    voiceRecognition = null;
+    $('#voice-toggle').classList.remove('active');
+  };
+
+  recognition.start();
+}
+
+async function parseVoiceTranscript(transcript) {
+  try {
+    $('#voice-status').textContent = t('voice.parsing');
+    const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
+    const data = await api('/foods/parse-voice', {
+      method: 'POST',
+      body: JSON.stringify({ transcript, locale }),
+    });
+    lastVoiceResults = data.items || [];
+    renderVoiceResults();
+  } catch (err) {
+    $('#voice-status').textContent = err.message;
+    showToast(err.message, 'error');
+  }
+}
+
+function renderVoiceResults() {
+  const container = $('#voice-results-form');
+  const list = $('#voice-results');
+  if (!lastVoiceResults.length) {
+    $('#voice-status').textContent = t('voice.empty');
+    container.classList.add('hidden');
+    return;
+  }
+  list.innerHTML = '';
+  lastVoiceResults.forEach((item, index) => {
+    const li = document.createElement('li');
+    li.className = 'list-item voice-result';
+    li.innerHTML = `
+      <label class="voice-result-label">
+        <input type="checkbox" checked data-index="${index}" />
+        <span>${escapeHtml(item.name)} — ${item.quantityGrams}g · ${item.calories} kcal</span>
+      </label>
+    `;
+    list.appendChild(li);
+  });
+  container.classList.remove('hidden');
+  $('#voice-status').textContent = t('voice.review');
+}
+
+async function confirmVoiceResults() {
+  const checkboxes = [...$('#voice-results').querySelectorAll('input[type="checkbox"]:checked')];
+  const selected = checkboxes.map((cb) => lastVoiceResults[Number(cb.dataset.index)]).filter(Boolean);
+  if (!selected.length) return;
+
+  try {
+    for (const item of selected) {
+      const body = {
+        name: item.name,
+        caloriesPer100g: item.quantityGrams > 0 ? Math.round((item.calories / item.quantityGrams) * 100 * 10) / 10 : item.calories,
+        proteinPer100g: item.quantityGrams > 0 ? Math.round((item.protein / item.quantityGrams) * 100 * 10) / 10 : 0,
+        carbsPer100g: item.quantityGrams > 0 ? Math.round((item.carbs / item.quantityGrams) * 100 * 10) / 10 : 0,
+        fatPer100g: item.quantityGrams > 0 ? Math.round((item.fat / item.quantityGrams) * 100 * 10) / 10 : 0,
+      };
+      await api('/foods', { method: 'POST', body: JSON.stringify(body) });
+    }
+    showToast(t('voice.added'));
+    $('#voice-results-form').classList.add('hidden');
+    $('#voice-status').textContent = t('voice.hint');
+    loadFoods($('#food-search').value);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
 async function handleCreateMeal(e) {
   e.preventDefault();
   const body = {
@@ -485,6 +599,8 @@ async function init() {
   });
 
   $('#meal-form').addEventListener('submit', handleCreateMeal);
+  $('#voice-toggle').addEventListener('click', toggleVoiceInput);
+  $('#voice-confirm').addEventListener('click', confirmVoiceResults);
   $('#food-form').addEventListener('submit', handleCreateFood);
   $('#toggle-food-form').addEventListener('click', () => setFoodFormVisible($('#food-form').classList.contains('hidden')));
   $('#cancel-food-form').addEventListener('click', () => setFoodFormVisible(false));

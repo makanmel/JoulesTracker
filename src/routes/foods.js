@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma.js';
 import { parseRequest, foodSchema, foodUpdateSchema } from '../lib/validation.js';
 import { AppError } from '../lib/errors.js';
 import { searchProducts, getProductByBarcode, isValidBarcode } from '../lib/openFoodFacts.js';
+import { parseVoiceInput } from '../lib/voiceParser.js';
 
 const router = Router();
 
@@ -167,6 +168,20 @@ router.delete('/:id', async (req, res, next) => {
     if (err.code === 'P2003') {
       return next(new AppError('Food is referenced by meal entries', 409));
     }
+    next(err);
+  }
+});
+
+router.post('/parse-voice', async (req, res, next) => {
+  try {
+    const transcript = String(req.body.transcript || '').trim();
+    if (transcript.length < 2) {
+      throw new AppError('Transcript must be at least 2 characters', 400);
+    }
+    const locale = req.body.locale === 'uk' ? 'uk' : 'en';
+    const items = await parseVoiceInput({ transcript, locale });
+    res.json({ items });
+  } catch (err) {
     next(err);
   }
 });
