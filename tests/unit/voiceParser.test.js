@@ -11,7 +11,15 @@ function jsonResponse(body, status = 200) {
 }
 
 describe('voice parser', () => {
+  const originalKey = process.env.OPENAI_API_KEY;
+
+  afterEach(() => {
+    if (originalKey) process.env.OPENAI_API_KEY = originalKey;
+    else delete process.env.OPENAI_API_KEY;
+  });
+
   it('returns parsed items from the OpenAI response', async () => {
+    process.env.OPENAI_API_KEY = 'test-key';
     const fetchImpl = vi.fn().mockResolvedValue(
       jsonResponse({
         choices: [
