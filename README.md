@@ -19,7 +19,7 @@ All changes go through Pull Requests. CI runs tests and lint on every PR and on 
 Tests delete database records before each case. Never point `.env.test` at a development or production database.
 
 1. Create a dedicated PostgreSQL database whose name ends with `_test`, such as `joules_test`.
-2. Copy `.env.test.example` to `.env.test` and update its connection details.
+2. Copy `.env.test.example` to `.env.test` and update its connection details (`DATABASE_URL` and `DATABASE_DIRECT_URL` can point to the same test database).
 3. Apply migrations with `npx prisma migrate deploy` using the test database URL.
 4. Run `npm test`.
 
