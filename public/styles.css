@@ -351,6 +351,18 @@ button {
   overflow-wrap: anywhere;
 }
 
+.target-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+#settings-section h3 {
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

@@ -17,6 +17,23 @@
     "theme": "Тема",
     "themeHint": "Оберіть візуальну тему застосунку."
   },
+  "profile": {
+    "title": "Профіль",
+    "weight": "Вага (кг)",
+    "height": "Зріст (см)",
+    "age": "Вік",
+    "gender": "Стать",
+    "genderMale": "Чоловіча",
+    "genderFemale": "Жіноча",
+    "activity": "Активність",
+    "activitySedentary": "Сидячий",
+    "activityLight": "Легка",
+    "activityModerate": "Помірна",
+    "activityActive": "Активна",
+    "activityVeryActive": "Дуже активна",
+    "save": "Зберегти профіль",
+    "saved": "Профіль збережено"
+  },
   "themes": {
     "default": "Стандартна",
     "dark": "Темна",
@@ -67,7 +84,11 @@
     "set": "Встановити ціль",
     "updated": "Ціль оновлено",
     "display": "Ціль на {{date}}: {{calories}} ккал",
-    "none": "Ціль на {{date}} не встановлено"
+    "none": "Ціль на {{date}} не встановлено",
+    "previousAvailable": "Попередня ціль на {{date}}: {{calories}} ккал",
+    "tdeeAvailable": "Оцінка TDEE: {{calories}} ккал (BMR {{bmr}})",
+    "usePrevious": "Використати попередній день",
+    "useTdee": "Використати TDEE"
   },
   "addMeal": {
     "title": "Додати прийом їжі",

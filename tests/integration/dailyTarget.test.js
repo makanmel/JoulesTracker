@@ -59,4 +59,36 @@ describe('Daily target endpoints', () => {
 
     expect(res.status).toBe(400);
   });
+
+  it('suggests the previous day target when present', async () => {
+    await request(app)
+      .put('/api/v1/daily-target')
+      .set('Authorization', authHeader)
+      .send({ targetDate: '2026-09-20', targetCalories: 2100 });
+
+    const res = await request(app)
+      .get('/api/v1/daily-target/suggest?date=2026-09-21')
+      .set('Authorization', authHeader);
+
+    expect(res.status).toBe(200);
+    expect(res.body.previousDate).toBe('2026-09-20');
+    expect(res.body.previousTargetCalories).toBe(2100);
+    expect(res.body.targetCalories).toBeNull();
+    expect(res.body.bmr).toBeNull();
+  });
+
+  it('suggests BMR and TDEE when profile is complete', async () => {
+    await request(app)
+      .put('/api/v1/users/profile')
+      .set('Authorization', authHeader)
+      .send({ weightKg: 70, heightCm: 175, age: 30, gender: 'male', activityLevel: 'moderate' });
+
+    const res = await request(app)
+      .get('/api/v1/daily-target/suggest?date=2026-09-21')
+      .set('Authorization', authHeader);
+
+    expect(res.status).toBe(200);
+    expect(res.body.bmr).toBe(Math.round(10 * 70 + 6.25 * 175 - 5 * 30 + 5));
+    expect(res.body.tdee).toBe(Math.round(res.body.bmr * 1.55));
+  });
 });

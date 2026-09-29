@@ -267,6 +267,38 @@ async function handleBarcodeLookup(e) {
   }
 }
 
+async function loadProfile() {
+  try {
+    const profile = await api('/users/profile');
+    $('#profile-weight').value = profile.weightKg ?? '';
+    $('#profile-height').value = profile.heightCm ?? '';
+    $('#profile-age').value = profile.age ?? '';
+    $('#profile-gender').value = profile.gender ?? 'male';
+    $('#profile-activity').value = profile.activityLevel ?? 'sedentary';
+    $('#profile-message').textContent = '';
+  } catch (err) {
+    $('#profile-message').textContent = err.message;
+  }
+}
+
+async function handleSaveProfile(e) {
+  e.preventDefault();
+  const body = {
+    weightKg: parseFloat($('#profile-weight').value),
+    heightCm: parseFloat($('#profile-height').value),
+    age: parseInt($('#profile-age').value, 10),
+    gender: $('#profile-gender').value,
+    activityLevel: $('#profile-activity').value,
+  };
+  try {
+    await api('/users/profile', { method: 'PUT', body: JSON.stringify(body) });
+    $('#profile-message').textContent = t('profile.saved');
+    await loadTarget($('#target-date').value);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
 async function handleCreateFood(e) {
   e.preventDefault();
   const body = {
@@ -300,6 +332,50 @@ async function loadTarget(date) {
     $('#target-display').textContent = data.targetCalories
       ? t('target.display', { date, calories: data.targetCalories })
       : t('target.none', { date });
+    await loadTargetSuggestions(date);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function loadTargetSuggestions(date) {
+  try {
+    const data = await api(`/daily-target/suggest?date=${encodeURIComponent(date)}`);
+    const container = $('#target-suggestions');
+    container.classList.toggle('hidden', !(data.previousTargetCalories || data.tdee));
+    $('#target-use-previous').classList.toggle('hidden', !data.previousTargetCalories);
+    $('#target-use-tdee').classList.toggle('hidden', !data.tdee);
+    if (!data.targetCalories) {
+      $('#target-display').textContent = data.previousTargetCalories
+        ? t('target.previousAvailable', { date: data.previousDate, calories: data.previousTargetCalories })
+        : t('target.none', { date });
+    }
+  } catch (err) {
+    // suggestions are optional
+    $('#target-suggestions').classList.add('hidden');
+  }
+}
+
+async function usePreviousTarget() {
+  const date = $('#target-date').value;
+  try {
+    const data = await api(`/daily-target/suggest?date=${encodeURIComponent(date)}`);
+    if (data.previousTargetCalories) {
+      $('#target-calories').value = data.previousTargetCalories;
+    }
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function useTdeeTarget() {
+  const date = $('#target-date').value;
+  try {
+    const data = await api(`/daily-target/suggest?date=${encodeURIComponent(date)}`);
+    if (data.tdee) {
+      $('#target-calories').value = data.tdee;
+      $('#target-display').textContent = t('target.tdeeAvailable', { calories: data.tdee, bmr: data.bmr });
+    }
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -459,11 +535,6 @@ async function init() {
 
   tabLogin.addEventListener('click', () => switchTab('login'));
   tabRegister.addEventListener('click', () => switchTab('register'));
-  $('#settings-toggle').addEventListener('click', (event) => {
-    const expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';
-    event.currentTarget.setAttribute('aria-expanded', String(!expanded));
-    $('#settings-section').classList.toggle('hidden', expanded);
-  });
   loginForm.addEventListener('submit', handleLogin);
   registerForm.addEventListener('submit', handleRegister);
   $('#logout-btn').addEventListener('click', () => {
@@ -473,6 +544,15 @@ async function init() {
 
   $('#target-form').addEventListener('submit', handleSetTarget);
   $('#target-date').addEventListener('change', (e) => loadTarget(e.target.value));
+  $('#target-use-previous').addEventListener('click', usePreviousTarget);
+  $('#target-use-tdee').addEventListener('click', useTdeeTarget);
+  $('#profile-form').addEventListener('submit', handleSaveProfile);
+  $('#settings-toggle').addEventListener('click', async (event) => {
+    const expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';
+    event.currentTarget.setAttribute('aria-expanded', String(!expanded));
+    $('#settings-section').classList.toggle('hidden', expanded);
+    if (!expanded) await loadProfile();
+  });
 
   $('#summary-date').addEventListener('change', (e) => {
     loadSummary(e.target.value);

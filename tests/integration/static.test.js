@@ -85,4 +85,26 @@ describe('Static frontend', () => {
     expect(css).toMatch(/input,\nselect \{[^}]*min-height: var\(--touch-target\);/);
     expect(css).toMatch(/html,\nbody \{[^}]*overflow-x: hidden;/);
   });
+
+  it('exposes the profile form and target suggestion UI', async () => {
+    const [html, js, en, uk] = await Promise.all([
+      request(app).get('/index.html'),
+      request(app).get('/app.js'),
+      request(app).get('/locales/en.json'),
+      request(app).get('/locales/uk.json'),
+    ]);
+
+    expect(html.text).toContain('id="profile-form"');
+    expect(html.text).toContain('id="profile-weight"');
+    expect(html.text).toContain('id="profile-activity"');
+    expect(html.text).toContain('id="target-suggestions"');
+    expect(html.text).toContain('id="target-use-previous"');
+    expect(html.text).toContain('id="target-use-tdee"');
+    expect(js.text).toContain('/daily-target/suggest?date=');
+    expect(js.text).toContain('/users/profile');
+    expect(en.body.profile.save).toBe('Save profile');
+    expect(uk.body.profile.save).toBe('Зберегти профіль');
+    expect(en.body.target.usePrevious).toBe('Use previous day');
+    expect(uk.body.target.usePrevious).toBe('Використати попередній день');
+  });
 });

@@ -17,6 +17,23 @@
     "theme": "Theme",
     "themeHint": "Choose a visual theme for the app."
   },
+  "profile": {
+    "title": "Profile",
+    "weight": "Weight (kg)",
+    "height": "Height (cm)",
+    "age": "Age",
+    "gender": "Gender",
+    "genderMale": "Male",
+    "genderFemale": "Female",
+    "activity": "Activity",
+    "activitySedentary": "Sedentary",
+    "activityLight": "Light",
+    "activityModerate": "Moderate",
+    "activityActive": "Active",
+    "activityVeryActive": "Very active",
+    "save": "Save profile",
+    "saved": "Profile saved"
+  },
   "themes": {
     "default": "Default",
     "dark": "Dark",
@@ -67,7 +84,11 @@
     "set": "Set target",
     "updated": "Target updated",
     "display": "Target for {{date}}: {{calories}} kcal",
-    "none": "No target set for {{date}}"
+    "none": "No target set for {{date}}",
+    "previousAvailable": "Previous target for {{date}}: {{calories}} kcal",
+    "tdeeAvailable": "TDEE estimate: {{calories}} kcal (BMR {{bmr}})",
+    "usePrevious": "Use previous day",
+    "useTdee": "Use TDEE estimate"
   },
   "addMeal": {
     "title": "Add Meal",

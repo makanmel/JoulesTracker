@@ -46,6 +46,14 @@ export const dailyTargetSchema = z.object({
   targetCalories: z.number().nonnegative(),
 });
 
+export const profileSchema = z.object({
+  weightKg: z.number().positive(),
+  heightCm: z.number().positive(),
+  age: z.number().int().positive(),
+  gender: z.enum(['male', 'female']),
+  activityLevel: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']),
+});
+
 export function parseRequest(schema, data) {
   try {
     return schema.parse(data);
