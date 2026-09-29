@@ -205,4 +205,52 @@ describe('voice parser', () => {
       parseVoiceInput({ transcript: 'test', provider: 'gemini', apiKey: 'all-fail-gemini-key', fetchImpl }),
     ).rejects.toMatchObject({ statusCode: 502 });
   });
+
+  it('extracts JSON wrapped in markdown fences from the Gemini response', async () => {
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(geminiModelListResponse('gemini-1.5-flash'));
+      }
+      return Promise.resolve(
+        jsonResponse({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: '```json\n{"items":[{"name":"Banana","quantityGrams":120,"calories":106,"protein":1,"carbs":27,"fat":0}]}\n```' }],
+              },
+            },
+          ],
+        }),
+      );
+    });
+
+    const items = await parseVoiceInput({ transcript: 'one banana', provider: 'gemini', apiKey: 'md-gemini-key', fetchImpl });
+
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ name: 'Banana' });
+  });
+
+  it('extracts JSON object from surrounding prose', async () => {
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(geminiModelListResponse('gemini-1.5-flash'));
+      }
+      return Promise.resolve(
+        jsonResponse({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: 'Here you go: {"items":[{"name":"Oatmeal","quantityGrams":200,"calories":140,"protein":5,"carbs":24,"fat":2}]}' }],
+              },
+            },
+          ],
+        }),
+      );
+    });
+
+    const items = await parseVoiceInput({ transcript: 'oatmeal', provider: 'gemini', apiKey: 'prose-gemini-key', fetchImpl });
+
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ name: 'Oatmeal' });
+  });
 });

@@ -163,9 +163,19 @@ export async function parseVoiceInput({
     throw new AppError('AI parsing returned an empty response', 502);
   }
 
+  function extractJson(text) {
+    const cleaned = text
+      .trim()
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    return match ? match[0] : cleaned;
+  }
+
   let parsed;
   try {
-    parsed = JSON.parse(content);
+    parsed = JSON.parse(extractJson(content));
   } catch {
     throw new AppError('AI parsing returned malformed JSON', 502);
   }
