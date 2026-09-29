@@ -3,8 +3,9 @@ import { AppError } from './errors.js';
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models';
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const GEMINI_MODEL_CACHE = new Map();
 
 const SYSTEM_PROMPT = `You are a nutrition assistant for a calorie tracker. The user speaks in either Ukrainian or English.
 Parse the input into food items with estimated macros per the described portion.
@@ -54,8 +55,38 @@ async function callOpenAI({ apiKey, transcript, locale, fetchImpl }) {
   return data?.choices?.[0]?.message?.content;
 }
 
+async function listGeminiModels({ apiKey, fetchImpl }) {
+  const url = `${GEMINI_API_BASE}/models?key=${encodeURIComponent(apiKey)}`;
+  const response = await fetchImpl(url, { headers: { 'Content-Type': 'application/json' } });
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'unknown');
+    throw new AppError(`Gemini model list failed (${response.status}): ${text}`, 502);
+  }
+  const data = await response.json().catch(() => null);
+  return data?.models || [];
+}
+
+async function resolveGeminiModel({ apiKey, requestedModel, fetchImpl }) {
+  const cached = GEMINI_MODEL_CACHE.get(apiKey);
+  if (cached) return cached;
+
+  const models = await listGeminiModels({ apiKey, fetchImpl });
+  const available = models
+    .filter((model) => model.supportedGenerationMethods?.includes('generateContent'))
+    .map((model) => model.name.replace(/^models\//, ''));
+
+  const selected = available.includes(requestedModel) ? requestedModel : available[0];
+  if (!selected) {
+    throw new AppError('No Gemini text-generation model available for this API key', 503);
+  }
+
+  GEMINI_MODEL_CACHE.set(apiKey, selected);
+  return selected;
+}
+
 async function callGemini({ apiKey, transcript, locale, fetchImpl }) {
-  const url = `${GEMINI_API_URL}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const model = await resolveGeminiModel({ apiKey, requestedModel: GEMINI_MODEL, fetchImpl });
+  const url = `${GEMINI_API_BASE}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
   const response = await fetchImpl(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
