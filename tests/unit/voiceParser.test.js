@@ -10,6 +10,17 @@ function jsonResponse(body, status = 200) {
   };
 }
 
+function geminiModelListResponse(modelName = 'gemini-1.5-flash') {
+  return jsonResponse({
+    models: [
+      {
+        name: `models/${modelName}`,
+        supportedGenerationMethods: ['generateContent'],
+      },
+    ],
+  });
+}
+
 describe('voice parser', () => {
   const originalOpenAiKey = process.env.OPENAI_API_KEY;
   const originalGeminiKey = process.env.GEMINI_API_KEY;
@@ -56,23 +67,28 @@ describe('voice parser', () => {
 
   it('uses an explicit provider and API key over environment variables', async () => {
     process.env.OPENAI_API_KEY = 'env-openai-key';
-    const fetchImpl = vi.fn().mockResolvedValue(
-      jsonResponse({
-        candidates: [
-          {
-            content: {
-              parts: [
-                {
-                  text: JSON.stringify({
-                    items: [{ name: 'Banana', quantityGrams: 120, calories: 106, protein: 1, carbs: 27, fat: 0 }],
-                  }),
-                },
-              ],
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(geminiModelListResponse('gemini-1.5-flash'));
+      }
+      return Promise.resolve(
+        jsonResponse({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      items: [{ name: 'Banana', quantityGrams: 120, calories: 106, protein: 1, carbs: 27, fat: 0 }],
+                    }),
+                  },
+                ],
+              },
             },
-          },
-        ],
-      }),
-    );
+          ],
+        }),
+      );
+    });
 
     const items = await parseVoiceInput({
       transcript: 'one banana',
@@ -82,31 +98,36 @@ describe('voice parser', () => {
     });
 
     expect(items).toHaveLength(1);
-    expect(fetchImpl.mock.calls[0][0]).toContain('generativelanguage.googleapis.com');
+    expect(fetchImpl.mock.calls[0][0]).toContain('generativelanguage.googleapis.com/v1/models');
     expect(fetchImpl.mock.calls[0][0]).toContain('explicit-gemini-key');
   });
 
   it('returns parsed items from the Gemini response', async () => {
     process.env.GEMINI_API_KEY = 'gemini-test-key';
-    const fetchImpl = vi.fn().mockResolvedValue(
-      jsonResponse({
-        candidates: [
-          {
-            content: {
-              parts: [
-                {
-                  text: JSON.stringify({
-                    items: [
-                      { name: 'Вівсянка', quantityGrams: 200, calories: 140, protein: 5, carbs: 24, fat: 2 },
-                    ],
-                  }),
-                },
-              ],
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(geminiModelListResponse('gemini-1.5-flash'));
+      }
+      return Promise.resolve(
+        jsonResponse({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      items: [
+                        { name: 'Вівсянка', quantityGrams: 200, calories: 140, protein: 5, carbs: 24, fat: 2 },
+                      ],
+                    }),
+                  },
+                ],
+              },
             },
-          },
-        ],
-      }),
-    );
+          ],
+        }),
+      );
+    });
 
     const items = await parseVoiceInput({
       transcript: "я з'їв 200 грам вівсянки",
@@ -116,11 +137,11 @@ describe('voice parser', () => {
 
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({ name: 'Вівсянка', quantityGrams: 200, calories: 140 });
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
-    const [url, options] = fetchImpl.mock.calls[0];
-    expect(url).toContain('generativelanguage.googleapis.com');
-    expect(url).toContain('gemini-test-key');
-    const body = JSON.parse(options.body);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    const generateCall = fetchImpl.mock.calls.find(([callUrl]) => callUrl.includes(':generateContent'));
+    expect(generateCall[0]).toContain('generativelanguage.googleapis.com');
+    expect(generateCall[0]).toContain('gemini-test-key');
+    const body = JSON.parse(generateCall[1].body);
     expect(body.contents[0].parts[0].text).toContain('Locale: uk');
     expect(body.contents[0].parts[0].text).toContain("я з'їв 200 грам вівсянки");
   });
