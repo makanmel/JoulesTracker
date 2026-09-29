@@ -7,6 +7,14 @@ import dailyTargetRoutes from './routes/dailyTarget.js';
 import userRoutes from './routes/users.js';
 import { authenticate } from './middleware/auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { rateLimit } from 'express-rate-limit';
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 100,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+});
 
 export function createApp() {
   const app = express();
@@ -18,6 +26,7 @@ export function createApp() {
     res.json({ status: 'ok' });
   });
 
+  app.use('/api/v1', apiLimiter);
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/foods', authenticate, foodRoutes);
   app.use('/api/v1/meals', authenticate, mealRoutes);
