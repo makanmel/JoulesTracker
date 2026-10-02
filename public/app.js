@@ -4,6 +4,9 @@ import { initTheme } from './theme.js';
 const API_BASE = '/api/v1';
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_EXTERNAL_QUERY = 2;
+const WAKE_NOTICE_DELAY_MS = 4000;
+const WAKE_RETRY_DELAY_MS = 3000;
+const WAKE_RETRY_LIMIT = 15;
 const AI_PROVIDER_KEY = 'joulesAiProvider';
 const AI_API_KEY_KEY = 'joulesAiApiKey';
 
@@ -17,6 +20,7 @@ const registerForm = $('#register-form');
 const tabLogin = $('#tab-login');
 const tabRegister = $('#tab-register');
 const toast = $('#toast');
+const serverNotice = $('#server-notice');
 
 let accessToken = localStorage.getItem('joulesToken');
 let currentUserEmail = null;
@@ -27,11 +31,44 @@ function showToast(message, type = 'info') {
   setTimeout(() => toast.classList.add('hidden'), 3000);
 }
 
+let pendingFetches = 0;
+let wakeNoticeTimer = null;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function startServerNotice() {
+  pendingFetches += 1;
+  if (!wakeNoticeTimer) {
+    wakeNoticeTimer = setTimeout(() => serverNotice.classList.remove('hidden'), WAKE_NOTICE_DELAY_MS);
+  }
+}
+
+function finishServerNotice() {
+  pendingFetches -= 1;
+  if (pendingFetches === 0) {
+    clearTimeout(wakeNoticeTimer);
+    wakeNoticeTimer = null;
+    serverNotice.classList.add('hidden');
+  }
+}
+
+// fetch rejects (TypeError) when the Render instance is cold-starting; retry until it wakes.
+function fetchWithRetry(url, options, attempt = 0) {
+  return fetch(url, options).catch(async (err) => {
+    if (!(err instanceof TypeError) || attempt >= WAKE_RETRY_LIMIT) throw err;
+    clearTimeout(wakeNoticeTimer);
+    wakeNoticeTimer = null;
+    serverNotice.classList.remove('hidden');
+    await sleep(WAKE_RETRY_DELAY_MS);
+    return fetchWithRetry(url, options, attempt + 1);
+  });
+}
+
 async function api(path, options = {}) {
   const url = `${API_BASE}${path}`;
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-  const res = await fetch(url, { ...options, headers });
+  startServerNotice();
+  const res = await fetchWithRetry(url, { ...options, headers }).finally(finishServerNotice);
   if (res.status === 204) return null;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {

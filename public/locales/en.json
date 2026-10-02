@@ -2,7 +2,8 @@
   "app": {
     "title": "JoulesTracker",
     "subtitle": "Calorie & macronutrient tracker",
-    "language": "Language"
+    "language": "Language",
+    "serverWaking": "The server is waking up, please wait…"
   },
   "nav": {
     "sections": "Sections",
