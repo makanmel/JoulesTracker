@@ -122,7 +122,7 @@ function setToken(token) {
 }
 
 function renderCurrentUser() {
-  $('#user-email').textContent = currentUserEmail ?? '';
+  $('#user-email').textContent = currentUserEmail ? t('auth.currentUser', { email: currentUserEmail }) : '';
 }
 
 function showDashboard(email) {
