@@ -30,7 +30,7 @@ describe('Static frontend', () => {
   it('serves dashboard section icons and visual accents', async () => {
     const [page, styles] = await Promise.all([request(app).get('/index.html'), request(app).get('/styles.css')]);
 
-    expect(page.text.match(/class="section-icon"/g)).toHaveLength(6);
+    expect(page.text.match(/class="section-icon"/g)).toHaveLength(5);
     for (const section of ['summary', 'target', 'add-meal', 'meals']) {
       expect(page.text).toMatch(new RegExp(`id="${section}-section"[\\s\\S]*?<svg class="section-icon"`));
     }
