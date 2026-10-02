@@ -394,6 +394,8 @@ async function loadTarget(date) {
     $('#target-fat-pct').value = data.fatPct ?? '';
     $('#target-fiber').value = data.fiberGrams ?? '';
     $('#target-salt').value = data.saltGrams ?? '';
+    $('#target-saturated').value = data.saturatedFatGrams ?? '';
+    $('#target-sugar').value = data.sugarGrams ?? '';
     $('#target-display').textContent = data.targetCalories
       ? t('target.display', { calories: data.targetCalories })
       : t('target.none');
@@ -443,6 +445,8 @@ async function handleSetTarget(e) {
     fatPct: optionalNumber('#target-fat-pct'),
     fiberGrams: optionalNumber('#target-fiber'),
     saltGrams: optionalNumber('#target-salt'),
+    sugarGrams: optionalNumber('#target-sugar'),
+    saturatedFatGrams: optionalNumber('#target-saturated'),
   };
   try {
     await api('/daily-target', {
@@ -501,47 +505,49 @@ function ratioClass(ratio, isMinGoal) {
   return ratio <= 1 ? 'ok' : ratio <= 1.2 ? 'warn' : 'over';
 }
 
-function renderMacroProgress(totals, targetData) {
-  const container = $('#macro-progress');
-  const kcal = targetData.targetCalories;
-  const entries = [];
-  if (kcal > 0) {
-    if (targetData.proteinPct > 0) {
-      entries.push({ labelKey: 'summary.protein', consumed: totals.protein, target: (targetData.proteinPct / 100) * kcal / 4 });
-    }
-    if (targetData.carbsPct > 0) {
-      entries.push({ labelKey: 'summary.carbs', consumed: totals.carbs, target: (targetData.carbsPct / 100) * kcal / 4 });
-    }
-    if (targetData.fatPct > 0) {
-      entries.push({ labelKey: 'summary.fat', consumed: totals.fat, target: (targetData.fatPct / 100) * kcal / 9 });
-    }
-  }
-  if (targetData.fiberGrams > 0) {
-    entries.push({ labelKey: 'summary.fiber', consumed: totals.fiber, target: targetData.fiberGrams, minGoal: true });
-  }
-  if (targetData.saltGrams > 0) {
-    entries.push({ labelKey: 'summary.salt', consumed: totals.salt, target: targetData.saltGrams });
-  }
-
-  if (!entries.length) {
-    container.classList.add('hidden');
-    container.innerHTML = '';
-    return;
-  }
-  container.innerHTML = '';
-  entries.forEach((entry) => {
+function macroRow(entry) {
+  const row = document.createElement('div');
+  row.className = 'macro-row';
+  let cls = '';
+  let value;
+  if (entry.target > 0) {
     const ratio = entry.consumed / entry.target;
-    const pct = Math.min(ratio * 100, 100);
-    const row = document.createElement('div');
-    row.className = 'macro-row';
-    row.innerHTML = `
-      <span class="macro-label">${t(entry.labelKey)}</span>
-      <span class="progress-bar macro-bar"><span class="macro-fill ${ratioClass(ratio, entry.minGoal)}" style="width:${pct}%"></span></span>
-      <span class="macro-value ${ratioClass(ratio, entry.minGoal)}">${t('summary.macroValue', { consumed: entry.consumed.toFixed(1), target: entry.target.toFixed(0) })}</span>
-    `;
-    container.appendChild(row);
-  });
-  container.classList.remove('hidden');
+    cls = ratioClass(ratio, entry.minGoal);
+    const target = entry.unit === 'kcal' ? entry.target.toFixed(0) : entry.target.toFixed(0);
+    value = t('summary.macroValue', { consumed: entry.consumed.toFixed(1), target }) + (entry.unit === 'kcal' ? ' kcal' : '');
+  } else {
+    value = t('summary.macroNoTarget', { consumed: entry.consumed.toFixed(1) }) + (entry.unit === 'kcal' ? ' kcal' : '');
+  }
+  const pct = entry.target > 0 ? Math.min((entry.consumed / entry.target) * 100, 100) : 0;
+  row.innerHTML = `
+    <span class="macro-label">${t(entry.labelKey)}</span>
+    <span class="progress-bar macro-bar"><span class="macro-fill ${cls}" style="width:${pct}%"></span></span>
+    <span class="macro-value ${cls}">${value}</span>
+  `;
+  return row;
+}
+
+function renderMacroProgress(totals, targetData) {
+  const kcal = targetData.targetCalories;
+  const left = [];
+  const right = [];
+
+  left.push({ labelKey: 'summary.calories', consumed: totals.calories, target: kcal, unit: 'kcal' });
+  left.push({ labelKey: 'summary.protein', consumed: totals.protein, target: kcal > 0 && targetData.proteinPct > 0 ? (targetData.proteinPct / 100) * kcal / 4 : null });
+  left.push({ labelKey: 'summary.fat', consumed: totals.fat, target: kcal > 0 && targetData.fatPct > 0 ? (targetData.fatPct / 100) * kcal / 9 : null });
+  left.push({ labelKey: 'summary.carbs', consumed: totals.carbs, target: kcal > 0 && targetData.carbsPct > 0 ? (targetData.carbsPct / 100) * kcal / 4 : null });
+
+  right.push({ labelKey: 'summary.fiber', consumed: totals.fiber, target: targetData.fiberGrams, minGoal: true });
+  right.push({ labelKey: 'summary.salt', consumed: totals.salt, target: targetData.saltGrams });
+  right.push({ labelKey: 'summary.saturated', consumed: totals.saturatedFat, target: targetData.saturatedFatGrams });
+  right.push({ labelKey: 'summary.sugar', consumed: totals.sugar, target: targetData.sugarGrams });
+
+  const leftCol = $('#macro-col-left');
+  const rightCol = $('#macro-col-right');
+  leftCol.innerHTML = '';
+  rightCol.innerHTML = '';
+  left.forEach((entry) => leftCol.appendChild(macroRow(entry)));
+  right.forEach((entry) => rightCol.appendChild(macroRow(entry)));
 }
 
 async function loadMeals(date) {
@@ -800,6 +806,18 @@ async function init() {
     const date = $('#summary-date').value;
     loadSummary(date);
     loadMeals(date);
+  });
+  const progressArea = $('#progress-area');
+  const toggleProgress = () => {
+    const expanded = progressArea.classList.toggle('expanded');
+    progressArea.setAttribute('aria-expanded', String(expanded));
+  };
+  progressArea.addEventListener('click', toggleProgress);
+  progressArea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleProgress();
+    }
   });
 
   $('#meal-form').addEventListener('submit', handleCreateMeal);

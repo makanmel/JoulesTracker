@@ -64,8 +64,12 @@
     "fat": "Жири",
     "fiber": "Клітковина",
     "salt": "Сіль",
+    "saturated": "Насич. жири",
+    "sugar": "Цукор",
     "progress": "{{calories}} / {{target}} ккал ({{pct}}%)",
     "macroValue": "{{consumed}} / {{target}} г",
+    "macroNoTarget": "{{consumed}} г",
+    "expandHint": "Торкніться, щоб побачити всі нутрієнти",
     "noTarget": "Встановіть денну ціль, щоб бачити прогрес."
   },
   "meals": {
@@ -91,6 +95,8 @@
     "fatPct": "Жири %",
     "fiber": "Клітковина (г)",
     "salt": "Сіль макс. (г)",
+    "saturated": "Насич. жири макс. (г)",
+    "sugar": "Цукор макс. (г)",
     "set": "Встановити ціль",
     "updated": "Ціль оновлено",
     "display": "Поточна ціль: {{calories}} ккал",

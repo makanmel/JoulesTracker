@@ -104,6 +104,8 @@ describe('Daily target endpoints', () => {
         fatPct: 35,
         fiberGrams: 25,
         saltGrams: 5,
+        sugarGrams: 40,
+        saturatedFatGrams: 20,
       });
 
     const res = await request(app)
@@ -116,6 +118,8 @@ describe('Daily target endpoints', () => {
     expect(res.body.fatPct).toBe(35);
     expect(res.body.fiberGrams).toBe(25);
     expect(res.body.saltGrams).toBe(5);
+    expect(res.body.sugarGrams).toBe(40);
+    expect(res.body.saturatedFatGrams).toBe(20);
   });
 
   it('suggests the previous day target when present', async () => {

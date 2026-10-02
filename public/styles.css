@@ -462,11 +462,43 @@ button {
   background: var(--danger);
 }
 
+.progress-area {
+  cursor: pointer;
+}
+
+.progress-area .expand-hint {
+  display: block;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
 .macro-progress {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 20px;
+  margin-top: 12px;
+}
+
+.macro-col {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 12px;
+}
+
+.progress-area.expanded #progress-collapsed {
+  display: none;
+}
+
+.progress-area.expanded .macro-progress {
+  display: grid;
+}
+
+@media (max-width: 480px) {
+  .macro-progress {
+    grid-template-columns: 1fr;
+  }
 }
 
 .macro-row {
