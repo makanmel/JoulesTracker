@@ -159,8 +159,7 @@ header h1 {
 .area-summary,
 .area-target,
 .area-add-meal,
-.area-meals,
-.area-foods {
+.area-meals {
   border-top: 3px solid var(--section-accent, var(--primary));
   background-image: radial-gradient(circle at 100% 0, color-mix(in srgb, var(--section-accent, var(--primary)) 12%, transparent), transparent 38%);
 }
@@ -181,15 +180,10 @@ header h1 {
   --section-accent: #f59e0b;
 }
 
-.area-foods {
-  --section-accent: #ec4899;
-}
-
 .area-summary .section-icon,
 .area-target .section-icon,
 .area-add-meal .section-icon,
-.area-meals .section-icon,
-.area-foods .section-icon {
+.area-meals .section-icon {
   color: var(--section-accent);
   background: color-mix(in srgb, var(--section-accent) 14%, transparent);
 }
@@ -403,9 +397,21 @@ button {
   margin-top: 12px;
 }
 
-#settings-section h3 {
+#settings-section h3,
+.foods-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-top: 24px;
   margin-bottom: 12px;
+}
+
+.list-item.selectable {
+  cursor: pointer;
+}
+
+.list-item.selectable:hover {
+  border-color: var(--primary);
 }
 
 .summary-grid {
@@ -592,12 +598,8 @@ button {
   order: 4;
 }
 
-.area-foods {
-  order: 5;
-}
-
 .area-meals .list,
-.area-foods #food-list {
+.area-add-meal #food-list {
   max-height: 60vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -647,7 +649,7 @@ button {
   }
 
   .area-meals .list,
-  .area-foods #food-list {
+  .area-add-meal #food-list {
     max-height: none;
     overflow-y: visible;
   }

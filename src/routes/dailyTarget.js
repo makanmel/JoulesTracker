@@ -18,10 +18,11 @@ router.get('/', async (req, res, next) => {
     if (!date) {
       throw new AppError('date query parameter is required', 400);
     }
-    const target = await prisma.dailyTarget.findUnique({
-      where: { userId_targetDate: { userId: req.user.id, targetDate: date } },
+    const target = await prisma.dailyTarget.findFirst({
+      where: { userId: req.user.id, targetDate: { lte: date } },
+      orderBy: { targetDate: 'desc' },
     });
-    res.json({ date, targetCalories: target?.targetCalories ?? null });
+    res.json({ date, targetDate: target?.targetDate ?? null, targetCalories: target?.targetCalories ?? null });
   } catch (err) {
     next(err);
   }

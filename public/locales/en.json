@@ -9,8 +9,7 @@
     "sections": "Sections",
     "summary": "Summary",
     "meals": "Meals",
-    "addMeal": "Add",
-    "foods": "Foods"
+    "addMeal": "Add"
   },
   "settings": {
     "title": "Settings",
@@ -86,9 +85,8 @@
     "kcal": "Target kcal",
     "set": "Set target",
     "updated": "Target updated",
-    "display": "Target for {{date}}: {{calories}} kcal",
-    "none": "No target set for {{date}}",
-    "previousAvailable": "Previous target for {{date}}: {{calories}} kcal",
+    "display": "Current target: {{calories}} kcal",
+    "none": "No target set",
     "tdeeAvailable": "TDEE estimate: {{calories}} kcal (BMR {{bmr}})",
     "usePrevious": "Use previous day",
     "useTdee": "Use TDEE estimate"

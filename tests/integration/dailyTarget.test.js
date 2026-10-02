@@ -66,6 +66,32 @@ describe('Daily target endpoints', () => {
     expect(res.status).toBe(400);
   });
 
+  it('carries the most recent target forward to later dates', async () => {
+    await request(app)
+      .put('/api/v1/daily-target')
+      .set('Authorization', authHeader)
+      .send({ targetDate: '2026-09-18', targetCalories: 1900 });
+    await request(app)
+      .put('/api/v1/daily-target')
+      .set('Authorization', authHeader)
+      .send({ targetDate: '2026-09-20', targetCalories: 2100 });
+
+    const res = await request(app)
+      .get('/api/v1/daily-target?date=2026-09-23')
+      .set('Authorization', authHeader);
+
+    expect(res.status).toBe(200);
+    expect(res.body.targetDate).toBe('2026-09-20');
+    expect(res.body.targetCalories).toBe(2100);
+
+    const earlier = await request(app)
+      .get('/api/v1/daily-target?date=2026-09-19')
+      .set('Authorization', authHeader);
+
+    expect(earlier.body.targetDate).toBe('2026-09-18');
+    expect(earlier.body.targetCalories).toBe(1900);
+  });
+
   it('suggests the previous day target when present', async () => {
     await request(app)
       .put('/api/v1/daily-target')
