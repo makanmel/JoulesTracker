@@ -62,7 +62,10 @@
     "protein": "Білки",
     "carbs": "Вуглеводи",
     "fat": "Жири",
+    "fiber": "Клітковина",
+    "salt": "Сіль",
     "progress": "{{calories}} / {{target}} ккал ({{pct}}%)",
+    "macroValue": "{{consumed}} / {{target}} г",
     "noTarget": "Встановіть денну ціль, щоб бачити прогрес."
   },
   "meals": {
@@ -83,6 +86,11 @@
     "title": "Ціль",
     "date": "Дата",
     "kcal": "Ціль, ккал",
+    "proteinPct": "Білки %",
+    "carbsPct": "Вуглеводи %",
+    "fatPct": "Жири %",
+    "fiber": "Клітковина (г)",
+    "salt": "Сіль макс. (г)",
     "set": "Встановити ціль",
     "updated": "Ціль оновлено",
     "display": "Поточна ціль: {{calories}} ккал",

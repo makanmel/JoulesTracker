@@ -454,8 +454,65 @@ button {
   transition: width 0.2s ease;
 }
 
+.progress-bar div.warn {
+  background: #f59e0b;
+}
+
 .progress-bar div.over {
   background: var(--danger);
+}
+
+.macro-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.macro-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.macro-bar {
+  margin-top: 0;
+  height: 8px;
+}
+
+.macro-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: 6px;
+  background: var(--border);
+  transition: width 0.2s ease;
+}
+
+.macro-fill.ok {
+  background: #22c55e;
+}
+
+.macro-fill.warn {
+  background: #f59e0b;
+}
+
+.macro-fill.over {
+  background: var(--danger);
+}
+
+.macro-value.ok {
+  color: #16a34a;
+}
+
+.macro-value.warn {
+  color: #d97706;
+}
+
+.macro-value.over {
+  color: var(--danger);
 }
 
 .list {

@@ -12,6 +12,17 @@ function previousDateString(date) {
   return d.toISOString().split('T')[0];
 }
 
+function targetFields(target) {
+  return {
+    targetCalories: target?.targetCalories ?? null,
+    proteinPct: target?.proteinPct ?? null,
+    carbsPct: target?.carbsPct ?? null,
+    fatPct: target?.fatPct ?? null,
+    fiberGrams: target?.fiberGrams ?? null,
+    saltGrams: target?.saltGrams ?? null,
+  };
+}
+
 router.get('/', async (req, res, next) => {
   try {
     const date = req.query.date;
@@ -22,7 +33,7 @@ router.get('/', async (req, res, next) => {
       where: { userId: req.user.id, targetDate: { lte: date } },
       orderBy: { targetDate: 'desc' },
     });
-    res.json({ date, targetDate: target?.targetDate ?? null, targetCalories: target?.targetCalories ?? null });
+    res.json({ date, targetDate: target?.targetDate ?? null, ...targetFields(target) });
   } catch (err) {
     next(err);
   }
@@ -64,13 +75,21 @@ router.get('/suggest', async (req, res, next) => {
 router.put('/', async (req, res, next) => {
   try {
     const data = parseRequest(dailyTargetSchema, req.body);
+    const fields = {
+      targetCalories: data.targetCalories,
+      proteinPct: data.proteinPct ?? null,
+      carbsPct: data.carbsPct ?? null,
+      fatPct: data.fatPct ?? null,
+      fiberGrams: data.fiberGrams ?? null,
+      saltGrams: data.saltGrams ?? null,
+    };
     const target = await prisma.dailyTarget.upsert({
       where: { userId_targetDate: { userId: req.user.id, targetDate: data.targetDate } },
-      update: { targetCalories: data.targetCalories },
+      update: fields,
       create: {
         userId: req.user.id,
         targetDate: data.targetDate,
-        targetCalories: data.targetCalories,
+        ...fields,
       },
     });
     res.json(target);

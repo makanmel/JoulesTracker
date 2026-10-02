@@ -62,7 +62,10 @@
     "protein": "Protein",
     "carbs": "Carbs",
     "fat": "Fat",
+    "fiber": "Fiber",
+    "salt": "Salt",
     "progress": "{{calories}} / {{target}} kcal ({{pct}}%)",
+    "macroValue": "{{consumed}} / {{target}} g",
     "noTarget": "Set a daily target to see progress."
   },
   "meals": {
@@ -83,6 +86,11 @@
     "title": "Target",
     "date": "Date",
     "kcal": "Target kcal",
+    "proteinPct": "Protein %",
+    "carbsPct": "Carbs %",
+    "fatPct": "Fat %",
+    "fiber": "Fiber (g)",
+    "salt": "Salt max (g)",
     "set": "Set target",
     "updated": "Target updated",
     "display": "Current target: {{calories}} kcal",
