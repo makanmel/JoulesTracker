@@ -430,6 +430,23 @@ async function useTdeeTarget() {
   }
 }
 
+// If all three macro %s are set but don't sum to 100, scale them proportionally
+// (largest share absorbs the rounding remainder) and reflect the fix in the inputs.
+function normalizeMacroSplit(body) {
+  const parts = ['proteinPct', 'fatPct', 'carbsPct'];
+  if (parts.some((p) => body[p] === null || body[p] === undefined)) return;
+  const sum = body.proteinPct + body.fatPct + body.carbsPct;
+  if (sum === 0 || Math.abs(sum - 100) < 0.01) return;
+  const scale = 100 / sum;
+  body.proteinPct = Math.round(body.proteinPct * scale);
+  body.fatPct = Math.round(body.fatPct * scale);
+  body.carbsPct = 100 - body.proteinPct - body.fatPct;
+  $('#target-protein-pct').value = body.proteinPct;
+  $('#target-fat-pct').value = body.fatPct;
+  $('#target-carbs-pct').value = body.carbsPct;
+  showToast(t('target.pctNormalized', { sum }), 'info');
+}
+
 async function handleSetTarget(e) {
   e.preventDefault();
   const date = formatDate(new Date());
@@ -448,6 +465,7 @@ async function handleSetTarget(e) {
     sugarGrams: optionalNumber('#target-sugar'),
     saturatedFatGrams: optionalNumber('#target-saturated'),
   };
+  normalizeMacroSplit(body);
   try {
     await api('/daily-target', {
       method: 'PUT',

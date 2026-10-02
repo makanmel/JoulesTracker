@@ -99,6 +99,7 @@
     "sugar": "Sugar max (g)",
     "set": "Set target",
     "updated": "Target updated",
+    "pctNormalized": "Macro split was {{sum}}% - normalized to 100%",
     "display": "Current target: {{calories}} kcal",
     "none": "No target set",
     "tdeeAvailable": "TDEE estimate: {{calories}} kcal (BMR {{bmr}})",
