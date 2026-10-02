@@ -12,7 +12,7 @@ describe('Static frontend', () => {
     expect(res.text).toContain('class="dashboard-grid"');
     expect(res.text).toContain('dashboard-col-main');
     expect(res.text).toContain('dashboard-col-side');
-    for (const area of ['area-target', 'area-summary', 'area-add-meal', 'area-meals', 'area-foods']) {
+    for (const area of ['area-target', 'area-summary', 'area-add-meal', 'area-meals']) {
       expect(res.text).toContain(area);
     }
   });
@@ -31,9 +31,11 @@ describe('Static frontend', () => {
     const [page, styles] = await Promise.all([request(app).get('/index.html'), request(app).get('/styles.css')]);
 
     expect(page.text.match(/class="section-icon"/g)).toHaveLength(5);
-    for (const section of ['summary', 'target', 'add-meal', 'meals', 'foods']) {
+    for (const section of ['summary', 'target', 'add-meal', 'meals']) {
       expect(page.text).toMatch(new RegExp(`id="${section}-section"[\\s\\S]*?<svg class="section-icon"`));
     }
+    // foods picker merged into the add-meal card
+    expect(page.text).toMatch(/foods-header[\s\S]*?<svg class="section-icon"/);
     expect(styles.text).toContain('.section-icon');
     expect(styles.text).toContain('--section-accent');
     expect(styles.text).toContain('radial-gradient');
@@ -66,7 +68,7 @@ describe('Static frontend', () => {
     const hrefs = [...res.text.matchAll(/class="mobile-nav-link"[^>]*href="#([^"]+)"|href="#([^"]+)" class="mobile-nav-link"/g)].map(
       (m) => m[1] || m[2],
     );
-    expect(hrefs).toEqual(['summary-section', 'meals-section', 'add-meal-section', 'foods-section']);
+    expect(hrefs).toEqual(['summary-section', 'meals-section', 'add-meal-section']);
     for (const id of hrefs) {
       expect(res.text).toContain(`id="${id}"`);
     }
@@ -100,7 +102,7 @@ describe('Static frontend', () => {
     expect(html.text).toContain('id="profile-activity"');
     expect(html.text).toContain('id="target-section"');
     expect(html.text).toContain('id="target-suggestions"');
-    expect(html.text).toContain('id="target-use-previous"');
+    expect(html.text).not.toContain('id="target-date"');
     expect(html.text).toContain('id="target-use-tdee"');
     expect(html.text).toContain('id="voice-settings"');
     expect(html.text).toContain('id="voice-provider"');
@@ -113,8 +115,6 @@ describe('Static frontend', () => {
     expect(js.text).toContain('X-AI-Key');
     expect(en.body.profile.save).toBe('Save profile');
     expect(uk.body.profile.save).toBe('Зберегти профіль');
-    expect(en.body.target.usePrevious).toBe('Use previous day');
-    expect(uk.body.target.usePrevious).toBe('Використати попередній день');
     expect(en.body.voice.settingsTitle).toBe('Voice input');
     expect(uk.body.voice.settingsTitle).toBe('Голосовий ввід');
   });

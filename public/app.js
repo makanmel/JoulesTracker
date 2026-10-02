@@ -4,6 +4,9 @@ import { initTheme } from './theme.js';
 const API_BASE = '/api/v1';
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_EXTERNAL_QUERY = 2;
+const WAKE_NOTICE_DELAY_MS = 4000;
+const WAKE_RETRY_DELAY_MS = 3000;
+const WAKE_RETRY_LIMIT = 15;
 const AI_PROVIDER_KEY = 'joulesAiProvider';
 const AI_API_KEY_KEY = 'joulesAiApiKey';
 
@@ -17,6 +20,7 @@ const registerForm = $('#register-form');
 const tabLogin = $('#tab-login');
 const tabRegister = $('#tab-register');
 const toast = $('#toast');
+const serverNotice = $('#server-notice');
 
 let accessToken = localStorage.getItem('joulesToken');
 let currentUserEmail = null;
@@ -27,11 +31,44 @@ function showToast(message, type = 'info') {
   setTimeout(() => toast.classList.add('hidden'), 3000);
 }
 
+let pendingFetches = 0;
+let wakeNoticeTimer = null;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function startServerNotice() {
+  pendingFetches += 1;
+  if (!wakeNoticeTimer) {
+    wakeNoticeTimer = setTimeout(() => serverNotice.classList.remove('hidden'), WAKE_NOTICE_DELAY_MS);
+  }
+}
+
+function finishServerNotice() {
+  pendingFetches -= 1;
+  if (pendingFetches === 0) {
+    clearTimeout(wakeNoticeTimer);
+    wakeNoticeTimer = null;
+    serverNotice.classList.add('hidden');
+  }
+}
+
+// fetch rejects (TypeError) when the Render instance is cold-starting; retry until it wakes.
+function fetchWithRetry(url, options, attempt = 0) {
+  return fetch(url, options).catch(async (err) => {
+    if (!(err instanceof TypeError) || attempt >= WAKE_RETRY_LIMIT) throw err;
+    clearTimeout(wakeNoticeTimer);
+    wakeNoticeTimer = null;
+    serverNotice.classList.remove('hidden');
+    await sleep(WAKE_RETRY_DELAY_MS);
+    return fetchWithRetry(url, options, attempt + 1);
+  });
+}
+
 async function api(path, options = {}) {
   const url = `${API_BASE}${path}`;
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-  const res = await fetch(url, { ...options, headers });
+  startServerNotice();
+  const res = await fetchWithRetry(url, { ...options, headers }).finally(finishServerNotice);
   if (res.status === 204) return null;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -93,7 +130,6 @@ function showDashboard(email) {
   authSection.classList.add('hidden');
   dashboardSection.classList.remove('hidden');
   renderCurrentUser();
-  $('#target-date').value = formatDate(new Date());
   $('#summary-date').value = formatDate(new Date());
   $('#meal-date').value = formatDate(new Date());
   loadVoiceSettings();
@@ -173,8 +209,12 @@ async function loadFoods(query = '') {
     data.items.forEach((food) => {
       const per100g = t('foods.per100g', { calories: food.caloriesPer100g });
       const li = document.createElement('li');
-      li.className = 'list-item';
+      li.className = 'list-item selectable';
       li.innerHTML = `<span>${escapeHtml(foodLabel(food))}</span><span class="muted">${escapeHtml(per100g)}</span>`;
+      li.addEventListener('click', () => {
+        $('#meal-food').value = food.id;
+        $('#meal-quantity').focus();
+      });
       list.appendChild(li);
 
       const option = document.createElement('option');
@@ -228,13 +268,15 @@ async function loadExternalFoods(query) {
 
 async function importExternalFood(food) {
   try {
-    if (food.barcode) {
-      await api('/foods/import', { method: 'POST', body: JSON.stringify({ barcode: food.barcode }) });
-    } else {
-      await api('/foods', { method: 'POST', body: JSON.stringify(food) });
-    }
+    const created = food.barcode
+      ? await api('/foods/import', { method: 'POST', body: JSON.stringify({ barcode: food.barcode }) })
+      : await api('/foods', { method: 'POST', body: JSON.stringify(food) });
     showToast(t('foods.imported'));
-    loadFoods($('#food-search').value);
+    await loadFoods($('#food-search').value);
+    if (created?.id) {
+      $('#meal-food').value = created.id;
+      $('#meal-quantity').focus();
+    }
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -311,7 +353,7 @@ async function handleSaveProfile(e) {
   try {
     await api('/users/profile', { method: 'PUT', body: JSON.stringify(body) });
     $('#profile-message').textContent = t('profile.saved');
-    await loadTarget($('#target-date').value);
+    await loadTarget(formatDate(new Date()));
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -348,8 +390,8 @@ async function loadTarget(date) {
     const data = await api(`/daily-target?date=${encodeURIComponent(date)}`);
     $('#target-calories').value = data.targetCalories ?? '';
     $('#target-display').textContent = data.targetCalories
-      ? t('target.display', { date, calories: data.targetCalories })
-      : t('target.none', { date });
+      ? t('target.display', { calories: data.targetCalories })
+      : t('target.none');
     await loadTargetSuggestions(date);
   } catch (err) {
     showToast(err.message, 'error');
@@ -360,34 +402,16 @@ async function loadTargetSuggestions(date) {
   try {
     const data = await api(`/daily-target/suggest?date=${encodeURIComponent(date)}`);
     const container = $('#target-suggestions');
-    container.classList.toggle('hidden', !(data.previousTargetCalories || data.tdee));
-    $('#target-use-previous').classList.toggle('hidden', !data.previousTargetCalories);
+    container.classList.toggle('hidden', !data.tdee);
     $('#target-use-tdee').classList.toggle('hidden', !data.tdee);
-    if (!data.targetCalories) {
-      $('#target-display').textContent = data.previousTargetCalories
-        ? t('target.previousAvailable', { date: data.previousDate, calories: data.previousTargetCalories })
-        : t('target.none', { date });
-    }
   } catch (err) {
     // suggestions are optional
     $('#target-suggestions').classList.add('hidden');
   }
 }
 
-async function usePreviousTarget() {
-  const date = $('#target-date').value;
-  try {
-    const data = await api(`/daily-target/suggest?date=${encodeURIComponent(date)}`);
-    if (data.previousTargetCalories) {
-      $('#target-calories').value = data.previousTargetCalories;
-    }
-  } catch (err) {
-    showToast(err.message, 'error');
-  }
-}
-
 async function useTdeeTarget() {
-  const date = $('#target-date').value;
+  const date = formatDate(new Date());
   try {
     const data = await api(`/daily-target/suggest?date=${encodeURIComponent(date)}`);
     if (data.tdee) {
@@ -401,7 +425,7 @@ async function useTdeeTarget() {
 
 async function handleSetTarget(e) {
   e.preventDefault();
-  const date = $('#target-date').value;
+  const date = formatDate(new Date());
   const targetCalories = parseInt($('#target-calories').value, 10);
   try {
     await api('/daily-target', {
@@ -683,8 +707,6 @@ async function init() {
   });
 
   $('#target-form').addEventListener('submit', handleSetTarget);
-  $('#target-date').addEventListener('change', (e) => loadTarget(e.target.value));
-  $('#target-use-previous').addEventListener('click', usePreviousTarget);
   $('#target-use-tdee').addEventListener('click', useTdeeTarget);
   $('#profile-form').addEventListener('submit', handleSaveProfile);
   $('#settings-toggle').addEventListener('click', async (event) => {
@@ -693,7 +715,7 @@ async function init() {
     $('#settings-section').classList.toggle('hidden', expanded);
     if (!expanded) {
       await loadProfile();
-      await loadTarget($('#target-date').value);
+      await loadTarget(formatDate(new Date()));
     }
   });
 

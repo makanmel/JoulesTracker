@@ -2,14 +2,14 @@
   "app": {
     "title": "JoulesTracker",
     "subtitle": "Трекер калорій та макронутрієнтів",
-    "language": "Мова"
+    "language": "Мова",
+    "serverWaking": "Сервер прокидається, зачекайте…"
   },
   "nav": {
     "sections": "Розділи",
     "summary": "Підсумок",
     "meals": "Їжа",
-    "addMeal": "Додати",
-    "foods": "Продукти"
+    "addMeal": "Додати"
   },
   "settings": {
     "title": "Налаштування",
@@ -85,9 +85,8 @@
     "kcal": "Ціль, ккал",
     "set": "Встановити ціль",
     "updated": "Ціль оновлено",
-    "display": "Ціль на {{date}}: {{calories}} ккал",
-    "none": "Ціль на {{date}} не встановлено",
-    "previousAvailable": "Попередня ціль на {{date}}: {{calories}} ккал",
+    "display": "Поточна ціль: {{calories}} ккал",
+    "none": "Ціль не встановлено",
     "tdeeAvailable": "Оцінка TDEE: {{calories}} ккал (BMR {{bmr}})",
     "usePrevious": "Використати попередній день",
     "useTdee": "Використати TDEE"
