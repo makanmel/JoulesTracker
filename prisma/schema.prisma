@@ -78,6 +78,13 @@ model DailyTarget {
   targetDate     String
   targetCalories Float
 
+  // Macronutrient targets (optional): protein/carbs/fat as % of calories, fiber goal in g, salt limit in g
+  proteinPct Float?
+  carbsPct   Float?
+  fatPct     Float?
+  fiberGrams Float?
+  saltGrams  Float?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

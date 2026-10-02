@@ -92,6 +92,32 @@ describe('Daily target endpoints', () => {
     expect(earlier.body.targetCalories).toBe(1900);
   });
 
+  it('stores and returns macronutrient targets', async () => {
+    await request(app)
+      .put('/api/v1/daily-target')
+      .set('Authorization', authHeader)
+      .send({
+        targetDate: '2026-09-21',
+        targetCalories: 2000,
+        proteinPct: 20,
+        carbsPct: 45,
+        fatPct: 35,
+        fiberGrams: 25,
+        saltGrams: 5,
+      });
+
+    const res = await request(app)
+      .get('/api/v1/daily-target?date=2026-09-25')
+      .set('Authorization', authHeader);
+
+    expect(res.status).toBe(200);
+    expect(res.body.proteinPct).toBe(20);
+    expect(res.body.carbsPct).toBe(45);
+    expect(res.body.fatPct).toBe(35);
+    expect(res.body.fiberGrams).toBe(25);
+    expect(res.body.saltGrams).toBe(5);
+  });
+
   it('suggests the previous day target when present', async () => {
     await request(app)
       .put('/api/v1/daily-target')
