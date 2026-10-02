@@ -257,7 +257,7 @@ async function loadExternalFoods(query) {
           ${escapeHtml(foodLabel(food))}<br />
           <span class="muted">${escapeHtml(meta)}</span>
         </div>
-        <button type="button" class="btn-icon" aria-label="${t('foods.import')}" title="${t('foods.import')}"><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 4v12m0 0-4-4m4 4 4-4M5 19h14" /></svg></button>
+        <button type="button" class="btn-icon" aria-label="${t('foods.import')}" title="${t('foods.import')}"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg></button>
       `;
       li.querySelector('button').addEventListener('click', () => importExternalFood(food));
       list.appendChild(li);
@@ -485,9 +485,8 @@ async function loadSummary(date) {
   try {
     const data = await api(`/meals?date=${encodeURIComponent(date)}`);
     const totals = data.totals;
-    $('#total-protein').textContent = `${totals.protein.toFixed(1)} g`;
-    $('#total-carbs').textContent = `${totals.carbs.toFixed(1)} g`;
     $('#total-fat').textContent = `${totals.fat.toFixed(1)} g`;
+    $('#total-carbs').textContent = `${totals.carbs.toFixed(1)} g`;
 
     const targetData = await api(`/daily-target?date=${encodeURIComponent(date)}`).catch(() => ({ targetCalories: null }));
     const target = targetData.targetCalories;
@@ -549,7 +548,6 @@ function renderMacroProgress(totals, targetData) {
   const left = [];
   const right = [];
 
-  left.push({ labelKey: 'summary.calories', consumed: totals.calories, target: kcal, unit: 'kcal' });
   left.push({ labelKey: 'summary.protein', consumed: totals.protein, target: kcal > 0 && targetData.proteinPct > 0 ? (targetData.proteinPct / 100) * kcal / 4 : null });
   left.push({ labelKey: 'summary.fat', consumed: totals.fat, target: kcal > 0 && targetData.fatPct > 0 ? (targetData.fatPct / 100) * kcal / 9 : null });
   left.push({ labelKey: 'summary.carbs', consumed: totals.carbs, target: kcal > 0 && targetData.carbsPct > 0 ? (targetData.carbsPct / 100) * kcal / 4 : null });
