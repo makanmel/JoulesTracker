@@ -254,6 +254,45 @@ button {
   background: var(--primary-hover);
 }
 
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.btn-icon .section-icon {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.btn-icon:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.user-area span {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .btn-secondary {
   background: var(--secondary);
   color: var(--text);
@@ -359,21 +398,6 @@ button {
 
 .section-header h2 {
   margin: 0;
-}
-
-.dashboard-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.dashboard-header p {
-  margin: 0;
-  min-width: 0;
-  overflow-wrap: anywhere;
 }
 
 .target-suggestions {
@@ -503,10 +527,23 @@ button {
 
 .macro-row {
   display: grid;
-  grid-template-columns: 90px 1fr auto;
+  grid-template-columns: 70px 48px 1fr 52px;
   align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.macro-consumed {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.macro-target {
+  text-align: left;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .macro-bar {
