@@ -131,6 +131,7 @@ describe('Static frontend', () => {
     expect(summary[1].match(/<strong/g)).toHaveLength(4);
     expect(summary[1]).toContain('id="total-calories"');
     expect(script.text).toContain("$('#total-calories').textContent");
+    expect(script.text).not.toMatch(/^(<<<<<<<|=======|>>>>>>>)/m);
     expect(styles.text).toMatch(/\.summary-grid \{[^}]*grid-template-columns: repeat\(4, 1fr\);/);
   });
 });
