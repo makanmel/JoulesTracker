@@ -118,4 +118,19 @@ describe('Static frontend', () => {
     expect(en.body.voice.settingsTitle).toBe('Voice input');
     expect(uk.body.voice.settingsTitle).toBe('Голосовий ввід');
   });
+
+  it('serves four headline summary metrics including calories', async () => {
+    const [page, script, styles] = await Promise.all([
+      request(app).get('/index.html'),
+      request(app).get('/app.js'),
+      request(app).get('/styles.css'),
+    ]);
+
+    const summary = page.text.match(/<div id="summary" class="summary-grid">([\s\S]*?)<\/div>\s*<div id="progress-area"/);
+    expect(summary).not.toBeNull();
+    expect(summary[1].match(/<strong/g)).toHaveLength(4);
+    expect(summary[1]).toContain('id="total-calories"');
+    expect(script.text).toContain("$('#total-calories').textContent");
+    expect(styles.text).toMatch(/\.summary-grid \{[^}]*grid-template-columns: repeat\(4, 1fr\);/);
+  });
 });
