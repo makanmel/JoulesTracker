@@ -129,6 +129,7 @@ function showDashboard(email) {
   currentUserEmail = email;
   authSection.classList.add('hidden');
   dashboardSection.classList.remove('hidden');
+  $('#user-area').classList.remove('hidden');
   renderCurrentUser();
   $('#summary-date').value = formatDate(new Date());
   $('#meal-date').value = formatDate(new Date());
@@ -142,6 +143,7 @@ function showAuth() {
   currentUserEmail = null;
   authSection.classList.remove('hidden');
   dashboardSection.classList.add('hidden');
+  $('#user-area').classList.add('hidden');
   setToken(null);
 }
 
@@ -255,7 +257,7 @@ async function loadExternalFoods(query) {
           ${escapeHtml(foodLabel(food))}<br />
           <span class="muted">${escapeHtml(meta)}</span>
         </div>
-        <button type="button" class="btn-secondary">${t('foods.import')}</button>
+        <button type="button" class="btn-icon" aria-label="${t('foods.import')}" title="${t('foods.import')}"><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 4v12m0 0-4-4m4 4 4-4M5 19h14" /></svg></button>
       `;
       li.querySelector('button').addEventListener('click', () => importExternalFood(food));
       list.appendChild(li);
@@ -483,12 +485,9 @@ async function loadSummary(date) {
   try {
     const data = await api(`/meals?date=${encodeURIComponent(date)}`);
     const totals = data.totals;
-    $('#total-calories').textContent = totals.calories.toFixed(1);
     $('#total-protein').textContent = `${totals.protein.toFixed(1)} g`;
     $('#total-carbs').textContent = `${totals.carbs.toFixed(1)} g`;
     $('#total-fat').textContent = `${totals.fat.toFixed(1)} g`;
-    $('#total-fiber').textContent = `${totals.fiber.toFixed(1)} g`;
-    $('#total-salt').textContent = `${totals.salt.toFixed(1)} g`;
 
     const targetData = await api(`/daily-target?date=${encodeURIComponent(date)}`).catch(() => ({ targetCalories: null }));
     const target = targetData.targetCalories;
@@ -526,21 +525,21 @@ function ratioClass(ratio, isMinGoal) {
 function macroRow(entry) {
   const row = document.createElement('div');
   row.className = 'macro-row';
+  const unit = entry.unit === 'kcal' ? 'kcal' : 'g';
+  const consumed = `${entry.consumed.toFixed(1)}`;
   let cls = '';
-  let value;
+  let targetText = '–';
   if (entry.target > 0) {
     const ratio = entry.consumed / entry.target;
     cls = ratioClass(ratio, entry.minGoal);
-    const target = entry.unit === 'kcal' ? entry.target.toFixed(0) : entry.target.toFixed(0);
-    value = t('summary.macroValue', { consumed: entry.consumed.toFixed(1), target }) + (entry.unit === 'kcal' ? ' kcal' : '');
-  } else {
-    value = t('summary.macroNoTarget', { consumed: entry.consumed.toFixed(1) }) + (entry.unit === 'kcal' ? ' kcal' : '');
+    targetText = entry.target.toFixed(0);
   }
   const pct = entry.target > 0 ? Math.min((entry.consumed / entry.target) * 100, 100) : 0;
   row.innerHTML = `
     <span class="macro-label">${t(entry.labelKey)}</span>
+    <span class="macro-consumed ${cls}">${consumed}</span>
     <span class="progress-bar macro-bar"><span class="macro-fill ${cls}" style="width:${pct}%"></span></span>
-    <span class="macro-value ${cls}">${value}</span>
+    <span class="macro-target">${targetText} ${unit}</span>
   `;
   return row;
 }

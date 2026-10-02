@@ -16,6 +16,10 @@
         <p class="subtitle" data-i18n="app.subtitle">Calorie &amp; macronutrient tracker</p>
       </div>
       <div class="header-controls">
+        <div id="user-area" class="user-area hidden">
+          <span id="user-email"></span>
+          <button type="button" id="logout-btn" class="btn-icon" data-i18n-aria-label="auth.logout" aria-label="Logout" title="Logout"><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M4 12h10m-4-4 4 4-4 4" /></svg></button>
+        </div>
         <div id="language-switcher" class="language-switcher" role="group" aria-label="Language" data-i18n-aria-label="app.language">
           <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
           <button type="button" class="lang-btn" data-lang="uk" aria-pressed="false">UKR</button>
@@ -115,11 +119,6 @@
       </section>
 
       <section id="dashboard-section" class="hidden">
-        <div class="dashboard-header">
-          <p id="user-email"></p>
-          <button type="button" id="logout-btn" class="btn-secondary" data-i18n="auth.logout">Logout</button>
-        </div>
-
         <div class="dashboard-grid">
           <div class="dashboard-col dashboard-col-main">
             <section id="summary-section" class="card area-summary">
@@ -129,12 +128,9 @@
                 <button type="button" id="refresh-summary" class="btn-secondary" data-i18n="summary.refresh">Refresh</button>
               </form>
               <div id="summary" class="summary-grid">
-                <div><strong data-i18n="summary.calories">Calories</strong><span id="total-calories">0</span></div>
                 <div><strong data-i18n="summary.protein">Protein</strong><span id="total-protein">0 g</span></div>
-                <div><strong data-i18n="summary.carbs">Carbs</strong><span id="total-carbs">0 g</span></div>
                 <div><strong data-i18n="summary.fat">Fat</strong><span id="total-fat">0 g</span></div>
-                <div><strong data-i18n="summary.fiber">Fiber</strong><span id="total-fiber">0 g</span></div>
-                <div><strong data-i18n="summary.salt">Salt</strong><span id="total-salt">0 g</span></div>
+                <div><strong data-i18n="summary.carbs">Carbs</strong><span id="total-carbs">0 g</span></div>
               </div>
               <div id="progress-area" class="progress-area" role="button" tabindex="0" aria-expanded="false">
                 <div class="progress-bar" id="progress-collapsed"><div id="progress-fill"></div></div>
