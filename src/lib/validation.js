@@ -49,7 +49,10 @@ export const dailyTargetSchema = z.object({
 export const profileSchema = z.object({
   weightKg: z.number().positive(),
   heightCm: z.number().positive(),
-  age: z.number().int().positive(),
+  birthDate: z
+    .string()
+    .regex(dateRegex)
+    .refine((value) => new Date(value) <= new Date(), 'birthDate cannot be in the future'),
   gender: z.enum(['male', 'female']),
   activityLevel: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']),
 });

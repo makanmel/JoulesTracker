@@ -6,6 +6,12 @@ import { registerAndLogin } from '../helpers/auth.js';
 const app = createApp();
 let authHeader;
 
+function birthDateForAge(age) {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - age);
+  return d.toISOString().split('T')[0];
+}
+
 beforeEach(async () => {
   const { token } = await registerAndLogin(app);
   authHeader = `Bearer ${token}`;
@@ -81,7 +87,7 @@ describe('Daily target endpoints', () => {
     await request(app)
       .put('/api/v1/users/profile')
       .set('Authorization', authHeader)
-      .send({ weightKg: 70, heightCm: 175, age: 30, gender: 'male', activityLevel: 'moderate' });
+      .send({ weightKg: 70, heightCm: 175, birthDate: birthDateForAge(30), gender: 'male', activityLevel: 'moderate' });
 
     const res = await request(app)
       .get('/api/v1/daily-target/suggest?date=2026-09-21')

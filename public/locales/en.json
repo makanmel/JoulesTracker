@@ -9,7 +9,6 @@
     "summary": "Summary",
     "meals": "Meals",
     "addMeal": "Add",
-    "target": "Target",
     "foods": "Foods"
   },
   "settings": {
@@ -21,7 +20,7 @@
     "title": "Profile",
     "weight": "Weight (kg)",
     "height": "Height (cm)",
-    "age": "Age",
+    "birthdate": "Birthdate",
     "gender": "Gender",
     "genderMale": "Male",
     "genderFemale": "Female",
@@ -39,7 +38,10 @@
     "dark": "Dark",
     "forest": "Forest",
     "neon": "Neon",
-    "sunset": "Sunset"
+    "sunset": "Sunset",
+    "slate": "Slate",
+    "sand": "Sand",
+    "lavender": "Lavender"
   },
   "auth": {
     "login": "Login",
@@ -78,7 +80,7 @@
     }
   },
   "target": {
-    "title": "Daily Target",
+    "title": "Target",
     "date": "Date",
     "kcal": "Target kcal",
     "set": "Set target",

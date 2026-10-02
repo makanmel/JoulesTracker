@@ -19,14 +19,14 @@ describe('User profile endpoints', () => {
     expect(res.body).toEqual({
       weightKg: null,
       heightCm: null,
-      age: null,
+      birthDate: null,
       gender: null,
       activityLevel: null,
     });
   });
 
   it('updates and returns the user profile', async () => {
-    const body = { weightKg: 70, heightCm: 175, age: 30, gender: 'male', activityLevel: 'moderate' };
+    const body = { weightKg: 70, heightCm: 175, birthDate: '1995-06-15', gender: 'male', activityLevel: 'moderate' };
     const res = await request(app).put('/api/v1/users/profile').set('Authorization', authHeader).send(body);
 
     expect(res.status).toBe(200);
@@ -40,7 +40,7 @@ describe('User profile endpoints', () => {
     const res = await request(app)
       .put('/api/v1/users/profile')
       .set('Authorization', authHeader)
-      .send({ weightKg: -1, heightCm: 0, age: 0, gender: 'other', activityLevel: 'none' });
+      .send({ weightKg: -1, heightCm: 0, birthDate: '2999-01-01', gender: 'other', activityLevel: 'none' });
 
     expect(res.status).toBe(400);
   });

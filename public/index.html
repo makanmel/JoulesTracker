@@ -34,7 +34,7 @@
         <form id="profile-form" class="grid-form">
           <label><span data-i18n="profile.weight">Weight (kg)</span> <input type="number" id="profile-weight" min="1" step="0.1" required /></label>
           <label><span data-i18n="profile.height">Height (cm)</span> <input type="number" id="profile-height" min="1" step="1" required /></label>
-          <label><span data-i18n="profile.age">Age</span> <input type="number" id="profile-age" min="1" step="1" required /></label>
+          <label><span data-i18n="profile.birthdate">Birthdate</span> <input type="date" id="profile-birthdate" required /></label>
           <label><span data-i18n="profile.gender">Gender</span>
             <select id="profile-gender" required>
               <option value="male" data-i18n="profile.genderMale">Male</option>
@@ -55,6 +55,20 @@
           </div>
         </form>
         <p id="profile-message" class="muted"></p>
+
+        <section id="target-section" class="card area-target">
+          <h3><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3 2M4 4l3 3m13-3-3 3" /></svg><span data-i18n="target.title">Target</span></h3>
+          <form id="target-form" class="inline-form">
+            <label><span data-i18n="target.date">Date</span> <input type="date" id="target-date" required /></label>
+            <label><span data-i18n="target.kcal">Target kcal</span> <input type="number" id="target-calories" min="0" step="1" required /></label>
+            <button type="submit" class="btn-primary" data-i18n="target.set">Set target</button>
+          </form>
+          <div id="target-suggestions" class="target-suggestions hidden">
+            <button type="button" id="target-use-previous" class="btn-secondary" data-i18n="target.usePrevious">Use previous day</button>
+            <button type="button" id="target-use-tdee" class="btn-secondary" data-i18n="target.useTdee">Use BMR/TDEE estimate</button>
+          </div>
+          <p id="target-display" class="muted"></p>
+        </section>
 
         <div id="voice-settings" class="voice-settings">
           <h3 data-i18n="voice.settingsTitle">Voice input</h3>
@@ -128,20 +142,6 @@
           </div>
 
           <div class="dashboard-col dashboard-col-side">
-            <section id="target-section" class="card area-target">
-              <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3 2M4 4l3 3m13-3-3 3" /></svg><span data-i18n="target.title">Daily Target</span></h2>
-              <form id="target-form" class="inline-form">
-                <label><span data-i18n="target.date">Date</span> <input type="date" id="target-date" required /></label>
-                <label><span data-i18n="target.kcal">Target kcal</span> <input type="number" id="target-calories" min="0" step="1" required /></label>
-                <button type="submit" class="btn-primary" data-i18n="target.set">Set target</button>
-              </form>
-              <div id="target-suggestions" class="target-suggestions hidden">
-                <button type="button" id="target-use-previous" class="btn-secondary" data-i18n="target.usePrevious">Use previous day</button>
-                <button type="button" id="target-use-tdee" class="btn-secondary" data-i18n="target.useTdee">Use BMR/TDEE estimate</button>
-              </div>
-              <p id="target-display" class="muted"></p>
-            </section>
-
             <section id="add-meal-section" class="card area-add-meal">
               <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /><circle cx="12" cy="12" r="9" /></svg><span data-i18n="addMeal.title">Add Meal</span></h2>
               <div class="voice-input">
@@ -217,7 +217,6 @@
           <a href="#summary-section" class="mobile-nav-link" data-i18n="nav.summary">Summary</a>
           <a href="#meals-section" class="mobile-nav-link" data-i18n="nav.meals">Meals</a>
           <a href="#add-meal-section" class="mobile-nav-link" data-i18n="nav.addMeal">Add</a>
-          <a href="#target-section" class="mobile-nav-link" data-i18n="nav.target">Target</a>
           <a href="#foods-section" class="mobile-nav-link" data-i18n="nav.foods">Foods</a>
         </nav>
       </section>

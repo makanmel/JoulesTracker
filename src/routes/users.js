@@ -16,7 +16,7 @@ function sanitizeProfile(user) {
   return {
     weightKg: user.weightKg,
     heightCm: user.heightCm,
-    age: user.age,
+    birthDate: user.birthDate,
     gender: user.gender,
     activityLevel: user.activityLevel,
   };

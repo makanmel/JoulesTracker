@@ -17,7 +17,7 @@ model User {
 
   weightKg        Float?
   heightCm        Float?
-  age             Int?
+  birthDate       String? // ISO date YYYY-MM-DD
   gender          String? // male | female
   activityLevel   String? // sedentary | light | moderate | active | very_active
 
