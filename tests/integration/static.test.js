@@ -134,4 +134,16 @@ describe('Static frontend', () => {
     expect(script.text).not.toMatch(/^(<<<<<<<|=======|>>>>>>>)/m);
     expect(styles.text).toMatch(/\.summary-grid \{[^}]*grid-template-columns: repeat\(4, 1fr\);/);
   });
+
+  it('prevents authentication credentials from being submitted or retained in URLs', async () => {
+    const [page, script] = await Promise.all([request(app).get('/index.html'), request(app).get('/app.js')]);
+
+    expect(page.text).toMatch(/<form id="login-form"[^>]*method="post"/);
+    expect(page.text).toMatch(/<form id="register-form"[^>]*method="post"/);
+    expect(page.text).toContain('autocomplete="current-password"');
+    expect(page.text).toContain('autocomplete="new-password"');
+    expect(script.text).toContain("url.searchParams.delete('email')");
+    expect(script.text).toContain("url.searchParams.delete('password')");
+    expect(script.text).toContain('window.history.replaceState');
+  });
 });
