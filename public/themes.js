@@ -95,6 +95,57 @@ export const THEMES = [
     surface: { color: '#ffffff', opacity: 0.18, blur: '14px', border: 'rgba(255,255,255,0.35)' },
     text: { primary: '#fff7f0', muted: '#ffd9c7', onPrimary: '#2b1d2f' },
   },
+  {
+    id: 'slate',
+    nameKey: 'themes.slate',
+    background: { color: '#eef1f5', image: 'none' },
+    colors: {
+      primary: '#475569',
+      primaryHover: '#334155',
+      secondary: '#e2e8f0',
+      accent: '#64748b',
+      danger: '#b91c1c',
+      dangerHover: '#991b1b',
+    },
+    surface: { color: '#ffffff', opacity: 1, blur: '0px', border: '#dbe1e8' },
+    text: { primary: '#1e293b', muted: '#64748b', onPrimary: '#ffffff' },
+  },
+  {
+    id: 'sand',
+    nameKey: 'themes.sand',
+    background: {
+      color: '#f4f0e8',
+      image: 'linear-gradient(160deg, #f4f0e8 0%, #e8e0d0 100%)',
+    },
+    colors: {
+      primary: '#8a6d3b',
+      primaryHover: '#6f5830',
+      secondary: '#e8e0cf',
+      accent: '#a3906b',
+      danger: '#a94438',
+      dangerHover: '#8c392f',
+    },
+    surface: { color: '#fdfcf8', opacity: 0.95, blur: '0px', border: '#ddd5c3' },
+    text: { primary: '#3a352a', muted: '#7a715d', onPrimary: '#ffffff' },
+  },
+  {
+    id: 'lavender',
+    nameKey: 'themes.lavender',
+    background: {
+      color: '#f2f0f7',
+      image: 'linear-gradient(160deg, #f2f0f7 0%, #e4e0f0 100%)',
+    },
+    colors: {
+      primary: '#6d5a94',
+      primaryHover: '#594880',
+      secondary: '#e5e1ee',
+      accent: '#8f7fb3',
+      danger: '#b04a4a',
+      dangerHover: '#954040',
+    },
+    surface: { color: '#ffffff', opacity: 0.95, blur: '0px', border: '#dcd7e6' },
+    text: { primary: '#332e44', muted: '#6f6884', onPrimary: '#ffffff' },
+  },
 ];
 
 export const DEFAULT_THEME_ID = 'default';

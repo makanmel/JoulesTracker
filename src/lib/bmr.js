@@ -1,6 +1,6 @@
 /**
  * Mifflin-St Jeor BMR and TDEE calculations.
- * Weight in kg, height in cm, age in years.
+ * Weight in kg, height in cm, birthDate as ISO date (YYYY-MM-DD).
  */
 
 const ACTIVITY_MULTIPLIERS = {
@@ -11,11 +11,22 @@ const ACTIVITY_MULTIPLIERS = {
   very_active: 1.9,
 };
 
-export function calculateBmr({ weightKg, heightCm, age, gender }) {
+export function ageFromBirthDate(birthDate, now = new Date()) {
+  const d = new Date(birthDate);
+  if (Number.isNaN(d.getTime()) || d > now) return null;
+  let age = now.getFullYear() - d.getFullYear();
+  const monthDiff = now.getMonth() - d.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < d.getDate())) {
+    age -= 1;
+  }
+  return age > 0 ? age : null;
+}
+
+export function calculateBmr({ weightKg, heightCm, birthDate, gender }) {
   const w = Number(weightKg);
   const h = Number(heightCm);
-  const a = Number(age);
-  if (!Number.isFinite(w) || w <= 0 || !Number.isFinite(h) || h <= 0 || !Number.isFinite(a) || a <= 0) {
+  const a = ageFromBirthDate(birthDate);
+  if (!Number.isFinite(w) || w <= 0 || !Number.isFinite(h) || h <= 0 || a === null) {
     return null;
   }
   if (gender !== 'male' && gender !== 'female') {
@@ -26,8 +37,8 @@ export function calculateBmr({ weightKg, heightCm, age, gender }) {
   return Math.round(bmr);
 }
 
-export function calculateTdee({ weightKg, heightCm, age, gender, activityLevel }) {
-  const bmr = calculateBmr({ weightKg, heightCm, age, gender });
+export function calculateTdee({ weightKg, heightCm, birthDate, gender, activityLevel }) {
+  const bmr = calculateBmr({ weightKg, heightCm, birthDate, gender });
   if (bmr === null) return null;
   const multiplier = ACTIVITY_MULTIPLIERS[activityLevel];
   if (!multiplier) return null;

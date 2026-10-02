@@ -18,7 +18,7 @@ describe('Visual themes', () => {
 
     expect(res.status).toBe(200);
     expect(res.text).toContain('export const THEMES');
-    for (const id of ['default', 'dark', 'forest', 'neon', 'sunset']) {
+    for (const id of ['default', 'dark', 'forest', 'neon', 'sunset', 'slate', 'sand', 'lavender']) {
       expect(res.text).toContain(`'${id}'`);
     }
   });

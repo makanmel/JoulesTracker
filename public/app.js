@@ -97,7 +97,6 @@ function showDashboard(email) {
   $('#summary-date').value = formatDate(new Date());
   $('#meal-date').value = formatDate(new Date());
   loadVoiceSettings();
-  loadTarget(formatDate(new Date()));
   loadSummary(formatDate(new Date()));
   loadFoods();
   loadMeals(formatDate(new Date()));
@@ -291,7 +290,7 @@ async function loadProfile() {
     const profile = await api('/users/profile');
     $('#profile-weight').value = profile.weightKg ?? '';
     $('#profile-height').value = profile.heightCm ?? '';
-    $('#profile-age').value = profile.age ?? '';
+    $('#profile-birthdate').value = profile.birthDate ?? '';
     $('#profile-gender').value = profile.gender ?? 'male';
     $('#profile-activity').value = profile.activityLevel ?? 'sedentary';
     $('#profile-message').textContent = '';
@@ -305,7 +304,7 @@ async function handleSaveProfile(e) {
   const body = {
     weightKg: parseFloat($('#profile-weight').value),
     heightCm: parseFloat($('#profile-height').value),
-    age: parseInt($('#profile-age').value, 10),
+    birthDate: $('#profile-birthdate').value,
     gender: $('#profile-gender').value,
     activityLevel: $('#profile-activity').value,
   };
@@ -634,7 +633,6 @@ function refreshDashboard() {
   if (dashboardSection.classList.contains('hidden')) return;
   renderCurrentUser();
   const date = $('#summary-date').value;
-  loadTarget($('#target-date').value);
   loadSummary(date);
   loadFoods($('#food-search').value);
   loadMeals(date);
@@ -693,7 +691,10 @@ async function init() {
     const expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';
     event.currentTarget.setAttribute('aria-expanded', String(!expanded));
     $('#settings-section').classList.toggle('hidden', expanded);
-    if (!expanded) await loadProfile();
+    if (!expanded) {
+      await loadProfile();
+      await loadTarget($('#target-date').value);
+    }
   });
 
   $('#summary-date').addEventListener('change', (e) => {

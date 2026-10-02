@@ -565,12 +565,8 @@ button {
   margin-bottom: 0;
 }
 
-.area-target {
-  order: 1;
-}
-
 .area-summary {
-  order: 2;
+  order: 1;
 }
 
 .area-add-meal {

@@ -66,7 +66,7 @@ describe('Static frontend', () => {
     const hrefs = [...res.text.matchAll(/class="mobile-nav-link"[^>]*href="#([^"]+)"|href="#([^"]+)" class="mobile-nav-link"/g)].map(
       (m) => m[1] || m[2],
     );
-    expect(hrefs).toEqual(['summary-section', 'meals-section', 'add-meal-section', 'target-section', 'foods-section']);
+    expect(hrefs).toEqual(['summary-section', 'meals-section', 'add-meal-section', 'foods-section']);
     for (const id of hrefs) {
       expect(res.text).toContain(`id="${id}"`);
     }
@@ -96,7 +96,9 @@ describe('Static frontend', () => {
 
     expect(html.text).toContain('id="profile-form"');
     expect(html.text).toContain('id="profile-weight"');
+    expect(html.text).toContain('id="profile-birthdate"');
     expect(html.text).toContain('id="profile-activity"');
+    expect(html.text).toContain('id="target-section"');
     expect(html.text).toContain('id="target-suggestions"');
     expect(html.text).toContain('id="target-use-previous"');
     expect(html.text).toContain('id="target-use-tdee"');
