@@ -64,8 +64,12 @@
     "fat": "Fat",
     "fiber": "Fiber",
     "salt": "Salt",
+    "saturated": "Sat. fat",
+    "sugar": "Sugar",
     "progress": "{{calories}} / {{target}} kcal ({{pct}}%)",
     "macroValue": "{{consumed}} / {{target}} g",
+    "macroNoTarget": "{{consumed}} g",
+    "expandHint": "Tap to see all nutrients",
     "noTarget": "Set a daily target to see progress."
   },
   "meals": {
@@ -91,6 +95,8 @@
     "fatPct": "Fat %",
     "fiber": "Fiber (g)",
     "salt": "Salt max (g)",
+    "saturated": "Saturated fat max (g)",
+    "sugar": "Sugar max (g)",
     "set": "Set target",
     "updated": "Target updated",
     "display": "Current target: {{calories}} kcal",

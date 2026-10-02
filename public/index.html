@@ -65,6 +65,8 @@
             <label><span data-i18n="target.fatPct">Fat %</span> <input type="number" id="target-fat-pct" min="0" max="100" step="1" /></label>
             <label><span data-i18n="target.fiber">Fiber (g)</span> <input type="number" id="target-fiber" min="0" step="1" /></label>
             <label><span data-i18n="target.salt">Salt max (g)</span> <input type="number" id="target-salt" min="0" step="0.1" /></label>
+            <label><span data-i18n="target.saturated">Saturated fat max (g)</span> <input type="number" id="target-saturated" min="0" step="1" /></label>
+            <label><span data-i18n="target.sugar">Sugar max (g)</span> <input type="number" id="target-sugar" min="0" step="1" /></label>
             <button type="submit" class="btn-primary" data-i18n="target.set">Set target</button>
           </form>
           <div id="target-suggestions" class="target-suggestions hidden">
@@ -134,9 +136,15 @@
                 <div><strong data-i18n="summary.fiber">Fiber</strong><span id="total-fiber">0 g</span></div>
                 <div><strong data-i18n="summary.salt">Salt</strong><span id="total-salt">0 g</span></div>
               </div>
-              <div class="progress-bar"><div id="progress-fill"></div></div>
-              <p id="progress-text" class="muted"></p>
-              <div id="macro-progress" class="macro-progress hidden"></div>
+              <div id="progress-area" class="progress-area" role="button" tabindex="0" aria-expanded="false">
+                <div class="progress-bar" id="progress-collapsed"><div id="progress-fill"></div></div>
+                <div id="macro-progress" class="macro-progress">
+                  <div id="macro-col-left" class="macro-col"></div>
+                  <div id="macro-col-right" class="macro-col"></div>
+                </div>
+                <p id="progress-text" class="muted"></p>
+                <span class="expand-hint" data-i18n="summary.expandHint">tap to see all nutrients</span>
+              </div>
             </section>
 
             <section id="meals-section" class="card area-meals">

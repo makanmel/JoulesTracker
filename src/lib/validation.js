@@ -51,6 +51,8 @@ export const dailyTargetSchema = z.object({
   fatPct: z.number().min(0).max(100).nullish(),
   fiberGrams: optionalNonNegative,
   saltGrams: optionalNonNegative,
+  sugarGrams: optionalNonNegative,
+  saturatedFatGrams: optionalNonNegative,
 });
 
 export const profileSchema = z.object({

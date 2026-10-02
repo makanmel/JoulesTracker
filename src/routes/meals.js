@@ -35,6 +35,8 @@ function roundTotals(totals) {
     fat: round1(totals.fat),
     fiber: round1(totals.fiber),
     salt: round1(totals.salt),
+    sugar: round1(totals.sugar),
+    saturatedFat: round1(totals.saturatedFat),
   };
 }
 
@@ -66,9 +68,11 @@ router.get('/', async (req, res, next) => {
         acc.fat += meal.food.fatPer100g * ratio;
         acc.fiber += meal.food.fiberPer100g * ratio;
         acc.salt += meal.food.saltPer100g * ratio;
+        acc.sugar += meal.food.sugarPer100g * ratio;
+        acc.saturatedFat += meal.food.saturatedFatPer100g * ratio;
         return acc;
       },
-      { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, salt: 0 }
+      { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, salt: 0, sugar: 0, saturatedFat: 0 }
     );
 
     res.json({

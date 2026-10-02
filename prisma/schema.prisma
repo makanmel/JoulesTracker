@@ -82,8 +82,10 @@ model DailyTarget {
   proteinPct Float?
   carbsPct   Float?
   fatPct     Float?
-  fiberGrams Float?
-  saltGrams  Float?
+  fiberGrams         Float?
+  saltGrams          Float?
+  sugarGrams         Float?
+  saturatedFatGrams  Float?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
