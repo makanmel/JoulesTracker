@@ -22,6 +22,17 @@ const tabRegister = $('#tab-register');
 const toast = $('#toast');
 const serverNotice = $('#server-notice');
 
+function removeCredentialsFromUrl() {
+  const url = new URL(window.location.href);
+  const containedCredentials = url.searchParams.has('email') || url.searchParams.has('password');
+  if (!containedCredentials) return;
+  url.searchParams.delete('email');
+  url.searchParams.delete('password');
+  window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+}
+
+removeCredentialsFromUrl();
+
 let accessToken = localStorage.getItem('joulesToken');
 let currentUserEmail = null;
 

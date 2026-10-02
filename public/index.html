@@ -105,15 +105,15 @@
           <button type="button" id="tab-register" class="tab" data-i18n="auth.register">Register</button>
         </div>
 
-        <form id="login-form" class="auth-form">
-          <label><span data-i18n="auth.email">Email</span> <input type="email" name="email" required /></label>
-          <label><span data-i18n="auth.password">Password</span> <input type="password" name="password" required /></label>
+        <form id="login-form" class="auth-form" method="post">
+          <label><span data-i18n="auth.email">Email</span> <input type="email" name="email" autocomplete="username" required /></label>
+          <label><span data-i18n="auth.password">Password</span> <input type="password" name="password" autocomplete="current-password" required /></label>
           <button type="submit" class="btn-primary" data-i18n="auth.login">Login</button>
         </form>
 
-        <form id="register-form" class="auth-form hidden">
-          <label><span data-i18n="auth.email">Email</span> <input type="email" name="email" required /></label>
-          <label><span data-i18n="auth.password">Password</span> <input type="password" name="password" minlength="8" required /></label>
+        <form id="register-form" class="auth-form hidden" method="post">
+          <label><span data-i18n="auth.email">Email</span> <input type="email" name="email" autocomplete="username" required /></label>
+          <label><span data-i18n="auth.password">Password</span> <input type="password" name="password" autocomplete="new-password" minlength="8" required /></label>
           <button type="submit" class="btn-primary" data-i18n="auth.register">Register</button>
         </form>
       </section>
