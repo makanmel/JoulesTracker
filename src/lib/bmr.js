@@ -12,6 +12,7 @@ const ACTIVITY_MULTIPLIERS = {
 };
 
 export function ageFromBirthDate(birthDate, now = new Date()) {
+  if (!birthDate) return null;
   const d = new Date(birthDate);
   if (Number.isNaN(d.getTime()) || d > now) return null;
   let age = now.getFullYear() - d.getFullYear();
