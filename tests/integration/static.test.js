@@ -31,9 +31,11 @@ describe('Static frontend', () => {
     const [page, styles] = await Promise.all([request(app).get('/index.html'), request(app).get('/styles.css')]);
 
     expect(page.text.match(/class="section-icon"/g)).toHaveLength(5);
-    for (const section of ['summary', 'target', 'add-meal', 'meals', 'foods']) {
+    for (const section of ['summary', 'target', 'add-meal', 'meals']) {
       expect(page.text).toMatch(new RegExp(`id="${section}-section"[\\s\\S]*?<svg class="section-icon"`));
     }
+    // foods picker merged into the add-meal card
+    expect(page.text).toMatch(/foods-header[\s\S]*?<svg class="section-icon"/);
     expect(styles.text).toContain('.section-icon');
     expect(styles.text).toContain('--section-accent');
     expect(styles.text).toContain('radial-gradient');
