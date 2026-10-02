@@ -485,12 +485,8 @@ async function loadSummary(date) {
   try {
     const data = await api(`/meals?date=${encodeURIComponent(date)}`);
     const totals = data.totals;
-<<<<<<< HEAD
-=======
     $('#total-calories').textContent = `${totals.calories.toFixed(1)} kcal`;
     $('#total-protein').textContent = `${totals.protein.toFixed(1)} g`;
-    $('#total-carbs').textContent = `${totals.carbs.toFixed(1)} g`;
->>>>>>> a57caa3 (fix: restore calories summary card)
     $('#total-fat').textContent = `${totals.fat.toFixed(1)} g`;
     $('#total-carbs').textContent = `${totals.carbs.toFixed(1)} g`;
 
