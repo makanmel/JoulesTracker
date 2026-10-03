@@ -135,6 +135,23 @@ describe('Static frontend', () => {
     expect(styles.text).toMatch(/\.summary-grid \{[^}]*grid-template-columns: repeat\(4, 1fr\);/);
   });
 
+  it('uses a two-row meal form with the summary date and persistent meal type', async () => {
+    const [page, script, styles] = await Promise.all([
+      request(app).get('/index.html'),
+      request(app).get('/app.js'),
+      request(app).get('/styles.css'),
+    ]);
+
+    expect(page.text).toMatch(/id="meal-form"[\s\S]*?meal-form-primary-row[\s\S]*?meal-food-field[\s\S]*?meal-quantity-field/);
+    expect(page.text).toMatch(/meal-form-secondary-row[\s\S]*?meal-type-field[\s\S]*?type="submit"/);
+    expect(page.text).not.toContain('id="meal-date"');
+    expect(script.text).toContain("mealDate: $('#summary-date').value");
+    expect(script.text).toContain("const MEAL_TYPE_KEY = 'joulesMealType'");
+    expect(script.text).toContain("$('#meal-type').value = body.mealType");
+    expect(styles.text).toContain('.meal-quantity-field');
+    expect(styles.text).toContain('flex: 0 0 112px;');
+  });
+
   it('prevents authentication credentials from being submitted or retained in URLs', async () => {
     const [page, script] = await Promise.all([request(app).get('/index.html'), request(app).get('/app.js')]);
 

@@ -9,6 +9,7 @@ const WAKE_RETRY_DELAY_MS = 3000;
 const WAKE_RETRY_LIMIT = 15;
 const AI_PROVIDER_KEY = 'joulesAiProvider';
 const AI_API_KEY_KEY = 'joulesAiApiKey';
+const MEAL_TYPE_KEY = 'joulesMealType';
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -119,11 +120,21 @@ function loadVoiceSettings() {
   if (apiKeyInput) apiKeyInput.value = apiKey;
 }
 
+function loadMealTypePreference() {
+  const mealType = localStorage.getItem(MEAL_TYPE_KEY);
+  const select = $('#meal-type');
+  if (mealType && select.querySelector(`option[value="${mealType}"]`)) select.value = mealType;
+}
+
 function saveVoiceSettings(e) {
   e.preventDefault();
   localStorage.setItem(AI_PROVIDER_KEY, $('#voice-provider').value);
   localStorage.setItem(AI_API_KEY_KEY, $('#voice-api-key').value.trim());
   showToast(t('voice.settingsSaved'));
+}
+
+function saveMealTypePreference() {
+  localStorage.setItem(MEAL_TYPE_KEY, $('#meal-type').value);
 }
 
 function setToken(token) {
@@ -143,7 +154,7 @@ function showDashboard(email) {
   $('#user-area').classList.remove('hidden');
   renderCurrentUser();
   $('#summary-date').value = formatDate(new Date());
-  $('#meal-date').value = formatDate(new Date());
+  loadMealTypePreference();
   loadVoiceSettings();
   loadSummary(formatDate(new Date()));
   loadFoods();
@@ -744,14 +755,14 @@ async function handleCreateMeal(e) {
   const body = {
     foodId: $('#meal-food').value,
     quantityGrams: parseFloat($('#meal-quantity').value),
-    mealDate: $('#meal-date').value,
+    mealDate: $('#summary-date').value,
     mealType: $('#meal-type').value,
   };
   try {
     await api('/meals', { method: 'POST', body: JSON.stringify(body) });
     showToast(t('meals.added'));
     e.target.reset();
-    $('#meal-date').value = body.mealDate;
+    $('#meal-type').value = body.mealType;
     const date = $('#summary-date').value;
     loadSummary(date);
     loadMeals(date);
