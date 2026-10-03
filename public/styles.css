@@ -494,6 +494,10 @@ button {
   padding: 6px 8px;
   text-align: center;
   --metric-fill: 0%;
+  --metric-color: var(--muted);
+}
+
+.summary-grid .summary-metric.ok {
   --metric-color: #22c55e;
 }
 
