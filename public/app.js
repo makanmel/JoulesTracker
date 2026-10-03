@@ -232,9 +232,20 @@ async function loadFoods(query = '') {
     select.innerHTML = `<option value="">${t('addMeal.select')}</option>`;
     data.items.forEach((food) => {
       const per100g = t('foods.per100g', { calories: food.caloriesPer100g });
+      const nutrients = t('meals.nutrients', {
+        protein: (food.proteinPer100g ?? 0).toFixed(1),
+        fat: (food.fatPer100g ?? 0).toFixed(1),
+        carbs: (food.carbsPer100g ?? 0).toFixed(1),
+      });
       const li = document.createElement('li');
       li.className = 'list-item selectable';
-      li.innerHTML = `<span>${escapeHtml(foodLabel(food))}</span><span class="muted">${escapeHtml(per100g)}</span>`;
+      li.innerHTML = `
+        <div>
+          ${escapeHtml(foodLabel(food))}<br />
+          <span class="muted">${escapeHtml(per100g)}</span><br />
+          <span class="muted">${escapeHtml(nutrients)}</span>
+        </div>
+      `;
       li.addEventListener('click', () => {
         $('#meal-food').value = food.id;
         $('#meal-quantity').focus();
