@@ -513,12 +513,13 @@ async function loadSummary(date) {
     const proteinTarget = caloriesTarget > 0 && targetData.proteinPct > 0 ? (targetData.proteinPct / 100) * caloriesTarget / 4 : null;
     const fatTarget = caloriesTarget > 0 && targetData.fatPct > 0 ? (targetData.fatPct / 100) * caloriesTarget / 9 : null;
     const carbsTarget = caloriesTarget > 0 && targetData.carbsPct > 0 ? (targetData.carbsPct / 100) * caloriesTarget / 4 : null;
-    $('#total-calories').textContent = summaryMetricText('summary.calories', totals.calories, caloriesTarget);
-    $('#total-protein').textContent = summaryMetricText('summary.protein', totals.protein, proteinTarget);
-    $('#total-fat').textContent = summaryMetricText('summary.fat', totals.fat, fatTarget);
-    $('#total-carbs').textContent = summaryMetricText('summary.carbs', totals.carbs, carbsTarget);
-    $('#progress-text').textContent = caloriesTarget > 0 ? '' : t('summary.noTarget');
-    renderMacroProgress(totals, targetData);
+    renderSummaryMetric('#total-calories', 'summary.calories', totals.calories, caloriesTarget);
+    renderSummaryMetric('#total-protein', 'summary.protein', totals.protein, proteinTarget);
+    renderSummaryMetric('#total-fat', 'summary.fat', totals.fat, fatTarget);
+    renderSummaryMetric('#total-carbs', 'summary.carbs', totals.carbs, carbsTarget);
+    renderSummaryMetric('#total-salt', 'summary.salt', totals.salt, targetData.saltGrams);
+    renderSummaryMetric('#total-saturated-fat', 'summary.saturated', totals.saturatedFat, targetData.saturatedFatGrams);
+    renderSummaryMetric('#total-sugar', 'summary.sugar', totals.sugar, targetData.sugarGrams);
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -532,57 +533,26 @@ function summaryMetricText(labelKey, consumed, target) {
   return `${t(labelKey)}: ${consumedText} / ${targetText} (${pct}%)`;
 }
 
+function renderSummaryMetric(selector, labelKey, consumed, target) {
+  const label = $(selector);
+  const metric = label.parentElement;
+  label.textContent = summaryMetricText(labelKey, consumed, target);
+  metric.classList.remove('ok', 'warn', 'over');
+  if (!(target > 0)) {
+    metric.style.setProperty('--metric-fill', '0%');
+    return;
+  }
+  const ratio = consumed / target;
+  metric.classList.add(ratioClass(ratio, false));
+  metric.style.setProperty('--metric-fill', `${Math.min(ratio * 100, 100)}%`);
+}
+
 // Nutrient progress classes: upper-bound nutrients (kcal, protein, carbs, fat, salt)
 // are green at/below target, orange up to 120%, red beyond. Fiber is a minimum goal:
 // green when reached, orange otherwise.
 function ratioClass(ratio, isMinGoal) {
   if (isMinGoal) return ratio >= 0.9 ? 'ok' : 'warn';
   return ratio <= 1 ? 'ok' : ratio <= 1.2 ? 'warn' : 'over';
-}
-
-function macroRow(entry) {
-  const row = document.createElement('div');
-  row.className = 'macro-row';
-  const unit = entry.unit === 'kcal' ? 'kcal' : 'g';
-  const consumed = `${entry.consumed.toFixed(1)}`;
-  let cls = '';
-  let targetText = '–';
-  if (entry.target > 0) {
-    const ratio = entry.consumed / entry.target;
-    cls = ratioClass(ratio, entry.minGoal);
-    targetText = entry.target.toFixed(0);
-  }
-  const pct = entry.target > 0 ? Math.min((entry.consumed / entry.target) * 100, 100) : 0;
-  row.innerHTML = `
-    <span class="macro-label">${t(entry.labelKey)}</span>
-    <span class="macro-consumed ${cls}">${consumed}</span>
-    <span class="macro-target">${targetText} ${unit}</span>
-    <span class="macro-pct ${cls}">${pct}%</span>
-  `;
-  return row;
-}
-
-function renderMacroProgress(totals, targetData) {
-  const kcal = targetData.targetCalories;
-  const left = [];
-  const right = [];
-
-  left.push({ labelKey: 'summary.calories', consumed: totals.calories, target: kcal, unit: 'kcal' });
-  left.push({ labelKey: 'summary.protein', consumed: totals.protein, target: kcal > 0 && targetData.proteinPct > 0 ? (targetData.proteinPct / 100) * kcal / 4 : null });
-  left.push({ labelKey: 'summary.fat', consumed: totals.fat, target: kcal > 0 && targetData.fatPct > 0 ? (targetData.fatPct / 100) * kcal / 9 : null });
-  left.push({ labelKey: 'summary.carbs', consumed: totals.carbs, target: kcal > 0 && targetData.carbsPct > 0 ? (targetData.carbsPct / 100) * kcal / 4 : null });
-
-  right.push({ labelKey: 'summary.fiber', consumed: totals.fiber, target: targetData.fiberGrams, minGoal: true });
-  right.push({ labelKey: 'summary.salt', consumed: totals.salt, target: targetData.saltGrams });
-  right.push({ labelKey: 'summary.saturated', consumed: totals.saturatedFat, target: targetData.saturatedFatGrams });
-  right.push({ labelKey: 'summary.sugar', consumed: totals.sugar, target: targetData.sugarGrams });
-
-  const leftCol = $('#macro-col-left');
-  const rightCol = $('#macro-col-right');
-  leftCol.innerHTML = '';
-  rightCol.innerHTML = '';
-  left.forEach((entry) => leftCol.appendChild(macroRow(entry)));
-  right.forEach((entry) => rightCol.appendChild(macroRow(entry)));
 }
 
 async function loadMeals(date) {
@@ -841,18 +811,6 @@ async function init() {
     const date = $('#summary-date').value;
     loadSummary(date);
     loadMeals(date);
-  });
-  const progressArea = $('#progress-area');
-  const toggleProgress = () => {
-    const expanded = progressArea.classList.toggle('expanded');
-    progressArea.setAttribute('aria-expanded', String(expanded));
-  };
-  progressArea.addEventListener('click', toggleProgress);
-  progressArea.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleProgress();
-    }
   });
 
   $('#meal-form').addEventListener('submit', handleCreateMeal);

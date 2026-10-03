@@ -119,25 +119,26 @@ describe('Static frontend', () => {
     expect(uk.body.voice.settingsTitle).toBe('Голосовий ввід');
   });
 
-  it('serves a compact two-row summary with expanded-only progress bars', async () => {
+  it('serves seven always-visible summary metrics with proportional colored fills', async () => {
     const [page, script, styles] = await Promise.all([
       request(app).get('/index.html'),
       request(app).get('/app.js'),
       request(app).get('/styles.css'),
     ]);
 
-    const summary = page.text.match(/<div id="summary" class="summary-grid">([\s\S]*?)<\/div>\s*<div id="progress-area"/);
+    const summary = page.text.match(/<div id="summary" class="summary-grid">([\s\S]*?)<\/div>\s*<\/section>/);
     expect(summary).not.toBeNull();
     expect(summary[1]).toContain('class="summary-metric summary-calories"');
-    expect(summary[1].match(/class="summary-metric/g)).toHaveLength(4);
-    expect(page.text).not.toContain('id="progress-collapsed"');
-    expect(page.text).not.toContain('id="progress-fill"');
-    expect(script.text).toContain('function summaryMetricText');
-    expect(script.text).toContain("labelKey: 'summary.calories'");
-    expect(script.text).not.toMatch(/^(<<<<<<<|=======|>>>>>>>)/m);
-    expect(styles.text).toMatch(/\.summary-grid \{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
-    expect(styles.text).toMatch(/\.summary-grid \.summary-calories \{[^}]*grid-column: 1 \/ -1;/);
-    expect(styles.text).toContain('.progress-area.expanded .macro-progress');
+    expect(summary[1].match(/class="summary-metric/g)).toHaveLength(7);
+    expect(summary[1]).toContain('id="total-salt"');
+    expect(summary[1]).toContain('id="total-saturated-fat"');
+    expect(summary[1]).toContain('id="total-sugar"');
+    expect(page.text).not.toContain('id="progress-area"');
+    expect(page.text).not.toContain('id="macro-progress"');
+    expect(script.text).toContain('function renderSummaryMetric');
+    expect(script.text).toContain("metric.style.setProperty('--metric-fill'");
+    expect(styles.text).toContain('.summary-grid .summary-metric::before');
+    expect(styles.text).toContain('width: var(--metric-fill);');
   });
 
   it('prevents authentication credentials from being submitted or retained in URLs', async () => {
@@ -150,5 +151,12 @@ describe('Static frontend', () => {
     expect(script.text).toContain("url.searchParams.delete('email')");
     expect(script.text).toContain("url.searchParams.delete('password')");
     expect(script.text).toContain('window.history.replaceState');
+  });
+
+  it('serves a meal form with a primary row containing the food field and a secondary row containing the type and quantity fields', async () => {
+    const page = await request(app).get('/index.html');
+
+    expect(page.text).toMatch(/id="meal-form"[\s\S]*?meal-form-primary-row[\s\S]*?meal-food-field[\s\S]*?<\/div>/);
+    expect(page.text).toMatch(/meal-form-secondary-row[\s\S]*?meal-type-field[\s\S]*?meal-quantity-field[\s\S]*?type="submit"/);
   });
 });
