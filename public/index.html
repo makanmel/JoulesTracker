@@ -167,23 +167,26 @@
                 <ul id="voice-results" class="list"></ul>
                 <button type="button" id="voice-confirm" class="btn-primary" data-i18n="voice.confirm">Add selected</button>
               </form>
-              <form id="meal-form" class="grid-form">
-                <label><span data-i18n="addMeal.food">Food</span>
-                  <select id="meal-food" required>
-                    <option value="" data-i18n="addMeal.loading">Loading foods...</option>
-                  </select>
-                </label>
-                <label><span data-i18n="addMeal.quantity">Quantity (g)</span> <input type="number" id="meal-quantity" min="1" step="1" required /></label>
-                <label><span data-i18n="addMeal.date">Date</span> <input type="date" id="meal-date" required /></label>
-                <label><span data-i18n="addMeal.type">Type</span>
-                  <select id="meal-type" required>
-                    <option value="breakfast" data-i18n="meals.types.breakfast">Breakfast</option>
-                    <option value="lunch" data-i18n="meals.types.lunch">Lunch</option>
-                    <option value="dinner" data-i18n="meals.types.dinner">Dinner</option>
-                    <option value="snack" data-i18n="meals.types.snack">Snack</option>
-                  </select>
-                </label>
-                <button type="submit" class="btn-primary" data-i18n="addMeal.submit">Add meal</button>
+              <form id="meal-form" class="meal-form">
+                <div class="meal-form-row meal-form-primary-row">
+                  <label class="meal-food-field"><span data-i18n="addMeal.food">Food</span>
+                    <select id="meal-food" required>
+                      <option value="" data-i18n="addMeal.loading">Loading foods...</option>
+                    </select>
+                  </label>
+                  <label class="meal-quantity-field"><span data-i18n="addMeal.quantity">Quantity (g)</span> <input type="number" id="meal-quantity" min="1" step="1" required /></label>
+                </div>
+                <div class="meal-form-row meal-form-secondary-row">
+                  <label class="meal-type-field"><span data-i18n="addMeal.type">Type</span>
+                    <select id="meal-type" required>
+                      <option value="breakfast" data-i18n="meals.types.breakfast">Breakfast</option>
+                      <option value="lunch" data-i18n="meals.types.lunch">Lunch</option>
+                      <option value="dinner" data-i18n="meals.types.dinner">Dinner</option>
+                      <option value="snack" data-i18n="meals.types.snack">Snack</option>
+                    </select>
+                  </label>
+                  <button type="submit" class="btn-primary" data-i18n="addMeal.submit">Add meal</button>
+                </div>
               </form>
 
               <div class="section-header foods-header">
