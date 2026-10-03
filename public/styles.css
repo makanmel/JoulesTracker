@@ -482,6 +482,10 @@ button {
   margin: 12px 0;
 }
 
+.summary-grid .summary-calories {
+  grid-column: 1 / -1;
+}
+
 .summary-grid .summary-metric {
   position: relative;
   display: flex;
