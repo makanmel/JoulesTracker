@@ -128,13 +128,12 @@
                 <button type="button" id="refresh-summary" class="btn-secondary" data-i18n="summary.refresh">Refresh</button>
               </form>
               <div id="summary" class="summary-grid">
-                <div><strong data-i18n="summary.calories">Calories</strong><span id="total-calories">0 kcal</span></div>
-                <div><strong data-i18n="summary.protein">Protein</strong><span id="total-protein">0 g</span></div>
-                <div><strong data-i18n="summary.fat">Fat</strong><span id="total-fat">0 g</span></div>
-                <div><strong data-i18n="summary.carbs">Carbs</strong><span id="total-carbs">0 g</span></div>
+                <div class="summary-metric summary-calories"><span id="total-calories">Calories: 0</span></div>
+                <div class="summary-metric"><span id="total-protein">Protein: 0</span></div>
+                <div class="summary-metric"><span id="total-fat">Fat: 0</span></div>
+                <div class="summary-metric"><span id="total-carbs">Carbs: 0</span></div>
               </div>
               <div id="progress-area" class="progress-area" role="button" tabindex="0" aria-expanded="false">
-                <div class="progress-bar" id="progress-collapsed"><div id="progress-fill"></div></div>
                 <div id="macro-progress" class="macro-progress">
                   <div id="macro-col-left" class="macro-col"></div>
                   <div id="macro-col-right" class="macro-col"></div>

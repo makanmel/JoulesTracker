@@ -507,34 +507,29 @@ async function loadSummary(date) {
   try {
     const data = await api(`/meals?date=${encodeURIComponent(date)}`);
     const totals = data.totals;
-    $('#total-calories').textContent = `${totals.calories.toFixed(1)} kcal`;
-    $('#total-protein').textContent = `${totals.protein.toFixed(1)} g`;
-    $('#total-fat').textContent = `${totals.fat.toFixed(1)} g`;
-    $('#total-carbs').textContent = `${totals.carbs.toFixed(1)} g`;
 
     const targetData = await api(`/daily-target?date=${encodeURIComponent(date)}`).catch(() => ({ targetCalories: null }));
-    const target = targetData.targetCalories;
-    const fill = $('#progress-fill');
-    const text = $('#progress-text');
-    const ratio = target && target > 0 ? totals.calories / target : null;
-    if (ratio !== null) {
-      const pct = Math.min(ratio * 100, 100);
-      fill.style.width = `${pct}%`;
-      text.textContent = t('summary.progress', {
-        calories: totals.calories.toFixed(1),
-        target,
-        pct: pct.toFixed(0),
-      });
-      fill.className = ratio <= 1 ? '' : ratio <= 1.2 ? 'warn' : 'over';
-    } else {
-      fill.style.width = '0%';
-      text.textContent = t('summary.noTarget');
-      fill.className = '';
-    }
+    const caloriesTarget = targetData.targetCalories;
+    const proteinTarget = caloriesTarget > 0 && targetData.proteinPct > 0 ? (targetData.proteinPct / 100) * caloriesTarget / 4 : null;
+    const fatTarget = caloriesTarget > 0 && targetData.fatPct > 0 ? (targetData.fatPct / 100) * caloriesTarget / 9 : null;
+    const carbsTarget = caloriesTarget > 0 && targetData.carbsPct > 0 ? (targetData.carbsPct / 100) * caloriesTarget / 4 : null;
+    $('#total-calories').textContent = summaryMetricText('summary.calories', totals.calories, caloriesTarget);
+    $('#total-protein').textContent = summaryMetricText('summary.protein', totals.protein, proteinTarget);
+    $('#total-fat').textContent = summaryMetricText('summary.fat', totals.fat, fatTarget);
+    $('#total-carbs').textContent = summaryMetricText('summary.carbs', totals.carbs, carbsTarget);
+    $('#progress-text').textContent = caloriesTarget > 0 ? '' : t('summary.noTarget');
     renderMacroProgress(totals, targetData);
   } catch (err) {
     showToast(err.message, 'error');
   }
+}
+
+function summaryMetricText(labelKey, consumed, target) {
+  const consumedText = Number(consumed.toFixed(1));
+  if (!(target > 0)) return `${t(labelKey)}: ${consumedText}`;
+  const targetText = Number(target.toFixed(1));
+  const pct = ((consumed / target) * 100).toFixed(0);
+  return `${t(labelKey)}: ${consumedText} / ${targetText} (${pct}%)`;
 }
 
 // Nutrient progress classes: upper-bound nutrients (kcal, protein, carbs, fat, salt)
@@ -561,8 +556,8 @@ function macroRow(entry) {
   row.innerHTML = `
     <span class="macro-label">${t(entry.labelKey)}</span>
     <span class="macro-consumed ${cls}">${consumed}</span>
-    <span class="progress-bar macro-bar"><span class="macro-fill ${cls}" style="width:${pct}%"></span></span>
     <span class="macro-target">${targetText} ${unit}</span>
+    <span class="macro-pct ${cls}">${pct}%</span>
   `;
   return row;
 }
@@ -572,6 +567,7 @@ function renderMacroProgress(totals, targetData) {
   const left = [];
   const right = [];
 
+  left.push({ labelKey: 'summary.calories', consumed: totals.calories, target: kcal, unit: 'kcal' });
   left.push({ labelKey: 'summary.protein', consumed: totals.protein, target: kcal > 0 && targetData.proteinPct > 0 ? (targetData.proteinPct / 100) * kcal / 4 : null });
   left.push({ labelKey: 'summary.fat', consumed: totals.fat, target: kcal > 0 && targetData.fatPct > 0 ? (targetData.fatPct / 100) * kcal / 9 : null });
   left.push({ labelKey: 'summary.carbs', consumed: totals.carbs, target: kcal > 0 && targetData.carbsPct > 0 ? (targetData.carbsPct / 100) * kcal / 4 : null });
