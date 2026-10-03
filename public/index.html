@@ -132,14 +132,9 @@
                 <div class="summary-metric"><span id="total-protein">Protein: 0</span></div>
                 <div class="summary-metric"><span id="total-fat">Fat: 0</span></div>
                 <div class="summary-metric"><span id="total-carbs">Carbs: 0</span></div>
-              </div>
-              <div id="progress-area" class="progress-area" role="button" tabindex="0" aria-expanded="false">
-                <div id="macro-progress" class="macro-progress">
-                  <div id="macro-col-left" class="macro-col"></div>
-                  <div id="macro-col-right" class="macro-col"></div>
-                </div>
-                <p id="progress-text" class="muted"></p>
-                <span class="expand-hint" data-i18n="summary.expandHint">tap to see all nutrients</span>
+                <div class="summary-metric"><span id="total-salt">Salt: 0</span></div>
+                <div class="summary-metric"><span id="total-saturated-fat">Saturated fat: 0</span></div>
+                <div class="summary-metric"><span id="total-sugar">Sugar: 0</span></div>
               </div>
             </section>
 
@@ -173,7 +168,6 @@
                       <option value="" data-i18n="addMeal.loading">Loading foods...</option>
                     </select>
                   </label>
-                  <label class="meal-quantity-field"><span data-i18n="addMeal.quantity">Quantity (g)</span> <input type="number" id="meal-quantity" min="1" step="1" required /></label>
                 </div>
                 <div class="meal-form-row meal-form-secondary-row">
                   <label class="meal-type-field"><span data-i18n="addMeal.type">Type</span>
@@ -184,6 +178,7 @@
                       <option value="snack" data-i18n="meals.types.snack">Snack</option>
                     </select>
                   </label>
+                  <label class="meal-quantity-field"><span data-i18n="addMeal.quantity">Quantity (g)</span> <input type="number" id="meal-quantity" min="1" step="1" required /></label>
                   <button type="submit" class="btn-primary" data-i18n="addMeal.submit">Add meal</button>
                 </div>
               </form>
