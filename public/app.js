@@ -534,7 +534,7 @@ function summaryMetricText(labelKey, consumed, target) {
   return `${t(labelKey)}: ${consumedText} / ${targetText} (${pct}%)`;
 }
 
-function renderSummaryMetric(selector, labelKey, consumed, target, floatingTargetPct = null) {
+function renderSummaryMetric(selector, labelKey, consumed, target, floatingTargetPct = null, isMinGoal = false) {
   const label = $(selector);
   const metric = label.parentElement;
   label.textContent = summaryMetricText(labelKey, consumed, target);
@@ -546,14 +546,16 @@ function renderSummaryMetric(selector, labelKey, consumed, target, floatingTarge
     return;
   }
   const ratio = consumed / target;
-  const cls = ratioClass(ratio);
+  const cls = ratioClass(ratio, isMinGoal);
   if (cls) metric.classList.add(cls);
   metric.style.setProperty('--metric-fill', `${Math.min(ratio * 100, 100)}%`);
 }
 
 // Nutrient progress classes: neutral while more than 5% below target,
 // green within +/-5%, yellow up to 10% above, red beyond that.
-function ratioClass(ratio) {
+// Min-goal nutrients (e.g. fiber) are green at >=95% of target, neutral below.
+function ratioClass(ratio, isMinGoal = false) {
+  if (isMinGoal) return ratio >= 0.95 ? 'ok' : '';
   if (ratio < 0.95) return '';
   if (ratio <= 1.05) return 'ok';
   return ratio <= 1.1 ? 'warn' : 'over';
