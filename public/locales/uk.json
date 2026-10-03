@@ -79,7 +79,7 @@
     "added": "Прийом їжі додано",
     "deleted": "Прийом їжі видалено",
     "entry": "{{grams}} г · {{calories}} ккал",
-    "nutrients": "Б {{protein}} г · В {{carbs}} г · Ж {{fat}} г",
+    "nutrients": "Б {{protein}} г · Ж {{fat}} г · В {{carbs}} г",
     "types": {
       "breakfast": "Сніданок",
       "lunch": "Обід",

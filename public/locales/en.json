@@ -79,7 +79,7 @@
     "added": "Meal added",
     "deleted": "Meal deleted",
     "entry": "{{grams}} g · {{calories}} kcal",
-    "nutrients": "P {{protein}} g · C {{carbs}} g · F {{fat}} g",
+    "nutrients": "P {{protein}} g · F {{fat}} g · C {{carbs}} g",
     "types": {
       "breakfast": "Breakfast",
       "lunch": "Lunch",
