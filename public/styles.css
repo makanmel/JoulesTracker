@@ -514,6 +514,17 @@ button {
   --metric-color: var(--danger);
 }
 
+.summary-grid .summary-metric.has-floating-target::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--floating-target, 0%);
+  width: 3px;
+  margin-left: -1.5px;
+  background: #7c3aed;
+  content: '';
+}
+
 .summary-grid span {
   position: relative;
   z-index: 1;
