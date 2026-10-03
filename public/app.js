@@ -306,11 +306,36 @@ async function importExternalFood(food) {
   }
 }
 
+let editingFoodId = null;
+
 function setFoodFormVisible(visible) {
   const form = $('#food-form');
-  if (!visible) form.reset();
+  if (!visible) {
+    form.reset();
+    editingFoodId = null;
+  }
+  $('#food-form-submit').textContent = t(editingFoodId ? 'foods.update' : 'foods.create');
   form.classList.toggle('hidden', !visible);
   if (visible) $('#food-name').focus();
+}
+
+async function startEditFood() {
+  const foodId = $('#meal-food').value;
+  if (!foodId) {
+    showToast(t('foods.selectToEdit'), 'info');
+    return;
+  }
+  try {
+    const food = await api(`/foods/${foodId}`);
+    if (food.isDefault) {
+      showToast(t('foods.editDefaultDenied'), 'error');
+      return;
+    }
+    editingFoodId = food.id;
+    prefillFoodForm(food);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
 function prefillFoodForm(food) {
@@ -344,6 +369,7 @@ async function handleBarcodeLookup(e) {
   } catch (err) {
     if (err.status === 404) {
       showToast(t('foods.barcodeNotFound'), 'error');
+      editingFoodId = null;
       prefillFoodForm({ barcode });
       return;
     }
@@ -399,11 +425,21 @@ async function handleCreateFood(e) {
     category: $('#food-category').value.trim() || null,
     barcode: $('#food-barcode').value.trim() || null,
   };
+  const wasEditing = Boolean(editingFoodId);
   try {
-    await api('/foods', { method: 'POST', body: JSON.stringify(body) });
-    showToast(t('foods.created'));
+    const saved = wasEditing
+      ? await api(`/foods/${editingFoodId}`, { method: 'PATCH', body: JSON.stringify(body) })
+      : await api('/foods', { method: 'POST', body: JSON.stringify(body) });
+    showToast(t(wasEditing ? 'foods.updated' : 'foods.created'));
     setFoodFormVisible(false);
-    loadFoods($('#food-search').value);
+    await loadFoods($('#food-search').value);
+    if (wasEditing) {
+      // Food nutrients changed - refresh meals and summary for the selected date.
+      if (saved?.id) $('#meal-food').value = saved.id;
+      const date = $('#summary-date').value;
+      loadSummary(date);
+      loadMeals(date);
+    }
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -570,10 +606,17 @@ async function loadMeals(date) {
     data.items.forEach((meal) => {
       const div = document.createElement('div');
       div.className = 'list-item';
+      const ratio = meal.quantityGrams / 100;
+      const nutrients = t('meals.nutrients', {
+        protein: (meal.food.proteinPer100g * ratio).toFixed(1),
+        carbs: (meal.food.carbsPer100g * ratio).toFixed(1),
+        fat: (meal.food.fatPer100g * ratio).toFixed(1),
+      });
       div.innerHTML = `
         <div>
           <strong>${t(`meals.types.${meal.mealType}`)}</strong>: ${meal.food.name}<br />
-          <span class="muted">${t('meals.entry', { grams: meal.quantityGrams, calories: meal.calculatedCalories.toFixed(1) })}</span>
+          <span class="muted">${t('meals.entry', { grams: meal.quantityGrams, calories: meal.calculatedCalories.toFixed(1) })}</span><br />
+          <span class="muted">${escapeHtml(nutrients)}</span>
         </div>
         <button class="btn-danger" data-id="${meal.id}">${t('meals.delete')}</button>
       `;
@@ -743,6 +786,7 @@ async function handleCreateMeal(e) {
 function refreshDashboard() {
   if (dashboardSection.classList.contains('hidden')) return;
   renderCurrentUser();
+  if (editingFoodId) $('#food-form-submit').textContent = t('foods.update');
   const date = $('#summary-date').value;
   loadSummary(date);
   loadFoods($('#food-search').value);
@@ -821,6 +865,7 @@ async function init() {
   $('#voice-confirm').addEventListener('click', confirmVoiceResults);
   $('#voice-settings-form').addEventListener('submit', saveVoiceSettings);
   $('#food-form').addEventListener('submit', handleCreateFood);
+  $('#edit-food-btn').addEventListener('click', startEditFood);
   $('#toggle-food-form').addEventListener('click', () => setFoodFormVisible($('#food-form').classList.contains('hidden')));
   $('#cancel-food-form').addEventListener('click', () => setFoodFormVisible(false));
   const searchFoods = debounce((query) => {
