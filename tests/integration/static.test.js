@@ -137,8 +137,16 @@ describe('Static frontend', () => {
     expect(page.text).not.toContain('id="macro-progress"');
     expect(script.text).toContain('function renderSummaryMetric');
     expect(script.text).toContain("metric.style.setProperty('--metric-fill'");
+    expect(script.text).toContain('floatingTargetPct');
+    expect(script.text).toContain("metric.classList.toggle('has-floating-target'");
+    expect(script.text).toContain("metric.style.setProperty('--floating-target'");
+    expect(script.text).toMatch(/renderSummaryMetric\('#total-calories', 'summary\.calories', totals\.calories, caloriesTarget\);/);
+    expect(script.text).toMatch(/renderSummaryMetric\('#total-protein', 'summary\.protein', totals\.protein, proteinTarget, floatingTargetPct\);/);
+    expect(script.text).toMatch(/renderSummaryMetric\('#total-sugar', 'summary\.sugar', totals\.sugar, targetData\.sugarGrams, floatingTargetPct\);/);
     expect(styles.text).toContain('.summary-grid .summary-metric::before');
     expect(styles.text).toContain('width: var(--metric-fill);');
+    expect(styles.text).toContain('.summary-grid .summary-metric.has-floating-target::after');
+    expect(styles.text).toContain('left: var(--floating-target');
   });
 
   it('prevents authentication credentials from being submitted or retained in URLs', async () => {

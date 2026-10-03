@@ -513,13 +513,14 @@ async function loadSummary(date) {
     const proteinTarget = caloriesTarget > 0 && targetData.proteinPct > 0 ? (targetData.proteinPct / 100) * caloriesTarget / 4 : null;
     const fatTarget = caloriesTarget > 0 && targetData.fatPct > 0 ? (targetData.fatPct / 100) * caloriesTarget / 9 : null;
     const carbsTarget = caloriesTarget > 0 && targetData.carbsPct > 0 ? (targetData.carbsPct / 100) * caloriesTarget / 4 : null;
+    const floatingTargetPct = caloriesTarget > 0 ? Math.min((totals.calories / caloriesTarget) * 100, 100) : null;
     renderSummaryMetric('#total-calories', 'summary.calories', totals.calories, caloriesTarget);
-    renderSummaryMetric('#total-protein', 'summary.protein', totals.protein, proteinTarget);
-    renderSummaryMetric('#total-fat', 'summary.fat', totals.fat, fatTarget);
-    renderSummaryMetric('#total-carbs', 'summary.carbs', totals.carbs, carbsTarget);
-    renderSummaryMetric('#total-salt', 'summary.salt', totals.salt, targetData.saltGrams);
-    renderSummaryMetric('#total-saturated-fat', 'summary.saturated', totals.saturatedFat, targetData.saturatedFatGrams);
-    renderSummaryMetric('#total-sugar', 'summary.sugar', totals.sugar, targetData.sugarGrams);
+    renderSummaryMetric('#total-protein', 'summary.protein', totals.protein, proteinTarget, floatingTargetPct);
+    renderSummaryMetric('#total-fat', 'summary.fat', totals.fat, fatTarget, floatingTargetPct);
+    renderSummaryMetric('#total-carbs', 'summary.carbs', totals.carbs, carbsTarget, floatingTargetPct);
+    renderSummaryMetric('#total-salt', 'summary.salt', totals.salt, targetData.saltGrams, floatingTargetPct);
+    renderSummaryMetric('#total-saturated-fat', 'summary.saturated', totals.saturatedFat, targetData.saturatedFatGrams, floatingTargetPct);
+    renderSummaryMetric('#total-sugar', 'summary.sugar', totals.sugar, targetData.sugarGrams, floatingTargetPct);
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -533,11 +534,13 @@ function summaryMetricText(labelKey, consumed, target) {
   return `${t(labelKey)}: ${consumedText} / ${targetText} (${pct}%)`;
 }
 
-function renderSummaryMetric(selector, labelKey, consumed, target) {
+function renderSummaryMetric(selector, labelKey, consumed, target, floatingTargetPct = null) {
   const label = $(selector);
   const metric = label.parentElement;
   label.textContent = summaryMetricText(labelKey, consumed, target);
   metric.classList.remove('ok', 'warn', 'over');
+  metric.classList.toggle('has-floating-target', floatingTargetPct != null && target > 0);
+  metric.style.setProperty('--floating-target', `${floatingTargetPct ?? 0}%`);
   if (!(target > 0)) {
     metric.style.setProperty('--metric-fill', '0%');
     return;
