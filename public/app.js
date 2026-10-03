@@ -617,26 +617,34 @@ async function loadMeals(date) {
       return;
     }
     container.innerHTML = '';
-    data.items.forEach((meal) => {
-      const div = document.createElement('div');
-      div.className = 'list-item';
-      const ratio = meal.quantityGrams / 100;
-      const nutrients = t('meals.nutrients', {
-        protein: (meal.food.proteinPer100g * ratio).toFixed(1),
-        carbs: (meal.food.carbsPer100g * ratio).toFixed(1),
-        fat: (meal.food.fatPer100g * ratio).toFixed(1),
+    for (const mealType of ['breakfast', 'lunch', 'dinner', 'snack']) {
+      const meals = data.items.filter((meal) => meal.mealType === mealType);
+      if (meals.length === 0) continue;
+      const heading = document.createElement('h3');
+      heading.className = 'meal-group-title';
+      heading.textContent = t(`meals.types.${mealType}`);
+      container.appendChild(heading);
+      meals.forEach((meal) => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        const ratio = meal.quantityGrams / 100;
+        const nutrients = t('meals.nutrients', {
+          protein: (meal.food.proteinPer100g * ratio).toFixed(1),
+          carbs: (meal.food.carbsPer100g * ratio).toFixed(1),
+          fat: (meal.food.fatPer100g * ratio).toFixed(1),
+        });
+        div.innerHTML = `
+          <div>
+            <strong>${escapeHtml(meal.food.name)}</strong><br />
+            <span class="muted">${t('meals.entry', { grams: meal.quantityGrams, calories: meal.calculatedCalories.toFixed(1) })}</span><br />
+            <span class="muted">${escapeHtml(nutrients)}</span>
+          </div>
+          <button class="btn-danger" data-id="${meal.id}">${t('meals.delete')}</button>
+        `;
+        div.querySelector('button').addEventListener('click', () => deleteMeal(meal.id, date));
+        container.appendChild(div);
       });
-      div.innerHTML = `
-        <div>
-          <strong>${t(`meals.types.${meal.mealType}`)}</strong>: ${meal.food.name}<br />
-          <span class="muted">${t('meals.entry', { grams: meal.quantityGrams, calories: meal.calculatedCalories.toFixed(1) })}</span><br />
-          <span class="muted">${escapeHtml(nutrients)}</span>
-        </div>
-        <button class="btn-danger" data-id="${meal.id}">${t('meals.delete')}</button>
-      `;
-      div.querySelector('button').addEventListener('click', () => deleteMeal(meal.id, date));
-      container.appendChild(div);
-    });
+    }
   } catch (err) {
     showToast(err.message, 'error');
   }
