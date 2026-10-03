@@ -119,7 +119,7 @@ describe('Static frontend', () => {
     expect(uk.body.voice.settingsTitle).toBe('Голосовий ввід');
   });
 
-  it('serves four headline summary metrics including calories', async () => {
+  it('serves a compact two-row summary with expanded-only progress bars', async () => {
     const [page, script, styles] = await Promise.all([
       request(app).get('/index.html'),
       request(app).get('/app.js'),
@@ -128,28 +128,16 @@ describe('Static frontend', () => {
 
     const summary = page.text.match(/<div id="summary" class="summary-grid">([\s\S]*?)<\/div>\s*<div id="progress-area"/);
     expect(summary).not.toBeNull();
-    expect(summary[1].match(/<strong/g)).toHaveLength(4);
-    expect(summary[1]).toContain('id="total-calories"');
-    expect(script.text).toContain("$('#total-calories').textContent");
+    expect(summary[1]).toContain('class="summary-metric summary-calories"');
+    expect(summary[1].match(/class="summary-metric/g)).toHaveLength(4);
+    expect(page.text).not.toContain('id="progress-collapsed"');
+    expect(page.text).not.toContain('id="progress-fill"');
+    expect(script.text).toContain('function summaryMetricText');
+    expect(script.text).toContain("labelKey: 'summary.calories'");
     expect(script.text).not.toMatch(/^(<<<<<<<|=======|>>>>>>>)/m);
-    expect(styles.text).toMatch(/\.summary-grid \{[^}]*grid-template-columns: repeat\(4, 1fr\);/);
-  });
-
-  it('uses a two-row meal form with the summary date and persistent meal type', async () => {
-    const [page, script, styles] = await Promise.all([
-      request(app).get('/index.html'),
-      request(app).get('/app.js'),
-      request(app).get('/styles.css'),
-    ]);
-
-    expect(page.text).toMatch(/id="meal-form"[\s\S]*?meal-form-primary-row[\s\S]*?meal-food-field[\s\S]*?meal-quantity-field/);
-    expect(page.text).toMatch(/meal-form-secondary-row[\s\S]*?meal-type-field[\s\S]*?type="submit"/);
-    expect(page.text).not.toContain('id="meal-date"');
-    expect(script.text).toContain("mealDate: $('#summary-date').value");
-    expect(script.text).toContain("const MEAL_TYPE_KEY = 'joulesMealType'");
-    expect(script.text).toContain("$('#meal-type').value = body.mealType");
-    expect(styles.text).toContain('.meal-quantity-field');
-    expect(styles.text).toContain('flex: 0 0 112px;');
+    expect(styles.text).toMatch(/\.summary-grid \{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
+    expect(styles.text).toMatch(/\.summary-grid \.summary-calories \{[^}]*grid-column: 1 \/ -1;/);
+    expect(styles.text).toContain('.progress-area.expanded .macro-progress');
   });
 
   it('prevents authentication credentials from being submitted or retained in URLs', async () => {
