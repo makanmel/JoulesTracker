@@ -175,6 +175,7 @@
     "saveSettings": "Save"
   },
   "errors": {
-    "requestFailed": "Request failed ({{status}})"
+    "requestFailed": "Request failed ({{status}})",
+    "network": "No connection - the server may still be waking up. Try again in a moment."
   }
 }

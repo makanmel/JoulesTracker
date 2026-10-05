@@ -321,6 +321,11 @@ button {
   background: var(--danger-hover);
 }
 
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .auth-form,
 .inline-form,
 .grid-form {
