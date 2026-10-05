@@ -28,6 +28,14 @@ function userPrompt(transcript, locale) {
   return `Locale: ${locale}\nTranscript: ${transcript}`;
 }
 
+// Pull the human-readable message out of a provider error body
+// (e.g. Gemini's {"error":{"message":"..."}}) and keep it short.
+function providerErrorMessage(text) {
+  const message = String(text).match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/)?.[1];
+  const clean = (message ? message.replace(/\\(.)/g, '$1') : String(text)).trim();
+  return clean.length > 200 ? `${clean.slice(0, 200)}...` : clean;
+}
+
 async function callOpenAI({ apiKey, transcript, locale, fetchImpl }) {
   const response = await fetchImpl(OPENAI_API_URL, {
     method: 'POST',
@@ -48,7 +56,7 @@ async function callOpenAI({ apiKey, transcript, locale, fetchImpl }) {
 
   if (!response.ok) {
     const text = await response.text().catch(() => 'unknown');
-    throw new AppError(`AI parsing failed (${response.status}): ${text}`, 502);
+    throw new AppError(`AI parsing failed (${response.status}): ${providerErrorMessage(text)}`, 502);
   }
 
   const data = await response.json().catch(() => null);
@@ -60,7 +68,7 @@ async function listGeminiModels({ apiKey, fetchImpl }) {
   const response = await fetchImpl(url, { headers: { 'Content-Type': 'application/json' } });
   if (!response.ok) {
     const text = await response.text().catch(() => 'unknown');
-    throw new AppError(`Gemini model list failed (${response.status}): ${text}`, 502);
+    throw new AppError(`Gemini model list failed (${response.status}): ${providerErrorMessage(text)}`, 502);
   }
   const data = await response.json().catch(() => null);
   return data?.models || [];
@@ -129,10 +137,10 @@ async function callGemini({ apiKey, transcript, locale, fetchImpl }) {
       GEMINI_MODEL_CACHE.set(apiKey, [model]);
       return result.content;
     }
-    lastError = `${result.status}: ${result.text}`;
+    lastError = `${result.status}: ${providerErrorMessage(result.text)}`;
   }
 
-  throw new AppError(`AI parsing failed (404): ${lastError}`, 502);
+  throw new AppError(`AI parsing failed: ${lastError}`, 502);
 }
 
 export async function parseVoiceInput({
