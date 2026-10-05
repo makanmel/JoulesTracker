@@ -79,11 +79,14 @@ function fetchWithRetry(url, options, attempt = 0) {
 }
 
 async function api(path, options = {}) {
+  const { wakeNotice = true, ...fetchOptions } = options;
   const url = `${API_BASE}${path}`;
-  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  const headers = { 'Content-Type': 'application/json', ...fetchOptions.headers };
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-  startServerNotice();
-  const res = await fetchWithRetry(url, { ...options, headers }).finally(finishServerNotice);
+  if (wakeNotice) startServerNotice();
+  const res = await fetchWithRetry(url, { ...fetchOptions, headers }).finally(() => {
+    if (wakeNotice) finishServerNotice();
+  });
   if (res.status === 204) return null;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -754,7 +757,7 @@ async function parseVoiceTranscript(transcript) {
         'X-AI-Key': apiKey,
       };
     }
-    const data = await api('/foods/parse-voice', options);
+    const data = await api('/foods/parse-voice', { ...options, wakeNotice: false });
     lastVoiceResults = data.items || [];
     renderVoiceResults();
   } catch (err) {
