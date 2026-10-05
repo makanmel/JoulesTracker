@@ -37,10 +37,16 @@ removeCredentialsFromUrl();
 let accessToken = localStorage.getItem('joulesToken');
 let currentUserEmail = null;
 
+let toastTimer = null;
+
 function showToast(message, type = 'info') {
   toast.textContent = message;
   toast.className = `toast ${type}`;
-  setTimeout(() => toast.classList.add('hidden'), 3000);
+  clearTimeout(toastTimer);
+  toastTimer = null;
+  if (type !== 'error') {
+    toastTimer = setTimeout(() => toast.classList.add('hidden'), 3000);
+  }
 }
 
 let pendingFetches = 0;
@@ -933,6 +939,7 @@ async function init() {
   }, SEARCH_DEBOUNCE_MS);
   $('#food-search').addEventListener('input', (e) => searchFoods(e.target.value));
   $('#barcode-form').addEventListener('submit', handleBarcodeLookup);
+  toast.addEventListener('click', () => toast.classList.add('hidden'));
 
   if (accessToken) {
     try {
