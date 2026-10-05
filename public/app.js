@@ -229,7 +229,8 @@ async function handleRegister(e) {
 
 async function loadFoods(query = '') {
   try {
-    const data = await api(`/foods?q=${encodeURIComponent(query)}&limit=100`);
+    const mealType = $('#meal-type').value;
+    const data = await api(`/foods?q=${encodeURIComponent(query)}&limit=100&mealType=${encodeURIComponent(mealType)}`);
     const list = $('#food-list');
     const select = $('#meal-food');
     list.innerHTML = '';
@@ -667,6 +668,7 @@ async function deleteMeal(id, date) {
     showToast(t('meals.deleted'));
     loadSummary(date);
     loadMeals(date);
+    loadFoods($('#food-search').value);
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -811,6 +813,7 @@ async function handleCreateMeal(e) {
     const date = $('#summary-date').value;
     loadSummary(date);
     loadMeals(date);
+    loadFoods($('#food-search').value);
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -886,6 +889,11 @@ async function init() {
   $('#summary-date').addEventListener('change', (e) => {
     loadSummary(e.target.value);
     loadMeals(e.target.value);
+  });
+
+  $('#meal-type').addEventListener('change', () => {
+    saveMealTypePreference();
+    loadFoods($('#food-search').value);
   });
   $('#refresh-summary').addEventListener('click', () => {
     const date = $('#summary-date').value;

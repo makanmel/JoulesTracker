@@ -23,22 +23,45 @@ router.get('/', async (req, res, next) => {
     const q = req.query.q || '';
     const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
     const offset = parseInt(req.query.offset, 10) || 0;
+    const mealType = req.query.mealType || null;
 
     const where = {
       AND: [{ name: { contains: q, mode: 'insensitive' } }, visibleTo(req.user.id)],
     };
 
+    // With mealType, fetch all matches and sort by usage in JS before paging.
     const [items, total] = await Promise.all([
       prisma.food.findMany({
         where,
-        take: limit,
-        skip: offset,
         orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
+        ...(mealType ? {} : { take: limit, skip: offset }),
       }),
       prisma.food.count({ where }),
     ]);
 
-    res.json({ items, total, limit, offset });
+    let page = items;
+    if (mealType) {
+      const usage = await prisma.mealEntry.groupBy({
+        by: ['foodId'],
+        where: { userId: req.user.id, mealType },
+        _count: { foodId: true },
+        _max: { createdAt: true },
+      });
+      const usageByFood = new Map(usage.map((u) => [u.foodId, u]));
+      items.sort((a, b) => {
+        const ua = usageByFood.get(a.id);
+        const ub = usageByFood.get(b.id);
+        if (!ua && !ub) return 0;
+        if (!ua) return 1;
+        if (!ub) return -1;
+        const byCount = ub._count.foodId - ua._count.foodId;
+        if (byCount !== 0) return byCount;
+        return (ub._max.createdAt?.getTime() ?? 0) - (ua._max.createdAt?.getTime() ?? 0);
+      });
+      page = items.slice(offset, offset + limit);
+    }
+
+    res.json({ items: page, total, limit, offset });
   } catch (err) {
     next(err);
   }

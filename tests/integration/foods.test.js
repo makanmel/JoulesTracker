@@ -78,6 +78,36 @@ describe('Food endpoints', () => {
     expect(res.status).toBe(403);
   });
 
+  it('sorts foods by usage for the given meal type', async () => {
+    const a = await request(app)
+      .post('/api/v1/foods')
+      .set('Authorization', authHeader)
+      .send({ name: 'Sort A', caloriesPer100g: 100 });
+    const b = await request(app)
+      .post('/api/v1/foods')
+      .set('Authorization', authHeader)
+      .send({ name: 'Sort B', caloriesPer100g: 100 });
+
+    const addMeal = (foodId, mealType) =>
+      request(app)
+        .post('/api/v1/meals')
+        .set('Authorization', authHeader)
+        .send({ foodId, quantityGrams: 100, mealDate: '2026-01-02', mealType });
+
+    await addMeal(a.body.id, 'lunch');
+    await addMeal(b.body.id, 'lunch');
+    await addMeal(b.body.id, 'lunch');
+    await addMeal(a.body.id, 'breakfast');
+
+    const lunch = await request(app).get('/api/v1/foods?mealType=lunch').set('Authorization', authHeader);
+    const lunchNames = lunch.body.items.map((f) => f.name);
+    expect(lunchNames.indexOf('Sort B')).toBeLessThan(lunchNames.indexOf('Sort A'));
+
+    const breakfast = await request(app).get('/api/v1/foods?mealType=breakfast').set('Authorization', authHeader);
+    const breakfastNames = breakfast.body.items.map((f) => f.name);
+    expect(breakfastNames.indexOf('Sort A')).toBeLessThan(breakfastNames.indexOf('Sort B'));
+  });
+
   it('deletes a custom food when unused', async () => {
     const food = await request(app)
       .post('/api/v1/foods')
