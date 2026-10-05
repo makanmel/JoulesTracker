@@ -253,6 +253,10 @@ async function loadFoods(query = '') {
         protein: macro('p', food.proteinPer100g),
         fat: macro('f', food.fatPer100g),
         carbs: macro('c', food.carbsPer100g),
+        fiber: num(food.fiberPer100g),
+        salt: num(food.saltPer100g),
+        saturated: num(food.saturatedFatPer100g),
+        sugar: num(food.sugarPer100g),
       });
       const li = document.createElement('li');
       li.className = 'list-item selectable';
