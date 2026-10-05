@@ -686,6 +686,11 @@ button {
   min-width: 0;
 }
 
+.list-item .btn-danger {
+  align-self: stretch;
+  min-height: 0;
+}
+
 .meal-group-title {
   margin: 12px 0 4px;
   font-size: 0.85rem;

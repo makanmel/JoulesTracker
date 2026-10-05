@@ -78,8 +78,7 @@
     "delete": "Delete",
     "added": "Meal added",
     "deleted": "Meal deleted",
-    "entry": "{{grams}} g · {{calories}} kcal",
-    "nutrients": "P {{protein}} g · F {{fat}} g · C {{carbs}} g",
+    "entry": "{{grams}} g · {{kcal}} · {{protein}} · {{fat}} · {{carbs}} ({{fiber}} · {{salt}} · {{saturated}} · {{sugar}})",
     "types": {
       "breakfast": "Breakfast",
       "lunch": "Lunch",
@@ -135,6 +134,7 @@
     "editDefaultDenied": "Default foods can't be edited",
     "search": "Search foods...",
     "per100g": "{{calories}} kcal/100g",
+    "details": "{{kcal}} · {{protein}} · {{fat}} · {{carbs}}",
     "saturatedFat": "Saturated fat / 100g",
     "sugar": "Sugar / 100g",
     "fiber": "Fiber / 100g",
