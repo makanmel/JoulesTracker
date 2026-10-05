@@ -391,7 +391,7 @@ button:disabled {
 
 .meal-type-field {
   flex: 1 1 0;
-  min-width: 96px;
+  min-width: 112px;
 }
 
 .meal-quantity-field {

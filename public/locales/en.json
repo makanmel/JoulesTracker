@@ -111,7 +111,7 @@
     "food": "Food",
     "loading": "Loading foods...",
     "select": "Select food...",
-    "quantity": "Quantity, g",
+    "quantity": "Grams",
     "date": "Date",
     "type": "Type",
     "submit": "Add meal"
