@@ -385,13 +385,17 @@ button:disabled {
   min-width: 0;
 }
 
-.meal-food-field,
-.meal-type-field {
+.meal-food-field {
   flex: 1 1 auto;
 }
 
+.meal-type-field {
+  flex: 1 1 0;
+  min-width: 96px;
+}
+
 .meal-quantity-field {
-  flex: 0 0 88px;
+  flex: 0 0 72px;
 }
 
 .meal-form-secondary-row .btn-primary {

@@ -64,6 +64,17 @@ describe('mealSchema', () => {
     ).toThrow();
   });
 
+  it('rejects quantity over 10000 g', () => {
+    expect(() =>
+      mealSchema.parse({
+        foodId: '550e8400-e29b-41d4-a716-446655440000',
+        quantityGrams: 10001,
+        mealDate: '2026-09-21',
+        mealType: 'lunch',
+      })
+    ).toThrow();
+  });
+
   it('rejects malformed date', () => {
     expect(() =>
       mealSchema.parse({
