@@ -34,7 +34,7 @@ export const foodUpdateSchema = foodSchema.partial();
 
 export const mealSchema = z.object({
   foodId: z.string().uuid(),
-  quantityGrams: z.number().positive(),
+  quantityGrams: z.number().positive().max(10000),
   mealDate: z.string().regex(dateRegex),
   mealType: z.enum(mealTypes),
 });
