@@ -66,12 +66,15 @@ function finishServerNotice() {
 // fetch rejects (TypeError) when the Render instance is cold-starting; retry until it wakes.
 function fetchWithRetry(url, options, attempt = 0) {
   return fetch(url, options).catch(async (err) => {
-    if (!(err instanceof TypeError) || attempt >= WAKE_RETRY_LIMIT) throw err;
-    clearTimeout(wakeNoticeTimer);
-    wakeNoticeTimer = null;
-    serverNotice.classList.remove('hidden');
-    await sleep(WAKE_RETRY_DELAY_MS);
-    return fetchWithRetry(url, options, attempt + 1);
+    if (err instanceof TypeError && attempt < WAKE_RETRY_LIMIT) {
+      clearTimeout(wakeNoticeTimer);
+      wakeNoticeTimer = null;
+      serverNotice.classList.remove('hidden');
+      await sleep(WAKE_RETRY_DELAY_MS);
+      return fetchWithRetry(url, options, attempt + 1);
+    }
+    if (err instanceof TypeError) throw new Error(t('errors.network'));
+    throw err;
   });
 }
 
@@ -190,6 +193,8 @@ function switchTab(tab) {
 async function handleLogin(e) {
   e.preventDefault();
   const form = e.target;
+  const submit = form.querySelector('button[type="submit"]');
+  submit.disabled = true;
   try {
     const data = await api('/auth/login', {
       method: 'POST',
@@ -204,12 +209,16 @@ async function handleLogin(e) {
     form.reset();
   } catch (err) {
     showToast(err.message, 'error');
+  } finally {
+    submit.disabled = false;
   }
 }
 
 async function handleRegister(e) {
   e.preventDefault();
   const form = e.target;
+  const submit = form.querySelector('button[type="submit"]');
+  submit.disabled = true;
   try {
     const data = await api('/auth/register', {
       method: 'POST',
@@ -224,6 +233,8 @@ async function handleRegister(e) {
     form.reset();
   } catch (err) {
     showToast(err.message, 'error');
+  } finally {
+    submit.disabled = false;
   }
 }
 
