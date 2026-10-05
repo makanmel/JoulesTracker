@@ -105,6 +105,8 @@ function escapeHtml(value) {
 
 const num = (value) => Number((value ?? 0).toFixed(1));
 
+const macro = (cls, value) => `<span class="macro macro-${cls}">${num(value)}</span>`;
+
 function foodLabel(food) {
   return food.brand ? `${food.name} · ${food.brand}` : food.name;
 }
@@ -235,17 +237,17 @@ async function loadFoods(query = '') {
     data.items.filter((food) => !food.isDefault).forEach((food) => {
       const per100g = t('foods.per100g', { calories: food.caloriesPer100g });
       const details = t('foods.details', {
-        kcal: num(food.caloriesPer100g),
-        protein: num(food.proteinPer100g),
-        fat: num(food.fatPer100g),
-        carbs: num(food.carbsPer100g),
+        kcal: macro('kcal', food.caloriesPer100g),
+        protein: macro('p', food.proteinPer100g),
+        fat: macro('f', food.fatPer100g),
+        carbs: macro('c', food.carbsPer100g),
       });
       const li = document.createElement('li');
       li.className = 'list-item selectable';
       li.innerHTML = `
         <div>
           ${escapeHtml(foodLabel(food))}<br />
-          <span class="muted">${escapeHtml(details)}</span>
+          <span class="muted">${details}</span>
         </div>
       `;
       li.addEventListener('click', () => {
@@ -634,10 +636,10 @@ async function loadMeals(date) {
         const scaled = (per100g) => num((per100g ?? 0) * ratio);
         const entry = t('meals.entry', {
           grams: meal.quantityGrams,
-          kcal: num(meal.calculatedCalories),
-          protein: scaled(meal.food.proteinPer100g),
-          fat: scaled(meal.food.fatPer100g),
-          carbs: scaled(meal.food.carbsPer100g),
+          kcal: macro('kcal', meal.calculatedCalories),
+          protein: macro('p', (meal.food.proteinPer100g ?? 0) * ratio),
+          fat: macro('f', (meal.food.fatPer100g ?? 0) * ratio),
+          carbs: macro('c', (meal.food.carbsPer100g ?? 0) * ratio),
           fiber: scaled(meal.food.fiberPer100g),
           salt: scaled(meal.food.saltPer100g),
           saturated: scaled(meal.food.saturatedFatPer100g),
@@ -646,7 +648,7 @@ async function loadMeals(date) {
         div.innerHTML = `
           <div>
             <strong>${escapeHtml(meal.food.name)}</strong><br />
-            <span class="muted">${escapeHtml(entry)}</span>
+            <span class="muted">${entry}</span>
           </div>
           <button class="btn-danger" data-id="${meal.id}">${t('meals.delete')}</button>
         `;
