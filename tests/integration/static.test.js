@@ -119,7 +119,7 @@ describe('Static frontend', () => {
     expect(uk.body.voice.settingsTitle).toBe('Голосовий ввід');
   });
 
-  it('serves seven always-visible summary metrics with proportional colored fills', async () => {
+  it('serves eight always-visible summary metrics with proportional colored fills', async () => {
     const [page, script, styles] = await Promise.all([
       request(app).get('/index.html'),
       request(app).get('/app.js'),
@@ -129,7 +129,8 @@ describe('Static frontend', () => {
     const summary = page.text.match(/<div id="summary" class="summary-grid">([\s\S]*?)<\/div>\s*<\/section>/);
     expect(summary).not.toBeNull();
     expect(summary[1]).toContain('class="summary-metric summary-calories"');
-    expect(summary[1].match(/class="summary-metric/g)).toHaveLength(7);
+    expect(summary[1].match(/class="summary-metric/g)).toHaveLength(8);
+    expect(summary[1]).toContain('id="total-fiber"');
     expect(summary[1]).toContain('id="total-salt"');
     expect(summary[1]).toContain('id="total-saturated-fat"');
     expect(summary[1]).toContain('id="total-sugar"');
