@@ -715,6 +715,26 @@ button {
   font-size: 0.9rem;
 }
 
+.macro {
+  font-variant-numeric: tabular-nums;
+}
+
+.macro-kcal {
+  color: var(--text);
+}
+
+.macro-p {
+  color: #2563eb;
+}
+
+.macro-f {
+  color: #d97706;
+}
+
+.macro-c {
+  color: #16a34a;
+}
+
 .hidden {
   display: none !important;
 }
