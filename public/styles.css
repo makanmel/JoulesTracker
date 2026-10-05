@@ -477,13 +477,9 @@ button {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin: 12px 0;
-}
-
-.summary-grid .summary-calories {
-  grid-column: 1 / -1;
 }
 
 .summary-grid .summary-metric {
@@ -836,7 +832,7 @@ button {
   }
 
   .summary-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .inline-form {

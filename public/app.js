@@ -565,6 +565,7 @@ async function loadSummary(date) {
     renderSummaryMetric('#total-protein', 'summary.protein', totals.protein, proteinTarget, floatingTargetPct);
     renderSummaryMetric('#total-fat', 'summary.fat', totals.fat, fatTarget, floatingTargetPct);
     renderSummaryMetric('#total-carbs', 'summary.carbs', totals.carbs, carbsTarget, floatingTargetPct);
+    renderSummaryMetric('#total-fiber', 'summary.fiber', totals.fiber, targetData.fiberGrams, floatingTargetPct, true);
     renderSummaryMetric('#total-salt', 'summary.salt', totals.salt, targetData.saltGrams, floatingTargetPct);
     renderSummaryMetric('#total-saturated-fat', 'summary.saturated', totals.saturatedFat, targetData.saturatedFatGrams, floatingTargetPct);
     renderSummaryMetric('#total-sugar', 'summary.sugar', totals.sugar, targetData.sugarGrams, floatingTargetPct);
