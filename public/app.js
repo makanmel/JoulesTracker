@@ -103,6 +103,8 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
+const num = (value) => Number((value ?? 0).toFixed(1));
+
 function foodLabel(food) {
   return food.brand ? `${food.name} · ${food.brand}` : food.name;
 }
@@ -232,18 +234,18 @@ async function loadFoods(query = '') {
     select.innerHTML = `<option value="">${t('addMeal.select')}</option>`;
     data.items.forEach((food) => {
       const per100g = t('foods.per100g', { calories: food.caloriesPer100g });
-      const nutrients = t('meals.nutrients', {
-        protein: (food.proteinPer100g ?? 0).toFixed(1),
-        fat: (food.fatPer100g ?? 0).toFixed(1),
-        carbs: (food.carbsPer100g ?? 0).toFixed(1),
+      const details = t('foods.details', {
+        kcal: num(food.caloriesPer100g),
+        protein: num(food.proteinPer100g),
+        fat: num(food.fatPer100g),
+        carbs: num(food.carbsPer100g),
       });
       const li = document.createElement('li');
       li.className = 'list-item selectable';
       li.innerHTML = `
         <div>
           ${escapeHtml(foodLabel(food))}<br />
-          <span class="muted">${escapeHtml(per100g)}</span><br />
-          <span class="muted">${escapeHtml(nutrients)}</span>
+          <span class="muted">${escapeHtml(details)}</span>
         </div>
       `;
       li.addEventListener('click', () => {
@@ -629,16 +631,22 @@ async function loadMeals(date) {
         const div = document.createElement('div');
         div.className = 'list-item';
         const ratio = meal.quantityGrams / 100;
-        const nutrients = t('meals.nutrients', {
-          protein: (meal.food.proteinPer100g * ratio).toFixed(1),
-          carbs: (meal.food.carbsPer100g * ratio).toFixed(1),
-          fat: (meal.food.fatPer100g * ratio).toFixed(1),
+        const scaled = (per100g) => num((per100g ?? 0) * ratio);
+        const entry = t('meals.entry', {
+          grams: meal.quantityGrams,
+          kcal: num(meal.calculatedCalories),
+          protein: scaled(meal.food.proteinPer100g),
+          fat: scaled(meal.food.fatPer100g),
+          carbs: scaled(meal.food.carbsPer100g),
+          fiber: scaled(meal.food.fiberPer100g),
+          salt: scaled(meal.food.saltPer100g),
+          saturated: scaled(meal.food.saturatedFatPer100g),
+          sugar: scaled(meal.food.sugarPer100g),
         });
         div.innerHTML = `
           <div>
             <strong>${escapeHtml(meal.food.name)}</strong><br />
-            <span class="muted">${t('meals.entry', { grams: meal.quantityGrams, calories: meal.calculatedCalories.toFixed(1) })}</span><br />
-            <span class="muted">${escapeHtml(nutrients)}</span>
+            <span class="muted">${escapeHtml(entry)}</span>
           </div>
           <button class="btn-danger" data-id="${meal.id}">${t('meals.delete')}</button>
         `;
