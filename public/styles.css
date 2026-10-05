@@ -748,6 +748,10 @@ button:disabled {
   display: none !important;
 }
 
+.toast.error {
+  cursor: pointer;
+}
+
 .toast {
   position: fixed;
   bottom: 16px;
