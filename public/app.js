@@ -232,7 +232,7 @@ async function loadFoods(query = '') {
     const select = $('#meal-food');
     list.innerHTML = '';
     select.innerHTML = `<option value="">${t('addMeal.select')}</option>`;
-    data.items.forEach((food) => {
+    data.items.filter((food) => !food.isDefault).forEach((food) => {
       const per100g = t('foods.per100g', { calories: food.caloriesPer100g });
       const details = t('foods.details', {
         kcal: num(food.caloriesPer100g),
