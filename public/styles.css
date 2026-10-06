@@ -32,6 +32,7 @@ html {
 html,
 body {
   max-width: 100%;
+  height: 100%;
   overflow-x: hidden;
 }
 
@@ -728,6 +729,20 @@ button:disabled {
 #food-search {
   width: 100%;
   margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.lists-scroll {
+  margin: 0 -8px;
+  padding: 0 8px;
+}
+
+.lists-scroll > :first-child {
+  margin-top: 0;
+}
+
+.lists-scroll > :last-child {
+  margin-bottom: 0;
 }
 
 #food-list {
@@ -1027,6 +1042,45 @@ button:disabled {
   .container {
     max-width: 1200px;
     padding: 32px 24px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  #dashboard-section:not(.hidden) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .area-meals,
+  .area-add-meal {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .area-meals .list,
+  .lists-scroll {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .area-add-meal #food-list {
+    max-height: none;
+    overflow: visible;
   }
 
   header {
@@ -1046,14 +1100,18 @@ button:disabled {
   .dashboard-grid {
     display: grid;
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-rows: minmax(0, 1fr);
     gap: 24px;
-    align-items: start;
+    align-items: stretch;
+    height: 100%;
+    min-height: 0;
   }
 
   .dashboard-col {
     display: flex;
     flex-direction: column;
     gap: 24px;
+    min-height: 0;
   }
 }
 
