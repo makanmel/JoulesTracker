@@ -137,7 +137,7 @@
     "search": "Search foods...",
     "per100g": "{{calories}} kcal/100g",
     "details": "{{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
-    "saturatedFat": "Saturated fat / 100g",
+    "saturatedFat": "Sat. fat / 100g",
     "sugar": "Sugar / 100g",
     "fiber": "Fiber / 100g",
     "salt": "Salt / 100g",
