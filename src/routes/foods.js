@@ -185,10 +185,14 @@ router.delete('/:id', async (req, res, next) => {
     if (food.isDefault || food.createdById !== req.user.id) {
       throw new AppError('Forbidden', 403);
     }
+    const mealCount = await prisma.mealEntry.count({ where: { foodId: food.id } });
+    if (mealCount > 0) {
+      throw new AppError('Food is referenced by meal entries', 409);
+    }
     await prisma.food.delete({ where: { id: req.params.id } });
     res.status(204).send();
   } catch (err) {
-    if (err.code === 'P2003') {
+    if (err.code === 'P2003' || err.code === '23001') {
       return next(new AppError('Food is referenced by meal entries', 409));
     }
     next(err);
