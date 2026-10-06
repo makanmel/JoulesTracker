@@ -14,6 +14,18 @@ const MEAL_TYPE_KEY = 'joulesMealType';
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
+const TARGET_MODE_KEYS = ['calories', 'protein', 'carbs', 'fat', 'fiber', 'salt', 'saturatedFat', 'sugar'];
+const DEFAULT_TARGET_MODES = {
+  calories: 'exact',
+  protein: 'min',
+  carbs: 'exact',
+  fat: 'exact',
+  fiber: 'min',
+  salt: 'max',
+  saturatedFat: 'max',
+  sugar: 'max',
+};
+
 const authSection = $('#auth-section');
 const dashboardSection = $('#dashboard-section');
 const loginForm = $('#login-form');
@@ -514,6 +526,8 @@ async function loadTarget(date) {
     $('#target-salt').value = data.saltGrams ?? '';
     $('#target-saturated').value = data.saturatedFatGrams ?? '';
     $('#target-sugar').value = data.sugarGrams ?? '';
+    const modes = data.modes ?? {};
+    TARGET_MODE_KEYS.forEach((metric) => setTargetMode(metric, modes[metric] ?? DEFAULT_TARGET_MODES[metric]));
     $('#target-display').textContent = data.targetCalories
       ? t('target.display', { calories: data.targetCalories })
       : t('target.none');
@@ -546,6 +560,16 @@ async function useTdeeTarget() {
   } catch (err) {
     showToast(err.message, 'error');
   }
+}
+
+function setTargetMode(metric, mode) {
+  const toggle = $(`.mode-toggle[data-metric="${metric}"]`);
+  if (!toggle) return;
+  toggle.querySelectorAll('button').forEach((btn) => {
+    const active = btn.dataset.mode === mode;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
 }
 
 // If all three macro %s are set but don't sum to 100, scale them proportionally
@@ -582,6 +606,11 @@ async function handleSetTarget(e) {
     saltGrams: optionalNumber('#target-salt'),
     sugarGrams: optionalNumber('#target-sugar'),
     saturatedFatGrams: optionalNumber('#target-saturated'),
+    modes: TARGET_MODE_KEYS.reduce((acc, metric) => {
+      const active = $(`.mode-toggle[data-metric="${metric}"] button.active`);
+      acc[metric] = active?.dataset.mode ?? DEFAULT_TARGET_MODES[metric];
+      return acc;
+    }, {}),
   };
   normalizeMacroSplit(body);
   try {
@@ -608,20 +637,21 @@ async function loadSummary(date) {
     const fatTarget = caloriesTarget > 0 && targetData.fatPct > 0 ? (targetData.fatPct / 100) * caloriesTarget / 9 : null;
     const carbsTarget = caloriesTarget > 0 && targetData.carbsPct > 0 ? (targetData.carbsPct / 100) * caloriesTarget / 4 : null;
     const floatingTargetPct = caloriesTarget > 0 ? Math.min((totals.calories / caloriesTarget) * 100, 100) : null;
-    renderSummaryMetric('#total-calories', 'summary.calories', totals.calories, caloriesTarget);
-    renderSummaryMetric('#total-protein', 'summary.protein', totals.protein, proteinTarget, floatingTargetPct);
-    renderSummaryMetric('#total-fat', 'summary.fat', totals.fat, fatTarget, floatingTargetPct);
-    renderSummaryMetric('#total-carbs', 'summary.carbs', totals.carbs, carbsTarget, floatingTargetPct);
-    renderSummaryMetric('#total-fiber', 'summary.fiber', totals.fiber, targetData.fiberGrams, floatingTargetPct, true);
-    renderSummaryMetric('#total-salt', 'summary.salt', totals.salt, targetData.saltGrams, floatingTargetPct);
-    renderSummaryMetric('#total-saturated-fat', 'summary.saturated', totals.saturatedFat, targetData.saturatedFatGrams, floatingTargetPct);
-    renderSummaryMetric('#total-sugar', 'summary.sugar', totals.sugar, targetData.sugarGrams, floatingTargetPct);
+    const modes = { ...DEFAULT_TARGET_MODES, ...(targetData.modes ?? {}) };
+    renderSummaryMetric('#total-calories', 'summary.calories', totals.calories, caloriesTarget, null, modes.calories);
+    renderSummaryMetric('#total-protein', 'summary.protein', totals.protein, proteinTarget, floatingTargetPct, modes.protein);
+    renderSummaryMetric('#total-fat', 'summary.fat', totals.fat, fatTarget, floatingTargetPct, modes.fat);
+    renderSummaryMetric('#total-carbs', 'summary.carbs', totals.carbs, carbsTarget, floatingTargetPct, modes.carbs);
+    renderSummaryMetric('#total-fiber', 'summary.fiber', totals.fiber, targetData.fiberGrams, floatingTargetPct, modes.fiber);
+    renderSummaryMetric('#total-salt', 'summary.salt', totals.salt, targetData.saltGrams, floatingTargetPct, modes.salt);
+    renderSummaryMetric('#total-saturated-fat', 'summary.saturated', totals.saturatedFat, targetData.saturatedFatGrams, floatingTargetPct, modes.saturatedFat);
+    renderSummaryMetric('#total-sugar', 'summary.sugar', totals.sugar, targetData.sugarGrams, floatingTargetPct, modes.sugar);
   } catch (err) {
     showToast(err.message, 'error');
   }
 }
 
-function renderSummaryMetric(selector, labelKey, consumed, target, floatingTargetPct = null, isMinGoal = false) {
+function renderSummaryMetric(selector, labelKey, consumed, target, floatingTargetPct = null, mode = 'exact') {
   const label = $(selector);
   const metric = label.parentElement;
   label.textContent = t(labelKey);
@@ -636,19 +666,24 @@ function renderSummaryMetric(selector, labelKey, consumed, target, floatingTarge
     return;
   }
   const ratio = consumed / target;
-  const cls = ratioClass(ratio, isMinGoal);
+  const cls = ratioClass(ratio, mode);
   if (cls) metric.classList.add(cls);
   metric.style.setProperty('--metric-fill', `${Math.min(ratio * 100, 100)}%`);
 }
 
-// Nutrient progress classes: neutral while more than 5% below target,
-// green within +/-5%, yellow up to 10% above, red beyond that.
-// Min-goal nutrients (e.g. fiber) are green at >=95% of target, neutral below.
-function ratioClass(ratio, isMinGoal = false) {
-  if (isMinGoal) return ratio >= 0.95 ? 'ok' : '';
-  if (ratio < 0.95) return '';
-  if (ratio <= 1.05) return 'ok';
-  return ratio <= 1.1 ? 'warn' : 'over';
+// Nutrient progress classes by target mode:
+//   'min'   - goal: green when reached, warn when close (>=90%), neutral below
+//   'max'   - limit: neutral under 90%, warn 90-100%, red above
+//   'exact' - green within +/-5%, warn within +/-15%, red beyond
+function ratioClass(ratio, mode = 'exact') {
+  if (mode === 'min') {
+    return ratio >= 1 ? 'ok' : ratio >= 0.9 ? 'warn' : '';
+  }
+  if (mode === 'max') {
+    return ratio > 1 ? 'over' : ratio >= 0.9 ? 'warn' : '';
+  }
+  const deviation = Math.abs(ratio - 1);
+  return deviation <= 0.05 ? 'ok' : deviation <= 0.15 ? 'warn' : 'over';
 }
 
 async function loadMeals(date) {
@@ -971,6 +1006,12 @@ async function init() {
   });
 
   $('#target-form').addEventListener('submit', handleSetTarget);
+  $$('.mode-toggle').forEach((toggle) => {
+    toggle.addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-mode]');
+      if (btn) setTargetMode(toggle.dataset.metric, btn.dataset.mode);
+    });
+  });
   $('#target-use-tdee').addEventListener('click', useTdeeTarget);
   $('#profile-form').addEventListener('submit', handleSaveProfile);
   $('#settings-toggle').addEventListener('click', async (event) => {

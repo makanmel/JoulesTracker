@@ -122,6 +122,61 @@ describe('Daily target endpoints', () => {
     expect(res.body.saturatedFatGrams).toBe(20);
   });
 
+  it('stores and returns per-metric target modes', async () => {
+    await request(app)
+      .put('/api/v1/daily-target')
+      .set('Authorization', authHeader)
+      .send({
+        targetDate: '2026-09-21',
+        targetCalories: 2000,
+        modes: { protein: 'min', salt: 'max', fat: 'exact' },
+      });
+
+    const res = await request(app)
+      .get('/api/v1/daily-target?date=2026-09-21')
+      .set('Authorization', authHeader);
+
+    expect(res.status).toBe(200);
+    expect(res.body.modes).toEqual({ protein: 'min', salt: 'max', fat: 'exact' });
+  });
+
+  it('keeps existing modes when updating without them', async () => {
+    await request(app)
+      .put('/api/v1/daily-target')
+      .set('Authorization', authHeader)
+      .send({
+        targetDate: '2026-09-21',
+        targetCalories: 2000,
+        modes: { protein: 'min' },
+      });
+
+    await request(app)
+      .put('/api/v1/daily-target')
+      .set('Authorization', authHeader)
+      .send({ targetDate: '2026-09-21', targetCalories: 2100 });
+
+    const res = await request(app)
+      .get('/api/v1/daily-target?date=2026-09-21')
+      .set('Authorization', authHeader);
+
+    expect(res.status).toBe(200);
+    expect(res.body.targetCalories).toBe(2100);
+    expect(res.body.modes).toEqual({ protein: 'min' });
+  });
+
+  it('rejects invalid target modes', async () => {
+    const res = await request(app)
+      .put('/api/v1/daily-target')
+      .set('Authorization', authHeader)
+      .send({
+        targetDate: '2026-09-21',
+        targetCalories: 2000,
+        modes: { protein: 'bogus' },
+      });
+
+    expect(res.status).toBe(400);
+  });
+
   it('suggests the previous day target when present', async () => {
     await request(app)
       .put('/api/v1/daily-target')

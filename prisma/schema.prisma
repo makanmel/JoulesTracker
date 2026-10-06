@@ -87,6 +87,9 @@ model DailyTarget {
   sugarGrams         Float?
   saturatedFatGrams  Float?
 
+  // Target mode per metric: min | exact | max (JSON object, e.g. {"protein":"min","salt":"max"})
+  modes              String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
