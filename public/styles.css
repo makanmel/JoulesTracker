@@ -380,10 +380,19 @@ button:disabled {
   grid-column: auto;
 }
 
+#target-form {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
 .target-row {
   display: flex;
   align-items: flex-end;
   gap: 8px;
+}
+
+.target-row input {
+  min-width: 0;
+  width: 100%;
 }
 
 .target-row label {
@@ -1092,12 +1101,22 @@ button:disabled {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #settings-section:not(.hidden) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   #dashboard-section:not(.hidden) {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
   }
 
   .area-meals,
