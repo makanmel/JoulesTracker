@@ -103,9 +103,7 @@
     "pctNormalized": "Macro split was {{sum}}% - normalized to 100%",
     "display": "Current target: {{calories}} kcal",
     "none": "No target set",
-    "tdeeAvailable": "TDEE estimate: {{calories}} kcal (BMR {{bmr}})",
-    "usePrevious": "Use previous day",
-    "useTdee": "Use TDEE estimate"
+    "tdeeAvailable": "TDEE estimate: {{calories}} kcal (BMR {{bmr}})"
   },
   "addMeal": {
     "title": "Add Meal",

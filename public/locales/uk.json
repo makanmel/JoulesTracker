@@ -103,9 +103,7 @@
     "pctNormalized": "Розподіл макро був {{sum}}% - нормалізовано до 100%",
     "display": "Поточна ціль: {{calories}} ккал",
     "none": "Ціль не встановлено",
-    "tdeeAvailable": "Оцінка TDEE: {{calories}} ккал (BMR {{bmr}})",
-    "usePrevious": "Використати попередній день",
-    "useTdee": "Використати TDEE"
+    "tdeeAvailable": "Оцінка TDEE: {{calories}} ккал (BMR {{bmr}})"
   },
   "addMeal": {
     "title": "Додати прийом їжі",
