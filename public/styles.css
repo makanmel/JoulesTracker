@@ -105,10 +105,14 @@ h1,
 h2,
 p,
 .list-item {
+  min-width: 0;
+}
+
+p,
+.list-item {
   overflow-wrap: anywhere;
   word-break: normal;
   hyphens: auto;
-  min-width: 0;
 }
 
 header h1 {
@@ -700,7 +704,7 @@ button:disabled {
 }
 
 .list-item .btn-danger {
-  align-self: stretch;
+  align-self: center;
   min-height: 0;
   display: inline-flex;
   align-items: center;
@@ -942,10 +946,6 @@ button:disabled {
 
   .list-item {
     flex-wrap: wrap;
-  }
-
-  .list-item .btn-danger {
-    flex-basis: 100%;
   }
 
   .area-meals .list,

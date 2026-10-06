@@ -52,7 +52,7 @@
     "loggedIn": "Вхід виконано",
     "loggedOut": "Вихід виконано",
     "registered": "Реєстрацію завершено",
-    "currentUser": "Користувач: {{email}}"
+    "currentUser": "{{email}}"
   },
   "summary": {
     "title": "Підсумок за день",

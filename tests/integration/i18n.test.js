@@ -82,8 +82,8 @@ describe('Internationalization', () => {
     expect(app.text).toContain("const user = await api('/auth/me')");
     expect(app.text).toContain("t('auth.currentUser', { email: currentUserEmail })");
     expect(app.text).toMatch(/function refreshDashboard\(\) \{[\s\S]*?renderCurrentUser\(\)/);
-    expect(en.body.auth.currentUser).toBe('User: {{email}}');
-    expect(uk.body.auth.currentUser).toBe('Користувач: {{email}}');
+    expect(en.body.auth.currentUser).toBe('{{email}}');
+    expect(uk.body.auth.currentUser).toBe('{{email}}');
   });
 
   it('serves the i18n module with localStorage persistence, browser detection, and locale fallback', async () => {
