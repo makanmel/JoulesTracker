@@ -729,7 +729,8 @@ button:disabled {
 }
 
 .macro-kcal {
-  color: var(--text);
+  color: #9333ea;
+  font-weight: 700;
 }
 
 .macro-p {
@@ -742,6 +743,22 @@ button:disabled {
 
 .macro-c {
   color: #16a34a;
+}
+
+.micro-fiber {
+  color: #0d9488;
+}
+
+.micro-salt {
+  color: #64748b;
+}
+
+.micro-saturated {
+  color: #b91c1c;
+}
+
+.micro-sugar {
+  color: #db2777;
 }
 
 .hidden {

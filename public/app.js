@@ -118,6 +118,7 @@ function escapeHtml(value) {
 const num = (value) => Number((value ?? 0).toFixed(1));
 
 const macro = (cls, value) => `<span class="macro macro-${cls}">${num(value)}</span>`;
+const micro = (cls, value) => `<span class="macro micro-${cls}">${num(value)}</span>`;
 
 function foodLabel(food) {
   return food.brand ? `${food.name} · ${food.brand}` : food.name;
@@ -262,10 +263,10 @@ async function loadFoods(query = '') {
         protein: macro('p', food.proteinPer100g),
         fat: macro('f', food.fatPer100g),
         carbs: macro('c', food.carbsPer100g),
-        fiber: num(food.fiberPer100g),
-        salt: num(food.saltPer100g),
-        saturated: num(food.saturatedFatPer100g),
-        sugar: num(food.sugarPer100g),
+        fiber: micro('fiber', food.fiberPer100g),
+        salt: micro('salt', food.saltPer100g),
+        saturated: micro('saturated', food.saturatedFatPer100g),
+        sugar: micro('sugar', food.sugarPer100g),
       });
       const li = document.createElement('li');
       li.className = 'list-item selectable';
@@ -658,21 +659,20 @@ async function loadMeals(date) {
         const div = document.createElement('div');
         div.className = 'list-item';
         const ratio = meal.quantityGrams / 100;
-        const scaled = (per100g) => num((per100g ?? 0) * ratio);
         const entry = t('meals.entry', {
-          grams: meal.quantityGrams,
+          grams: num(meal.quantityGrams),
           kcal: macro('kcal', meal.calculatedCalories),
           protein: macro('p', (meal.food.proteinPer100g ?? 0) * ratio),
           fat: macro('f', (meal.food.fatPer100g ?? 0) * ratio),
           carbs: macro('c', (meal.food.carbsPer100g ?? 0) * ratio),
-          fiber: scaled(meal.food.fiberPer100g),
-          salt: scaled(meal.food.saltPer100g),
-          saturated: scaled(meal.food.saturatedFatPer100g),
-          sugar: scaled(meal.food.sugarPer100g),
+          fiber: micro('fiber', (meal.food.fiberPer100g ?? 0) * ratio),
+          salt: micro('salt', (meal.food.saltPer100g ?? 0) * ratio),
+          saturated: micro('saturated', (meal.food.saturatedFatPer100g ?? 0) * ratio),
+          sugar: micro('sugar', (meal.food.sugarPer100g ?? 0) * ratio),
         });
         div.innerHTML = `
           <div>
-            <strong>${escapeHtml(meal.food.name)}</strong><br />
+            ${escapeHtml(meal.food.name)}<br />
             <span class="muted">${entry}</span>
           </div>
           <button class="btn-danger" data-id="${meal.id}">${t('meals.delete')}</button>
