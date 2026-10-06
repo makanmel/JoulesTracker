@@ -66,9 +66,6 @@
     "salt": "Сіль",
     "saturated": "Насич. жири",
     "sugar": "Цукор",
-    "progress": "{{calories}} / {{target}} ккал ({{pct}}%)",
-    "macroValue": "{{consumed}} / {{target}} г",
-    "macroNoTarget": "{{consumed}} г",
     "expandHint": "Торкніться, щоб побачити всі нутрієнти",
     "noTarget": "Встановіть денну ціль, щоб бачити прогрес."
   },

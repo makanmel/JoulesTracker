@@ -66,9 +66,6 @@
     "salt": "Salt",
     "saturated": "Sat. fat",
     "sugar": "Sugar",
-    "progress": "{{calories}} / {{target}} kcal ({{pct}}%)",
-    "macroValue": "{{consumed}} / {{target}} g",
-    "macroNoTarget": "{{consumed}} g",
     "expandHint": "Tap to see all nutrients",
     "noTarget": "Set a daily target to see progress."
   },
