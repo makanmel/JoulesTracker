@@ -340,6 +340,12 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+#summary-date-form label {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
 .inline-form label,
 .grid-form label {
   flex: 1;
