@@ -755,6 +755,7 @@ button:disabled {
 }
 
 .list-item {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -769,11 +770,29 @@ button:disabled {
 }
 
 .list-item .btn-danger {
-  align-self: center;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
   min-height: 0;
+  padding: 0;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  opacity: 0.45;
+}
+
+.list-item .btn-danger:hover,
+.list-item .btn-danger:focus-visible {
+  opacity: 1;
+}
+
+.list-item .btn-danger .action-icon {
+  width: 14px;
+  height: 14px;
+  flex-basis: 14px;
 }
 
 .list-item.vanishing {
