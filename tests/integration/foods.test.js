@@ -120,4 +120,22 @@ describe('Food endpoints', () => {
 
     expect(res.status).toBe(204);
   });
+
+  it('returns 409 when deleting a food referenced by meals', async () => {
+    const food = await request(app)
+      .post('/api/v1/foods')
+      .set('Authorization', authHeader)
+      .send({ name: 'Referenced', caloriesPer100g: 80 });
+
+    await request(app)
+      .post('/api/v1/meals')
+      .set('Authorization', authHeader)
+      .send({ foodId: food.body.id, quantityGrams: 100, mealDate: '2026-01-03', mealType: 'lunch' });
+
+    const res = await request(app)
+      .delete(`/api/v1/foods/${food.body.id}`)
+      .set('Authorization', authHeader);
+
+    expect(res.status).toBe(409);
+  });
 });
