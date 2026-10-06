@@ -19,6 +19,10 @@ const apiLimiter = rateLimit({
 export function createApp() {
   const app = express();
 
+  // Render sits behind a proxy; trust one hop so req.ip resolves correctly
+  // and express-rate-limit stops throwing ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
+  app.set('trust proxy', 1);
+
   app.use(cors());
   app.use(express.json());
 
