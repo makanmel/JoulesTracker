@@ -913,19 +913,24 @@ button:disabled {
     align-items: stretch;
   }
 
+  .inline-form:has(.btn-icon) {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+
   .grid-form {
     grid-template-columns: 1fr;
   }
 
   .grid-form button,
-  .inline-form button,
+  .inline-form button:not(.btn-icon),
   .auth-form button,
-  .section-header button {
+  .section-header button:not(.btn-icon) {
     width: 100%;
     justify-self: stretch;
   }
 
-  .section-header button {
+  .section-header button:not(.btn-icon) {
     flex-basis: 100%;
   }
 
