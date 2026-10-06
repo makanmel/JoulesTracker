@@ -428,6 +428,18 @@ button:disabled {
   color: var(--text-on-primary);
 }
 
+.food-form-row {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.food-form-row label {
+  flex: 1;
+  min-width: 0;
+}
+
 .meal-form {
   display: flex;
   flex-direction: column;
@@ -983,6 +995,11 @@ button:disabled {
   }
 
   .inline-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .food-form-row {
     flex-direction: column;
     align-items: stretch;
   }
