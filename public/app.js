@@ -315,7 +315,7 @@ async function loadExternalFoods(query) {
   const list = $('#external-food-list');
   const q = query.trim();
   if (q.length < MIN_EXTERNAL_QUERY) {
-    list.innerHTML = `<p class="muted">${t('foods.externalHint')}</p>`;
+    list.innerHTML = '';
     return;
   }
   const seq = ++externalSearchSeq;
