@@ -24,7 +24,7 @@
           <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
           <button type="button" class="lang-btn" data-lang="uk" aria-pressed="false">UKR</button>
         </div>
-        <button type="button" id="settings-toggle" class="btn-secondary" data-i18n="settings.title" aria-expanded="false" aria-controls="settings-section">Settings</button>
+        <button type="button" id="settings-toggle" class="btn-icon" data-i18n-aria-label="settings.title" aria-label="Settings" title="Settings" aria-expanded="false" aria-controls="settings-section"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.2 2.2m9.8 9.8 2.2 2.2M4.9 19.1l2.2-2.2M16.9 7.1l2.2-2.2" /></svg></button>
       </div>
     </header>
 
@@ -125,7 +125,7 @@
               <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" /></svg><span data-i18n="summary.title">Today's Summary</span></h2>
               <form id="summary-date-form" class="inline-form">
                 <label><span data-i18n="summary.date">Date</span> <input type="date" id="summary-date" required /></label>
-                <button type="button" id="refresh-summary" class="btn-secondary" data-i18n="summary.refresh">Refresh</button>
+                <button type="button" id="refresh-summary" class="btn-icon" data-i18n-aria-label="summary.refresh" aria-label="Refresh" title="Refresh"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.9 1 6.7 2.7L21 8" /><path d="M21 3v5h-5" /></svg></button>
               </form>
               <div id="summary" class="summary-grid">
                 <div class="summary-metric summary-calories"><span id="total-calories">Calories: 0</span></div>
@@ -151,9 +151,8 @@
             <section id="add-meal-section" class="card area-add-meal">
               <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /><circle cx="12" cy="12" r="9" /></svg><span data-i18n="addMeal.title">Add Meal</span></h2>
               <div class="voice-input">
-                <button type="button" id="voice-toggle" class="btn-secondary" data-i18n="voice.start">
-                  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" /><path d="M17 11v-1a5 5 0 0 0-10 0v1" /><path d="M19 11v-1a7 7 0 0 0-14 0v1" /><path d="M12 19v3M5 22h14" /></svg>
-                  <span data-i18n="voice.start">Voice input</span>
+                <button type="button" id="voice-toggle" class="btn-icon" data-i18n-aria-label="voice.start" aria-label="Voice input" title="Voice input">
+                  <svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" /><path d="M17 11v-1a5 5 0 0 0-10 0v1" /><path d="M19 11v-1a7 7 0 0 0-14 0v1" /><path d="M12 19v3M5 22h14" /></svg>
                 </button>
                 <p id="voice-status" class="muted" data-i18n="voice.hint">Tap the microphone and say what you ate</p>
               </div>
@@ -181,13 +180,13 @@
                     </select>
                   </label>
                   <label class="meal-quantity-field"><span data-i18n="addMeal.quantity">Quantity (g)</span> <input type="number" id="meal-quantity" min="1" max="10000" step="1" required /></label>
-                  <button type="submit" class="btn-primary" data-i18n="addMeal.submit">Add meal</button>
+                  <button type="submit" class="btn-primary" data-i18n-aria-label="addMeal.submit" aria-label="Add" title="Add"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></button>
                 </div>
               </form>
 
               <div class="section-header foods-header">
                 <h3><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3v8m-3-8v5a3 3 0 0 0 6 0V3M7 11v10M16 3c3 2 4 6 4 10h-4V3Zm0 10v8" /></svg><span data-i18n="foods.title">Foods</span></h3>
-                <button type="button" id="toggle-food-form" class="btn-secondary" data-i18n="foods.new">+ New food</button>
+                <button type="button" id="toggle-food-form" class="btn-icon" data-i18n-aria-label="foods.new" aria-label="New food" title="New food"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></button>
               </div>
               <form id="food-form" class="grid-form hidden">
                 <label><span data-i18n="foods.name">Name</span> <input type="text" id="food-name" required /></label>
@@ -209,7 +208,7 @@
               </form>
               <form id="barcode-form" class="inline-form">
                 <label><span data-i18n="foods.barcode">Barcode</span> <input type="text" id="barcode-input" inputmode="numeric" pattern="[0-9]{8,14}" placeholder="4820000000000" required /></label>
-                <button type="submit" class="btn-secondary" data-i18n="foods.lookupBarcode">Look up barcode</button>
+                <button type="submit" class="btn-icon" data-i18n-aria-label="foods.lookupBarcode" aria-label="Look up barcode" title="Look up barcode"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M8 9v6M12 9v6M16 9v6" /></svg></button>
               </form>
               <input type="search" id="food-search" placeholder="Search foods..." data-i18n-placeholder="foods.search" />
               <ul id="food-list" class="list"></ul>
