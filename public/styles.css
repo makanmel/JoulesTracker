@@ -484,8 +484,10 @@ button:disabled {
 .summary-grid .summary-metric {
   position: relative;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
+  gap: 2px;
+  align-items: center;
   min-height: 32px;
   overflow: hidden;
   background: var(--bg);
@@ -494,6 +496,12 @@ button:disabled {
   text-align: center;
   --metric-fill: 0%;
   --metric-color: var(--muted);
+}
+
+.summary-grid .metric-values {
+  position: relative;
+  z-index: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .summary-grid .summary-metric.ok {

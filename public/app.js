@@ -621,18 +621,13 @@ async function loadSummary(date) {
   }
 }
 
-function summaryMetricText(labelKey, consumed, target) {
-  const consumedText = Number(consumed.toFixed(1));
-  if (!(target > 0)) return `${t(labelKey)}: ${consumedText}`;
-  const targetText = Number(target.toFixed(1));
-  const pct = ((consumed / target) * 100).toFixed(0);
-  return `${t(labelKey)}: ${consumedText} / ${targetText} (${pct}%)`;
-}
-
 function renderSummaryMetric(selector, labelKey, consumed, target, floatingTargetPct = null, isMinGoal = false) {
   const label = $(selector);
   const metric = label.parentElement;
-  label.textContent = summaryMetricText(labelKey, consumed, target);
+  label.textContent = t(labelKey);
+  const consumedText = Number(consumed.toFixed(1));
+  metric.querySelector('.metric-values').textContent =
+    target > 0 ? `${consumedText} / ${Number(target.toFixed(1))}` : `${consumedText}`;
   metric.classList.remove('ok', 'warn', 'over');
   metric.classList.toggle('has-floating-target', floatingTargetPct != null && target > 0);
   metric.style.setProperty('--floating-target', `${floatingTargetPct ?? 0}%`);
