@@ -43,6 +43,8 @@ export const mealUpdateSchema = mealSchema.partial();
 
 const optionalNonNegative = z.number().nonnegative().nullish();
 
+const targetMode = z.enum(['min', 'exact', 'max']);
+
 export const dailyTargetSchema = z.object({
   targetDate: z.string().regex(dateRegex),
   targetCalories: z.number().nonnegative(),
@@ -53,6 +55,18 @@ export const dailyTargetSchema = z.object({
   saltGrams: optionalNonNegative,
   sugarGrams: optionalNonNegative,
   saturatedFatGrams: optionalNonNegative,
+  modes: z
+    .object({
+      calories: targetMode.optional(),
+      protein: targetMode.optional(),
+      carbs: targetMode.optional(),
+      fat: targetMode.optional(),
+      fiber: targetMode.optional(),
+      salt: targetMode.optional(),
+      saturatedFat: targetMode.optional(),
+      sugar: targetMode.optional(),
+    })
+    .nullish(),
 });
 
 export const profileSchema = z.object({

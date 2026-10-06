@@ -22,6 +22,7 @@ function targetFields(target) {
     saltGrams: target?.saltGrams ?? null,
     sugarGrams: target?.sugarGrams ?? null,
     saturatedFatGrams: target?.saturatedFatGrams ?? null,
+    modes: target?.modes ? JSON.parse(target.modes) : null,
   };
 }
 
@@ -86,10 +87,11 @@ router.put('/', async (req, res, next) => {
       saltGrams: data.saltGrams ?? null,
       sugarGrams: data.sugarGrams ?? null,
       saturatedFatGrams: data.saturatedFatGrams ?? null,
+      modes: data.modes ? JSON.stringify(data.modes) : null,
     };
     const target = await prisma.dailyTarget.upsert({
       where: { userId_targetDate: { userId: req.user.id, targetDate: data.targetDate } },
-      update: fields,
+      update: data.modes === undefined ? { ...fields, modes: undefined } : fields,
       create: {
         userId: req.user.id,
         targetDate: data.targetDate,

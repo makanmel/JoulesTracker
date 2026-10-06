@@ -141,9 +141,9 @@ describe('Static frontend', () => {
     expect(script.text).toContain('floatingTargetPct');
     expect(script.text).toContain("metric.classList.toggle('has-floating-target'");
     expect(script.text).toContain("metric.style.setProperty('--floating-target'");
-    expect(script.text).toMatch(/renderSummaryMetric\('#total-calories', 'summary\.calories', totals\.calories, caloriesTarget\);/);
-    expect(script.text).toMatch(/renderSummaryMetric\('#total-protein', 'summary\.protein', totals\.protein, proteinTarget, floatingTargetPct\);/);
-    expect(script.text).toMatch(/renderSummaryMetric\('#total-sugar', 'summary\.sugar', totals\.sugar, targetData\.sugarGrams, floatingTargetPct\);/);
+    expect(script.text).toMatch(/renderSummaryMetric\('#total-calories', 'summary\.calories', totals\.calories, caloriesTarget, null, modes\.calories\);/);
+    expect(script.text).toMatch(/renderSummaryMetric\('#total-protein', 'summary\.protein', totals\.protein, proteinTarget, floatingTargetPct, modes\.protein\);/);
+    expect(script.text).toMatch(/renderSummaryMetric\('#total-sugar', 'summary\.sugar', totals\.sugar, targetData\.sugarGrams, floatingTargetPct, modes\.sugar\);/);
     expect(styles.text).toContain('.summary-grid .summary-metric::before');
     expect(styles.text).toContain('width: var(--metric-fill);');
     expect(styles.text).toContain('.summary-grid .summary-metric.has-floating-target::after');
