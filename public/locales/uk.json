@@ -78,7 +78,7 @@
     "delete": "Видалити",
     "added": "Прийом їжі додано",
     "deleted": "Прийом їжі видалено",
-    "entry": "{{grams}} г · {{kcal}} · {{protein}} · {{fat}} · {{carbs}} ({{fiber}} · {{salt}} · {{saturated}} · {{sugar}})",
+    "entry": "<strong>{{grams}} г</strong> · {{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "types": {
       "breakfast": "Сніданок",
       "lunch": "Обід",
@@ -134,7 +134,7 @@
     "editDefaultDenied": "Стандартні продукти не можна редагувати",
     "search": "Пошук продуктів...",
     "per100g": "{{calories}} ккал/100 г",
-    "details": "{{kcal}} · {{protein}} · {{fat}} · {{carbs}} ({{fiber}} · {{salt}} · {{saturated}} · {{sugar}})",
+    "details": "{{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "saturatedFat": "Насичені жири / 100 г",
     "sugar": "Цукор / 100 г",
     "fiber": "Клітковина / 100 г",
