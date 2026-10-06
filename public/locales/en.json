@@ -52,7 +52,7 @@
     "loggedIn": "Logged in",
     "loggedOut": "Logged out",
     "registered": "Registered",
-    "currentUser": "User: {{email}}"
+    "currentUser": "{{email}}"
   },
   "summary": {
     "title": "Today's Summary",
