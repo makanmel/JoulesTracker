@@ -542,23 +542,10 @@ async function loadTargetSuggestions(date) {
     const data = await api(`/daily-target/suggest?date=${encodeURIComponent(date)}`);
     const container = $('#target-suggestions');
     container.classList.toggle('hidden', !data.tdee);
-    $('#target-use-tdee').classList.toggle('hidden', !data.tdee);
+    container.textContent = data.tdee ? t('target.tdeeAvailable', { calories: data.tdee, bmr: data.bmr }) : '';
   } catch (err) {
     // suggestions are optional
     $('#target-suggestions').classList.add('hidden');
-  }
-}
-
-async function useTdeeTarget() {
-  const date = formatDate(new Date());
-  try {
-    const data = await api(`/daily-target/suggest?date=${encodeURIComponent(date)}`);
-    if (data.tdee) {
-      $('#target-calories').value = data.tdee;
-      $('#target-display').textContent = t('target.tdeeAvailable', { calories: data.tdee, bmr: data.bmr });
-    }
-  } catch (err) {
-    showToast(err.message, 'error');
   }
 }
 
@@ -1012,7 +999,6 @@ async function init() {
       if (btn) setTargetMode(toggle.dataset.metric, btn.dataset.mode);
     });
   });
-  $('#target-use-tdee').addEventListener('click', useTdeeTarget);
   $('#profile-form').addEventListener('submit', handleSaveProfile);
   $('#settings-toggle').addEventListener('click', async (event) => {
     const expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';

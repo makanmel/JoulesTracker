@@ -508,11 +508,14 @@ button:disabled {
   margin: 0;
 }
 
-.target-suggestions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+#settings-section:not(.hidden) ~ #auth-section,
+#settings-section:not(.hidden) ~ #dashboard-section {
+  display: none;
+}
+
+.form-note {
+  grid-column: 1 / -1;
+  margin: 0;
 }
 
 .voice-settings {
