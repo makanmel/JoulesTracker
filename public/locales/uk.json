@@ -137,7 +137,7 @@
     "search": "Пошук продуктів...",
     "per100g": "{{calories}} ккал/100 г",
     "details": "{{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
-    "saturatedFat": "Насичені жири / 100 г",
+    "saturatedFat": "Насич. жири / 100 г",
     "sugar": "Цукор / 100 г",
     "fiber": "Клітковина / 100 г",
     "salt": "Сіль / 100 г",
