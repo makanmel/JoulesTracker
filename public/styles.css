@@ -300,6 +300,7 @@ button {
 
 .user-area span {
   max-width: 320px;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1002,10 +1003,6 @@ button:disabled {
     flex-basis: 100%;
   }
 
-  .list-item {
-    flex-wrap: wrap;
-  }
-
   .area-meals .list,
   .area-add-meal #food-list {
     max-height: none;
@@ -1025,7 +1022,7 @@ button:disabled {
   }
 
   .header-controls {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
   }
 
