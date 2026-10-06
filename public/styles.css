@@ -268,7 +268,7 @@ button {
   cursor: pointer;
 }
 
-.btn-icon .action-icon {
+.action-icon {
   width: 20px;
   height: 20px;
   flex: 0 0 20px;
@@ -408,16 +408,6 @@ button:disabled {
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
-}
-
-.voice-input .icon {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 #voice-toggle.active {
@@ -698,6 +688,9 @@ button:disabled {
 .list-item .btn-danger {
   align-self: stretch;
   min-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .meal-group-title {
