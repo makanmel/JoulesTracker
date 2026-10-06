@@ -275,10 +275,15 @@ async function loadFoods(query = '') {
           ${escapeHtml(foodLabel(food))}<br />
           <span class="muted">${details}</span>
         </div>
+        <button type="button" class="btn-danger" aria-label="${t('foods.delete')}" title="${t('foods.delete')}"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg></button>
       `;
       li.addEventListener('click', () => {
         $('#meal-food').value = food.id;
         $('#meal-quantity').focus();
+      });
+      li.querySelector('button').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteFood(food.id);
       });
       list.appendChild(li);
 
@@ -683,6 +688,16 @@ async function loadMeals(date) {
     }
   } catch (err) {
     showToast(err.message, 'error');
+  }
+}
+
+async function deleteFood(id) {
+  try {
+    await api(`/foods/${id}`, { method: 'DELETE' });
+    showToast(t('foods.deleted'));
+    loadFoods($('#food-search').value);
+  } catch (err) {
+    showToast(err.status === 409 ? t('foods.inUse') : err.message, 'error');
   }
 }
 
