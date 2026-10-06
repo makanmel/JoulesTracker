@@ -39,13 +39,25 @@ let currentUserEmail = null;
 
 let toastTimer = null;
 
-function showToast(message, type = 'info') {
+function showToast(message, type = 'info', action = null) {
   toast.textContent = message;
   toast.className = `toast ${type}`;
+  if (action) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toast-action';
+    btn.textContent = action.label;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toast.classList.add('hidden');
+      action.onClick();
+    });
+    toast.appendChild(btn);
+  }
   clearTimeout(toastTimer);
   toastTimer = null;
   if (type !== 'error') {
-    toastTimer = setTimeout(() => toast.classList.add('hidden'), 3000);
+    toastTimer = setTimeout(() => toast.classList.add('hidden'), action ? 5000 : 3000);
   }
 }
 
@@ -283,7 +295,7 @@ async function loadFoods(query = '') {
       });
       li.querySelector('button').addEventListener('click', (e) => {
         e.stopPropagation();
-        deleteFood(food.id);
+        deleteFood(food, li);
       });
       list.appendChild(li);
 
@@ -682,7 +694,7 @@ async function loadMeals(date) {
           </div>
           <button type="button" class="btn-danger" data-id="${meal.id}" aria-label="${t('meals.delete')}" title="${t('meals.delete')}"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg></button>
         `;
-        div.querySelector('button').addEventListener('click', () => deleteMeal(meal.id, date));
+        div.querySelector('button').addEventListener('click', () => deleteMeal(meal, div, date));
         container.appendChild(div);
       });
     }
@@ -691,20 +703,71 @@ async function loadMeals(date) {
   }
 }
 
-async function deleteFood(id) {
+async function deleteFood(food, rowEl) {
+  rowEl.classList.add('vanishing');
+  await sleep(280);
   try {
-    await api(`/foods/${id}`, { method: 'DELETE' });
-    showToast(t('foods.deleted'));
+    await api(`/foods/${food.id}`, { method: 'DELETE' });
+    showToast(t('foods.deleted'), 'info', { label: t('common.undo'), onClick: () => undoFoodDelete(food) });
     loadFoods($('#food-search').value);
   } catch (err) {
+    rowEl.classList.remove('vanishing');
     showToast(err.status === 409 ? t('foods.inUse') : err.message, 'error');
   }
 }
 
-async function deleteMeal(id, date) {
+async function undoFoodDelete(food) {
   try {
-    await api(`/meals/${id}`, { method: 'DELETE' });
-    showToast(t('meals.deleted'));
+    await api('/foods', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: food.name,
+        caloriesPer100g: food.caloriesPer100g,
+        proteinPer100g: food.proteinPer100g,
+        carbsPer100g: food.carbsPer100g,
+        fatPer100g: food.fatPer100g,
+        fiberPer100g: food.fiberPer100g,
+        sugarPer100g: food.sugarPer100g,
+        saturatedFatPer100g: food.saturatedFatPer100g,
+        saltPer100g: food.saltPer100g,
+        barcode: food.barcode,
+        brand: food.brand,
+        category: food.category,
+        source: food.source || 'local',
+      }),
+    });
+    loadFoods($('#food-search').value);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function deleteMeal(meal, rowEl, date) {
+  rowEl.classList.add('vanishing');
+  await sleep(280);
+  try {
+    await api(`/meals/${meal.id}`, { method: 'DELETE' });
+    showToast(t('meals.deleted'), 'info', { label: t('common.undo'), onClick: () => undoMealDelete(meal, date) });
+    loadSummary(date);
+    loadMeals(date);
+    loadFoods($('#food-search').value);
+  } catch (err) {
+    rowEl.classList.remove('vanishing');
+    showToast(err.message, 'error');
+  }
+}
+
+async function undoMealDelete(meal, date) {
+  try {
+    await api('/meals', {
+      method: 'POST',
+      body: JSON.stringify({
+        foodId: meal.food.id,
+        quantityGrams: meal.quantityGrams,
+        mealDate: meal.mealDate || date,
+        mealType: meal.mealType,
+      }),
+    });
     loadSummary(date);
     loadMeals(date);
     loadFoods($('#food-search').value);

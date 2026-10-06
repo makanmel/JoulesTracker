@@ -693,6 +693,12 @@ button:disabled {
   justify-content: center;
 }
 
+.list-item.vanishing {
+  opacity: 0;
+  transform: translateX(16px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
 .meal-group-title {
   margin: 12px 0 4px;
   font-size: 0.85rem;
@@ -777,6 +783,17 @@ button:disabled {
 
 .toast.error {
   background: var(--danger);
+}
+
+.toast-action {
+  margin-left: 12px;
+  padding: 4px 10px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .server-notice {
