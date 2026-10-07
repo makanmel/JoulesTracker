@@ -698,7 +698,6 @@ async function loadMeals(date) {
       const sum = meals.reduce(
         (acc, meal) => {
           const ratio = meal.quantityGrams / 100;
-          acc.grams += meal.quantityGrams;
           acc.kcal += meal.calculatedCalories ?? 0;
           acc.protein += (meal.food.proteinPer100g ?? 0) * ratio;
           acc.fat += (meal.food.fatPer100g ?? 0) * ratio;
@@ -709,10 +708,9 @@ async function loadMeals(date) {
           acc.sugar += (meal.food.sugarPer100g ?? 0) * ratio;
           return acc;
         },
-        { grams: 0, kcal: 0, protein: 0, fat: 0, carbs: 0, fiber: 0, salt: 0, saturated: 0, sugar: 0 }
+        { kcal: 0, protein: 0, fat: 0, carbs: 0, fiber: 0, salt: 0, saturated: 0, sugar: 0 }
       );
-      const totals = t('meals.entry', {
-        grams: num(sum.grams),
+      const totals = t('meals.groupTotal', {
         kcal: macro('kcal', sum.kcal),
         protein: macro('p', sum.protein),
         fat: macro('f', sum.fat),
