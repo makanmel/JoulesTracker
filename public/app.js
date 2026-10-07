@@ -722,10 +722,33 @@ async function loadMeals(date) {
         saturated: micro('saturated', sum.saturated),
         sugar: micro('sugar', sum.sugar),
       });
+      const group = document.createElement('div');
+      group.className = 'meal-group collapsed';
       const heading = document.createElement('h3');
       heading.className = 'meal-group-title';
-      heading.innerHTML = `${escapeHtml(t(`meals.types.${mealType}`))} <span class="meal-group-total">${totals}</span>`;
-      container.appendChild(heading);
+      heading.setAttribute('role', 'button');
+      heading.tabIndex = 0;
+      heading.setAttribute('aria-expanded', 'false');
+      heading.innerHTML = `
+        <svg class="action-icon chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg>
+        ${escapeHtml(t(`meals.types.${mealType}`))} <span class="meal-group-total">${totals}</span>
+      `;
+      const body = document.createElement('div');
+      body.className = 'meal-group-body';
+      const toggleGroup = () => {
+        const collapsed = group.classList.toggle('collapsed');
+        heading.setAttribute('aria-expanded', String(!collapsed));
+      };
+      heading.addEventListener('click', toggleGroup);
+      heading.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleGroup();
+        }
+      });
+      group.appendChild(heading);
+      group.appendChild(body);
+      container.appendChild(group);
       meals.forEach((meal) => {
         const div = document.createElement('div');
         div.className = 'list-item';
@@ -749,7 +772,7 @@ async function loadMeals(date) {
           <button type="button" class="btn-danger" data-id="${meal.id}" aria-label="${t('meals.delete')}" title="${t('meals.delete')}"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg></button>
         `;
         div.querySelector('button').addEventListener('click', () => deleteMeal(meal, div, date));
-        container.appendChild(div);
+        body.appendChild(div);
       });
     }
   } catch (err) {

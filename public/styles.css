@@ -804,11 +804,37 @@ button:disabled {
 }
 
 .meal-group-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 12px 0 4px;
   font-size: 0.85rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  cursor: pointer;
+  user-select: none;
+}
+
+.meal-group-title:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.meal-group-title .chevron {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  transition: transform 0.2s ease;
+}
+
+.meal-group:not(.collapsed) .meal-group-title .chevron {
+  transform: rotate(90deg);
+}
+
+.meal-group.collapsed .meal-group-body {
+  display: none;
 }
 
 .meal-group-total {
