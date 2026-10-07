@@ -474,14 +474,6 @@ button:disabled {
   flex: 0 0 auto;
 }
 
-.voice-input {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
 #voice-toggle.active {
   background: var(--primary);
   color: var(--text-on-primary);
@@ -793,6 +785,16 @@ button:disabled {
   width: 14px;
   height: 14px;
   flex-basis: 14px;
+}
+
+@media (max-width: 767px) {
+  #meals-list .list-item .muted {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.8rem;
+  }
 }
 
 .list-item.vanishing {
