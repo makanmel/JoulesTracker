@@ -695,9 +695,36 @@ async function loadMeals(date) {
     for (const mealType of ['breakfast', 'lunch', 'dinner', 'snack']) {
       const meals = data.items.filter((meal) => meal.mealType === mealType);
       if (meals.length === 0) continue;
+      const sum = meals.reduce(
+        (acc, meal) => {
+          const ratio = meal.quantityGrams / 100;
+          acc.grams += meal.quantityGrams;
+          acc.kcal += meal.calculatedCalories ?? 0;
+          acc.protein += (meal.food.proteinPer100g ?? 0) * ratio;
+          acc.fat += (meal.food.fatPer100g ?? 0) * ratio;
+          acc.carbs += (meal.food.carbsPer100g ?? 0) * ratio;
+          acc.fiber += (meal.food.fiberPer100g ?? 0) * ratio;
+          acc.salt += (meal.food.saltPer100g ?? 0) * ratio;
+          acc.saturated += (meal.food.saturatedFatPer100g ?? 0) * ratio;
+          acc.sugar += (meal.food.sugarPer100g ?? 0) * ratio;
+          return acc;
+        },
+        { grams: 0, kcal: 0, protein: 0, fat: 0, carbs: 0, fiber: 0, salt: 0, saturated: 0, sugar: 0 }
+      );
+      const totals = t('meals.entry', {
+        grams: num(sum.grams),
+        kcal: macro('kcal', sum.kcal),
+        protein: macro('p', sum.protein),
+        fat: macro('f', sum.fat),
+        carbs: macro('c', sum.carbs),
+        fiber: micro('fiber', sum.fiber),
+        salt: micro('salt', sum.salt),
+        saturated: micro('saturated', sum.saturated),
+        sugar: micro('sugar', sum.sugar),
+      });
       const heading = document.createElement('h3');
       heading.className = 'meal-group-title';
-      heading.textContent = t(`meals.types.${mealType}`);
+      heading.innerHTML = `${escapeHtml(t(`meals.types.${mealType}`))} <span class="meal-group-total">(${totals})</span>`;
       container.appendChild(heading);
       meals.forEach((meal) => {
         const div = document.createElement('div');
