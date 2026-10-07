@@ -724,7 +724,7 @@ async function loadMeals(date) {
       });
       const heading = document.createElement('h3');
       heading.className = 'meal-group-title';
-      heading.innerHTML = `${escapeHtml(t(`meals.types.${mealType}`))} <span class="meal-group-total">(${totals})</span>`;
+      heading.innerHTML = `${escapeHtml(t(`meals.types.${mealType}`))} <span class="meal-group-total">${totals}</span>`;
       container.appendChild(heading);
       meals.forEach((meal) => {
         const div = document.createElement('div');
