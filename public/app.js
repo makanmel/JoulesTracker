@@ -653,7 +653,17 @@ function renderSummaryMetric(selector, labelKey, consumed, target, floatingTarge
     return;
   }
   const ratio = consumed / target;
-  const cls = ratioClass(ratio, mode);
+  // Evaluate modes against the calorie-paced budget (the purple marker), not
+  // the full-day target — otherwise early-day progress always reads as 'over'.
+  // With no pace reference (calories tile), 'exact' degrades to 'max'; with
+  // pace 0 (nothing eaten) metrics stay neutral.
+  const pace = floatingTargetPct == null ? null : floatingTargetPct / 100;
+  let cls = '';
+  if (pace > 0) {
+    cls = ratioClass(ratio / pace, mode);
+  } else if (pace === null) {
+    cls = ratioClass(ratio, mode === 'exact' ? 'max' : mode);
+  }
   if (cls) metric.classList.add(cls);
   metric.style.setProperty('--metric-fill', `${Math.min(ratio * 100, 100)}%`);
 }
