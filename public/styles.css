@@ -837,6 +837,12 @@ button:disabled {
   display: none;
 }
 
+.meal-group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .meal-group-total {
   font-weight: normal;
   text-transform: none;
