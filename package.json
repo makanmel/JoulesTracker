@@ -5,6 +5,7 @@
   "type": "module",
   "main": "src/server.js",
   "scripts": {
+    "predev": "prisma generate",
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "test": "vitest run",
