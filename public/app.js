@@ -828,17 +828,14 @@ function toggleVoiceInput() {
   }
   voiceRecognition = recognition;
   voiceRecognition.listening = true;
-  $('#voice-status').textContent = t('voice.listening');
   $('#voice-toggle').classList.add('active');
 
   recognition.onresult = async (event) => {
     const transcript = event.results[0][0].transcript;
-    $('#voice-status').textContent = transcript;
     await parseVoiceTranscript(transcript);
   };
 
   recognition.onerror = (event) => {
-    $('#voice-status').textContent = t('voice.error');
     showToast(t('voice.error'), 'error');
     voiceRecognition = null;
     $('#voice-toggle').classList.remove('active');
@@ -854,7 +851,7 @@ function toggleVoiceInput() {
 
 async function parseVoiceTranscript(transcript) {
   try {
-    $('#voice-status').textContent = t('voice.parsing');
+    showToast(t('voice.parsing'), 'info');
     const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
     const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
     const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
@@ -872,7 +869,6 @@ async function parseVoiceTranscript(transcript) {
     lastVoiceResults = data.items || [];
     renderVoiceResults();
   } catch (err) {
-    $('#voice-status').textContent = err.message;
     showToast(err.message, 'error');
   }
 }
@@ -881,7 +877,7 @@ function renderVoiceResults() {
   const container = $('#voice-results-form');
   const list = $('#voice-results');
   if (!lastVoiceResults.length) {
-    $('#voice-status').textContent = t('voice.empty');
+    showToast(t('voice.empty'), 'info');
     container.classList.add('hidden');
     return;
   }
@@ -898,7 +894,6 @@ function renderVoiceResults() {
     list.appendChild(li);
   });
   container.classList.remove('hidden');
-  $('#voice-status').textContent = t('voice.review');
 }
 
 async function confirmVoiceResults() {
@@ -919,7 +914,6 @@ async function confirmVoiceResults() {
     }
     showToast(t('voice.added'));
     $('#voice-results-form').classList.add('hidden');
-    $('#voice-status').textContent = t('voice.hint');
     loadFoods($('#food-search').value);
   } catch (err) {
     showToast(err.message, 'error');
@@ -1029,11 +1023,16 @@ async function init() {
     saveMealTypePreference();
     loadFoods($('#food-search').value);
   });
-  $('#refresh-summary').addEventListener('click', () => {
-    const date = $('#summary-date').value;
+  const shiftSummaryDate = (days) => {
+    const cur = $('#summary-date').value || formatDate(new Date());
+    const [y, m, d] = cur.split('-').map(Number);
+    const date = formatDate(new Date(Date.UTC(y, m - 1, d + days)));
+    $('#summary-date').value = date;
     loadSummary(date);
     loadMeals(date);
-  });
+  };
+  $('#summary-prev-day').addEventListener('click', () => shiftSummaryDate(-1));
+  $('#summary-next-day').addEventListener('click', () => shiftSummaryDate(1));
 
   $('#meal-form').addEventListener('submit', handleCreateMeal);
   $('#voice-toggle').addEventListener('click', toggleVoiceInput);

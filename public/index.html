@@ -36,8 +36,8 @@
 
         <h3 data-i18n="profile.title">Profile</h3>
         <form id="profile-form" class="grid-form">
-          <label><span data-i18n="profile.weight">Weight (kg)</span> <input type="number" id="profile-weight" min="1" step="0.1" required /></label>
-          <label><span data-i18n="profile.height">Height (cm)</span> <input type="number" id="profile-height" min="1" step="1" required /></label>
+          <label><span data-i18n="profile.weight">Weight (kg)</span> <input type="text" inputmode="decimal" id="profile-weight" required /></label>
+          <label><span data-i18n="profile.height">Height (cm)</span> <input type="text" inputmode="decimal" id="profile-height" required /></label>
           <label><span data-i18n="profile.birthdate">Birthdate</span> <input type="date" id="profile-birthdate" required /></label>
           <label><span data-i18n="profile.gender">Gender</span>
             <select id="profile-gender" required>
@@ -65,7 +65,7 @@
           <h3><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3 2M4 4l3 3m13-3-3 3" /></svg><span data-i18n="target.title">Target</span></h3>
           <form id="target-form" class="grid-form">
             <div class="target-row">
-              <label><span data-i18n="target.kcal">Target kcal</span> <input type="number" id="target-calories" min="0" step="1" required /></label>
+              <label><span data-i18n="target.kcal">Target kcal</span> <input type="text" inputmode="decimal" id="target-calories" required /></label>
               <div class="mode-toggle" data-metric="calories" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" aria-pressed="false">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" class="active" aria-pressed="true">=</button>
@@ -73,7 +73,7 @@
               </div>
             </div>
             <div class="target-row">
-              <label><span data-i18n="target.proteinPct">Protein %</span> <input type="number" id="target-protein-pct" min="0" max="100" step="1" /></label>
+              <label><span data-i18n="target.proteinPct">Protein %</span> <input type="text" inputmode="decimal" id="target-protein-pct" /></label>
               <div class="mode-toggle" data-metric="protein" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" class="active" aria-pressed="true">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" aria-pressed="false">=</button>
@@ -81,7 +81,7 @@
               </div>
             </div>
             <div class="target-row">
-              <label><span data-i18n="target.fatPct">Fat %</span> <input type="number" id="target-fat-pct" min="0" max="100" step="1" /></label>
+              <label><span data-i18n="target.fatPct">Fat %</span> <input type="text" inputmode="decimal" id="target-fat-pct" /></label>
               <div class="mode-toggle" data-metric="fat" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" aria-pressed="false">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" class="active" aria-pressed="true">=</button>
@@ -89,7 +89,7 @@
               </div>
             </div>
             <div class="target-row">
-              <label><span data-i18n="target.carbsPct">Carbs %</span> <input type="number" id="target-carbs-pct" min="0" max="100" step="1" /></label>
+              <label><span data-i18n="target.carbsPct">Carbs %</span> <input type="text" inputmode="decimal" id="target-carbs-pct" /></label>
               <div class="mode-toggle" data-metric="carbs" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" aria-pressed="false">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" class="active" aria-pressed="true">=</button>
@@ -97,7 +97,7 @@
               </div>
             </div>
             <div class="target-row">
-              <label><span data-i18n="target.fiber">Fiber (g)</span> <input type="number" id="target-fiber" min="0" step="1" /></label>
+              <label><span data-i18n="target.fiber">Fiber (g)</span> <input type="text" inputmode="decimal" id="target-fiber" /></label>
               <div class="mode-toggle" data-metric="fiber" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" class="active" aria-pressed="true">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" aria-pressed="false">=</button>
@@ -105,7 +105,7 @@
               </div>
             </div>
             <div class="target-row">
-              <label><span data-i18n="target.salt">Salt (g)</span> <input type="number" id="target-salt" min="0" step="0.1" /></label>
+              <label><span data-i18n="target.salt">Salt (g)</span> <input type="text" inputmode="decimal" id="target-salt" /></label>
               <div class="mode-toggle" data-metric="salt" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" aria-pressed="false">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" aria-pressed="false">=</button>
@@ -113,7 +113,7 @@
               </div>
             </div>
             <div class="target-row">
-              <label><span data-i18n="target.saturated">Saturated fat (g)</span> <input type="number" id="target-saturated" min="0" step="1" /></label>
+              <label><span data-i18n="target.saturated">Saturated fat (g)</span> <input type="text" inputmode="decimal" id="target-saturated" /></label>
               <div class="mode-toggle" data-metric="saturatedFat" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" aria-pressed="false">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" aria-pressed="false">=</button>
@@ -121,7 +121,7 @@
               </div>
             </div>
             <div class="target-row">
-              <label><span data-i18n="target.sugar">Sugar (g)</span> <input type="number" id="target-sugar" min="0" step="1" /></label>
+              <label><span data-i18n="target.sugar">Sugar (g)</span> <input type="text" inputmode="decimal" id="target-sugar" /></label>
               <div class="mode-toggle" data-metric="sugar" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" aria-pressed="false">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" aria-pressed="false">=</button>
@@ -179,7 +179,8 @@
               <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" /></svg><span data-i18n="summary.title">Today's Summary</span></h2>
               <form id="summary-date-form" class="inline-form">
                 <label><span data-i18n="summary.date">Date</span> <input type="date" id="summary-date" required /></label>
-                <button type="button" id="refresh-summary" class="btn-icon" data-i18n-aria-label="summary.refresh" aria-label="Refresh" title="Refresh"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.9 1 6.7 2.7L21 8" /><path d="M21 3v5h-5" /></svg></button>
+                <button type="button" id="summary-prev-day" class="btn-icon" data-i18n-aria-label="summary.prevDay" aria-label="Previous day" title="Previous day"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg></button>
+                <button type="button" id="summary-next-day" class="btn-icon" data-i18n-aria-label="summary.nextDay" aria-label="Next day" title="Next day"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg></button>
               </form>
               <div id="summary" class="summary-grid">
                 <div class="summary-metric summary-calories"><span id="total-calories">Calories</span><span class="metric-values"></span></div>
@@ -203,12 +204,11 @@
 
           <div class="dashboard-col dashboard-col-side">
             <section id="add-meal-section" class="card area-add-meal">
-              <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /><circle cx="12" cy="12" r="9" /></svg><span data-i18n="addMeal.title">Add Meal</span></h2>
-              <div class="voice-input">
+              <div class="section-header">
+                <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /><circle cx="12" cy="12" r="9" /></svg><span data-i18n="addMeal.title">Add Meal</span></h2>
                 <button type="button" id="voice-toggle" class="btn-icon" data-i18n-aria-label="voice.start" aria-label="Voice input" title="Voice input">
                   <svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><path d="M12 19v3" /></svg>
                 </button>
-                <p id="voice-status" class="muted" data-i18n="voice.hint">Tap the microphone and say what you ate</p>
               </div>
               <form id="voice-results-form" class="hidden">
                 <p data-i18n="voice.resultsTitle">Parsed items</p>
@@ -233,14 +233,14 @@
                       <option value="snack" data-i18n="meals.types.snack">Snack</option>
                     </select>
                   </label>
-                  <label class="meal-quantity-field"><span data-i18n="addMeal.quantity">Quantity (g)</span> <input type="number" id="meal-quantity" min="1" max="10000" step="1" required /></label>
+                  <label class="meal-quantity-field"><span data-i18n="addMeal.quantity">Quantity (g)</span> <input type="text" inputmode="decimal" id="meal-quantity" required /></label>
                   <button type="submit" class="btn-primary" data-i18n-aria-label="addMeal.submit" aria-label="Add" title="Add"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></button>
                 </div>
               </form>
 
               <div class="section-header foods-header">
                 <h3><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3v8m-3-8v5a3 3 0 0 0 6 0V3M7 11v10M16 3c3 2 4 6 4 10h-4V3Zm0 10v8" /></svg><span data-i18n="foods.title">Foods</span></h3>
-                <button type="button" id="toggle-food-form" class="btn-icon" data-i18n-aria-label="foods.new" aria-label="New food" title="New food"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></button>
+                <button type="button" id="toggle-food-form" class="btn-secondary" data-i18n="foods.new">Add new food</button>
               </div>
               <form id="food-form" class="grid-form hidden">
                 <div class="food-form-row">
@@ -252,16 +252,16 @@
                   <label><span data-i18n="foods.barcode">Barcode</span> <input type="text" id="food-barcode" inputmode="numeric" pattern="[0-9]{8,14}" /></label>
                 </div>
                 <div class="food-form-row">
-                  <label><span data-i18n="foods.kcal">kcal</span> <input type="number" id="food-calories" min="0" step="0.1" required /></label>
-                  <label><span data-i18n="foods.protein">Protein</span> <input type="number" id="food-protein" min="0" step="0.1" value="0" /></label>
-                  <label><span data-i18n="foods.fat">Fat</span> <input type="number" id="food-fat" min="0" step="0.1" value="0" /></label>
-                  <label><span data-i18n="foods.carbs">Carbs</span> <input type="number" id="food-carbs" min="0" step="0.1" value="0" /></label>
+                  <label><span data-i18n="foods.kcal">kcal</span> <input type="text" inputmode="decimal" id="food-calories" required /></label>
+                  <label><span data-i18n="foods.protein">Protein</span> <input type="text" inputmode="decimal" id="food-protein" value="0" /></label>
+                  <label><span data-i18n="foods.fat">Fat</span> <input type="text" inputmode="decimal" id="food-fat" value="0" /></label>
+                  <label><span data-i18n="foods.carbs">Carbs</span> <input type="text" inputmode="decimal" id="food-carbs" value="0" /></label>
                 </div>
                 <div class="food-form-row">
-                  <label><span data-i18n="foods.fiber">Fiber</span> <input type="number" id="food-fiber" min="0" step="0.1" value="0" /></label>
-                  <label><span data-i18n="foods.salt">Salt</span> <input type="number" id="food-salt" min="0" step="0.01" value="0" /></label>
-                  <label><span data-i18n="foods.saturatedFat">Sat. fat</span> <input type="number" id="food-saturated-fat" min="0" step="0.1" value="0" /></label>
-                  <label><span data-i18n="foods.sugar">Sugar</span> <input type="number" id="food-sugar" min="0" step="0.1" value="0" /></label>
+                  <label><span data-i18n="foods.fiber">Fiber</span> <input type="text" inputmode="decimal" id="food-fiber" value="0" /></label>
+                  <label><span data-i18n="foods.salt">Salt</span> <input type="text" inputmode="decimal" id="food-salt" value="0" /></label>
+                  <label><span data-i18n="foods.saturatedFat">Sat. fat</span> <input type="text" inputmode="decimal" id="food-saturated-fat" value="0" /></label>
+                  <label><span data-i18n="foods.sugar">Sugar</span> <input type="text" inputmode="decimal" id="food-sugar" value="0" /></label>
                 </div>
                 <div class="form-actions">
                   <button type="submit" id="food-form-submit" class="btn-primary" data-i18n="foods.create">Create food</button>
