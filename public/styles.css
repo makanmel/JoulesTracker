@@ -797,6 +797,10 @@ button:disabled {
     font-size: 0.8rem;
   }
 
+  #summary-date-form label span {
+    display: none;
+  }
+
   .meal-group-title {
     flex-wrap: wrap;
   }
