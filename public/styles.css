@@ -821,11 +821,7 @@ button:disabled {
 
   .meal-group-total {
     flex-basis: 100%;
-    padding-left: 20px;
-  }
-
-  .user-area span {
-    max-width: 40vw;
+    padding-left: 30px;
   }
 }
 
@@ -840,6 +836,9 @@ button:disabled {
   align-items: center;
   gap: 6px;
   margin: 12px 0 4px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--secondary);
   font-size: 0.85rem;
   color: var(--muted);
   text-transform: uppercase;
@@ -1146,7 +1145,7 @@ button:disabled {
   }
 
   .user-area span {
-    max-width: min(320px, calc(100vw - 92px));
+    max-width: min(320px, calc(100vw - 180px));
   }
 
   .mobile-nav {
