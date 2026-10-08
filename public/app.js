@@ -139,7 +139,10 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
-const num = (value) => Number((value ?? 0).toFixed(1));
+const num = (value) => {
+  const v = value ?? 0;
+  return Math.abs(v) >= 10 ? Math.round(v) : Number(v.toFixed(1));
+};
 
 const macro = (cls, value) => `<span class="macro macro-${cls}">${num(value)}</span>`;
 const micro = (cls, value) => `<span class="macro micro-${cls}">${num(value)}</span>`;
@@ -193,6 +196,7 @@ function showDashboard(email) {
   authSection.classList.add('hidden');
   dashboardSection.classList.remove('hidden');
   $('#user-area').classList.remove('hidden');
+  $('#logout-btn').classList.remove('hidden');
   renderCurrentUser();
   $('#summary-date').value = formatDate(new Date());
   loadMealTypePreference();
@@ -207,6 +211,7 @@ function showAuth() {
   authSection.classList.remove('hidden');
   dashboardSection.classList.add('hidden');
   $('#user-area').classList.add('hidden');
+  $('#logout-btn').classList.add('hidden');
   setToken(null);
 }
 
@@ -281,7 +286,7 @@ async function loadFoods(query = '') {
     list.innerHTML = '';
     select.innerHTML = `<option value="">${t('addMeal.select')}</option>`;
     data.items.filter((food) => !food.isDefault).forEach((food) => {
-      const per100g = t('foods.per100g', { calories: food.caloriesPer100g });
+      const per100g = t('foods.per100g', { calories: num(food.caloriesPer100g) });
       const details = t('foods.details', {
         kcal: macro('kcal', food.caloriesPer100g),
         protein: macro('p', food.proteinPer100g),
@@ -343,7 +348,7 @@ async function loadExternalFoods(query) {
     data.items.forEach((food) => {
       const li = document.createElement('li');
       li.className = 'list-item';
-      const meta = [food.category, t('foods.per100g', { calories: food.caloriesPer100g })].filter(Boolean).join(' · ');
+      const meta = [food.category, t('foods.per100g', { calories: num(food.caloriesPer100g) })].filter(Boolean).join(' · ');
       li.innerHTML = `
         <div>
           ${escapeHtml(foodLabel(food))}<br />
@@ -642,9 +647,9 @@ function renderSummaryMetric(selector, labelKey, consumed, target, floatingTarge
   const label = $(selector);
   const metric = label.parentElement;
   label.textContent = t(labelKey);
-  const consumedText = Number(consumed.toFixed(1));
+  const consumedText = num(consumed);
   metric.querySelector('.metric-values').textContent =
-    target > 0 ? `${consumedText} / ${Number(target.toFixed(1))}` : `${consumedText}`;
+    target > 0 ? `${consumedText} / ${num(target)}` : `${consumedText}`;
   metric.classList.remove('ok', 'warn', 'over');
   metric.classList.toggle('has-floating-target', floatingTargetPct != null && target > 0);
   metric.style.setProperty('--floating-target', `${floatingTargetPct ?? 0}%`);
@@ -936,7 +941,7 @@ function renderVoiceResults() {
     li.innerHTML = `
       <label class="voice-result-label">
         <input type="checkbox" checked data-index="${index}" />
-        <span>${escapeHtml(item.name)} — ${item.quantityGrams}g · ${item.calories} kcal</span>
+        <span>${escapeHtml(item.name)} — ${num(item.quantityGrams)}g · ${num(item.calories)} kcal</span>
       </label>
     `;
     list.appendChild(li);

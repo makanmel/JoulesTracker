@@ -77,6 +77,8 @@ header {
 
 .header-controls {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 12px;
   align-items: center;
   min-width: 0;
@@ -96,8 +98,7 @@ header {
 }
 
 .lang-btn.active {
-  background: var(--primary);
-  color: var(--text-on-primary);
+  display: none;
 }
 
 button,
@@ -794,6 +795,19 @@ button:disabled {
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 0.8rem;
+  }
+
+  .meal-group-title {
+    flex-wrap: wrap;
+  }
+
+  .meal-group-total {
+    flex-basis: 100%;
+    padding-left: 20px;
+  }
+
+  .user-area span {
+    max-width: 40vw;
   }
 }
 
