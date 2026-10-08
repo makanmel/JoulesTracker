@@ -137,6 +137,7 @@
     "deleted": "Продукт видалено",
     "inUse": "Цей продукт використовується у прийомах їжі, його не можна видалити.",
     "search": "Пошук продуктів...",
+    "clearSearch": "Очистити пошук",
     "per100g": "{{calories}} ккал/100 г",
     "details": "{{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "saturatedFat": "Насич. жири",

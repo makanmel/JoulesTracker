@@ -1100,6 +1100,12 @@ async function init() {
     loadExternalFoods(query);
   }, SEARCH_DEBOUNCE_MS);
   $('#food-search').addEventListener('input', (e) => searchFoods(e.target.value));
+  $('#food-search-clear').addEventListener('click', () => {
+    const input = $('#food-search');
+    input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
+  });
   $('#barcode-form').addEventListener('submit', handleBarcodeLookup);
   toast.addEventListener('click', () => toast.classList.add('hidden'));
 

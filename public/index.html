@@ -272,7 +272,10 @@
                 <label><span data-i18n="foods.barcode">Barcode</span> <input type="text" id="barcode-input" inputmode="numeric" pattern="[0-9]{8,14}" placeholder="4820000000000" required /></label>
                 <button type="submit" class="btn-icon" data-i18n-aria-label="foods.lookupBarcode" aria-label="Look up barcode" title="Look up barcode"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M8 9v6M12 9v6M16 9v6" /></svg></button>
               </form>
-              <input type="search" id="food-search" placeholder="Search foods..." data-i18n-placeholder="foods.search" />
+              <div class="food-search">
+                <input type="text" id="food-search" placeholder="Search foods..." data-i18n-placeholder="foods.search" />
+                <button type="button" id="food-search-clear" class="btn-icon" data-i18n-aria-label="foods.clearSearch" aria-label="Clear search" title="Clear search"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
+              </div>
               <div class="lists-scroll">
                 <ul id="food-list" class="list"></ul>
                 <p class="muted" data-i18n="foods.externalLine">OpenFoodFacts (Ukraine) · type 2+ characters to search.</p>
