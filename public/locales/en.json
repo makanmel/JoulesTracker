@@ -9,7 +9,8 @@
     "sections": "Sections",
     "summary": "Summary",
     "meals": "Meals",
-    "addMeal": "Add"
+    "addMeal": "Add",
+    "foods": "Foods"
   },
   "settings": {
     "title": "Settings",
