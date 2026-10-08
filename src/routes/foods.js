@@ -41,9 +41,11 @@ router.get('/', async (req, res, next) => {
 
     let page = items;
     if (mealType) {
+      // Habits change — only recent meals should drive the ranking.
+      const usageCutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       const usage = await prisma.mealEntry.groupBy({
         by: ['foodId'],
-        where: { userId: req.user.id, mealType },
+        where: { userId: req.user.id, mealType, mealDate: { gte: usageCutoff } },
         _count: { foodId: true },
         _max: { createdAt: true },
       });

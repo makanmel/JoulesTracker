@@ -88,20 +88,29 @@ describe('Food endpoints', () => {
       .set('Authorization', authHeader)
       .send({ name: 'Sort B', caloriesPer100g: 100 });
 
-    const addMeal = (foodId, mealType) =>
+    const recentDate = new Date().toISOString().slice(0, 10);
+    const addMeal = (foodId, mealType, mealDate = recentDate) =>
       request(app)
         .post('/api/v1/meals')
         .set('Authorization', authHeader)
-        .send({ foodId, quantityGrams: 100, mealDate: '2026-01-02', mealType });
+        .send({ foodId, quantityGrams: 100, mealDate, mealType });
 
     await addMeal(a.body.id, 'lunch');
     await addMeal(b.body.id, 'lunch');
     await addMeal(b.body.id, 'lunch');
     await addMeal(a.body.id, 'breakfast');
 
+    const c = await request(app)
+      .post('/api/v1/foods')
+      .set('Authorization', authHeader)
+      .send({ name: 'Sort C', caloriesPer100g: 100 });
+    await addMeal(c.body.id, 'lunch', '2000-01-02');
+
     const lunch = await request(app).get('/api/v1/foods?mealType=lunch').set('Authorization', authHeader);
     const lunchNames = lunch.body.items.map((f) => f.name);
     expect(lunchNames.indexOf('Sort B')).toBeLessThan(lunchNames.indexOf('Sort A'));
+    // Stale (>30 days) usage must not rank — Sort C lands after recently used foods.
+    expect(lunchNames.indexOf('Sort C')).toBeGreaterThan(lunchNames.indexOf('Sort A'));
 
     const breakfast = await request(app).get('/api/v1/foods?mealType=breakfast').set('Authorization', authHeader);
     const breakfastNames = breakfast.body.items.map((f) => f.name);

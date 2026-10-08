@@ -103,6 +103,8 @@ header {
 
 button,
 label,
+input,
+select,
 h1,
 h2,
 p,
@@ -450,6 +452,7 @@ button:disabled {
 .meal-form-row {
   display: flex;
   align-items: flex-end;
+  flex-wrap: wrap;
   gap: 12px;
   min-width: 0;
 }
@@ -468,7 +471,7 @@ button:disabled {
 }
 
 .meal-quantity-field {
-  flex: 0 1 60px;
+  flex: 0 1 96px;
 }
 
 .meal-form-secondary-row .btn-primary {
