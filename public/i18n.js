@@ -74,6 +74,9 @@ export function applyTranslations(root = document) {
   root.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
     el.setAttribute('aria-label', t(el.dataset.i18nAriaLabel));
   });
+  root.querySelectorAll('[data-i18n-title]').forEach((el) => {
+    el.setAttribute('title', t(el.dataset.i18nTitle));
+  });
   root.querySelectorAll('[data-lang]').forEach((el) => {
     el.classList.toggle('active', el.dataset.lang === currentLanguage);
     el.setAttribute('aria-pressed', String(el.dataset.lang === currentLanguage));

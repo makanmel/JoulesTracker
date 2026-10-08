@@ -23,8 +23,8 @@
           <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
           <button type="button" class="lang-btn" data-lang="uk" aria-pressed="false">UKR</button>
         </div>
-        <button type="button" id="settings-toggle" class="btn-icon" data-i18n-aria-label="settings.title" aria-label="Settings" title="Settings" aria-expanded="false" aria-controls="settings-section"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg></button>
-        <button type="button" id="logout-btn" class="btn-icon hidden" data-i18n-aria-label="auth.logout" aria-label="Logout" title="Logout"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg></button>
+        <button type="button" id="settings-toggle" class="btn-icon" data-i18n-aria-label="settings.title" data-i18n-title="settings.title" aria-label="Settings" title="Settings" aria-expanded="false" aria-controls="settings-section"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg></button>
+        <button type="button" id="logout-btn" class="btn-icon hidden" data-i18n-aria-label="auth.logout" data-i18n-title="auth.logout" aria-label="Logout" title="Logout"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg></button>
       </div>
     </header>
 
@@ -179,8 +179,8 @@
               <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" /></svg><span data-i18n="summary.title">Today's Summary</span></h2>
               <form id="summary-date-form" class="inline-form">
                 <label><span data-i18n="summary.date">Date</span> <input type="date" id="summary-date" data-i18n-aria-label="summary.date" aria-label="Date" required /></label>
-                <button type="button" id="summary-prev-day" class="btn-icon" data-i18n-aria-label="summary.prevDay" aria-label="Previous day" title="Previous day"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg></button>
-                <button type="button" id="summary-next-day" class="btn-icon" data-i18n-aria-label="summary.nextDay" aria-label="Next day" title="Next day"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg></button>
+                <button type="button" id="summary-prev-day" class="btn-icon" data-i18n-aria-label="summary.prevDay" data-i18n-title="summary.prevDay" aria-label="Previous day" title="Previous day"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg></button>
+                <button type="button" id="summary-next-day" class="btn-icon" data-i18n-aria-label="summary.nextDay" data-i18n-title="summary.nextDay" aria-label="Next day" title="Next day"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg></button>
               </form>
               <div id="summary" class="summary-grid">
                 <div class="summary-metric summary-calories"><span id="total-calories">Calories</span><span class="metric-values"></span></div>
@@ -206,7 +206,7 @@
             <section id="add-meal-section" class="card area-add-meal">
               <div class="section-header">
                 <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /><circle cx="12" cy="12" r="9" /></svg><span data-i18n="addMeal.title">Add Meal</span></h2>
-                <button type="button" id="voice-toggle" class="btn-icon" data-i18n-aria-label="voice.start" aria-label="Voice input" title="Voice input">
+                <button type="button" id="voice-toggle" class="btn-icon" data-i18n-aria-label="voice.start" data-i18n-title="voice.start" aria-label="Voice input" title="Voice input">
                   <svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><path d="M12 19v3" /></svg>
                 </button>
               </div>
@@ -222,7 +222,7 @@
                       <option value="" data-i18n="addMeal.loading">Loading foods...</option>
                     </select>
                   </label>
-                  <button type="button" id="edit-food-btn" class="btn-icon" data-i18n-aria-label="foods.edit" aria-label="Edit food" title="Edit food"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg></button>
+                  <button type="button" id="edit-food-btn" class="btn-icon" data-i18n-aria-label="foods.edit" data-i18n-title="foods.edit" aria-label="Edit food" title="Edit food"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg></button>
                 </div>
                 <div class="meal-form-row meal-form-secondary-row">
                   <label class="meal-type-field"><span data-i18n="addMeal.type">Type</span>
@@ -234,7 +234,7 @@
                     </select>
                   </label>
                   <label class="meal-quantity-field"><span data-i18n="addMeal.quantity">Quantity (g)</span> <input type="text" inputmode="decimal" id="meal-quantity" required /></label>
-                  <button type="submit" class="btn-primary" data-i18n-aria-label="addMeal.submit" aria-label="Add" title="Add"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></button>
+                  <button type="submit" class="btn-primary" data-i18n-aria-label="addMeal.submit" data-i18n-title="addMeal.submit" aria-label="Add" title="Add"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></button>
                 </div>
               </form>
 
@@ -270,11 +270,11 @@
               </form>
               <form id="barcode-form" class="inline-form">
                 <label><span data-i18n="foods.barcode">Barcode</span> <input type="text" id="barcode-input" inputmode="numeric" pattern="[0-9]{8,14}" placeholder="4820000000000" required /></label>
-                <button type="submit" class="btn-icon" data-i18n-aria-label="foods.lookupBarcode" aria-label="Look up barcode" title="Look up barcode"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M8 9v6M12 9v6M16 9v6" /></svg></button>
+                <button type="submit" class="btn-icon" data-i18n-aria-label="foods.lookupBarcode" data-i18n-title="foods.lookupBarcode" aria-label="Look up barcode" title="Look up barcode"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M8 9v6M12 9v6M16 9v6" /></svg></button>
               </form>
               <div class="food-search">
                 <input type="text" id="food-search" placeholder="Search foods..." data-i18n-placeholder="foods.search" />
-                <button type="button" id="food-search-clear" class="btn-icon" data-i18n-aria-label="foods.clearSearch" aria-label="Clear search" title="Clear search"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
+                <button type="button" id="food-search-clear" class="btn-icon" data-i18n-aria-label="foods.clearSearch" data-i18n-title="foods.clearSearch" aria-label="Clear search" title="Clear search"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
               </div>
               <div class="lists-scroll">
                 <ul id="food-list" class="list"></ul>
