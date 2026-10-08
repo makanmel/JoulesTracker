@@ -280,7 +280,7 @@ async function handleRegister(e) {
 async function loadFoods(query = '') {
   try {
     const mealType = $('#meal-type').value;
-    const data = await api(`/foods?q=${encodeURIComponent(query)}&limit=100&mealType=${encodeURIComponent(mealType)}`);
+    const data = await api(`/foods?q=${encodeURIComponent(query)}&limit=10&mealType=${encodeURIComponent(mealType)}`);
     const list = $('#food-list');
     const select = $('#meal-food');
     list.innerHTML = '';

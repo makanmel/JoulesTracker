@@ -16,7 +16,7 @@
   --radius: 12px;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   --touch-target: 44px;
-  --mobile-nav-height: 64px;
+  --mobile-nav-height: 32px;
 }
 
 * {
@@ -1145,7 +1145,7 @@ button:disabled {
     justify-content: space-around;
     align-items: stretch;
     min-height: var(--mobile-nav-height);
-    padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
+    padding: 2px 4px calc(2px + env(safe-area-inset-bottom, 0px));
     background: var(--card);
     backdrop-filter: blur(var(--card-blur));
     border-top: 1px solid var(--border);
@@ -1155,7 +1155,7 @@ button:disabled {
   .mobile-nav-link {
     flex: 1 1 0;
     min-width: var(--touch-target);
-    min-height: var(--touch-target);
+    min-height: calc(var(--mobile-nav-height) - 4px);
     display: flex;
     align-items: center;
     justify-content: center;
