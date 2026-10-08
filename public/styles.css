@@ -906,6 +906,12 @@ button:disabled {
   margin-bottom: 12px;
 }
 
+#food-form:not(.hidden) ~ #barcode-form,
+#food-form:not(.hidden) ~ .food-search,
+#food-form:not(.hidden) ~ .lists-scroll {
+  display: none;
+}
+
 .lists-scroll {
   margin: 0 -8px;
   padding: 0 8px;
@@ -1169,8 +1175,13 @@ button:disabled {
     scroll-padding-top: 12px;
   }
 
+  header {
+    gap: 4px;
+  }
+
   .header-controls {
     justify-content: center;
+    row-gap: 4px;
   }
 
   .user-area {
