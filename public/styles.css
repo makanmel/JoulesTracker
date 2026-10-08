@@ -452,7 +452,6 @@ button:disabled {
 .meal-form-row {
   display: flex;
   align-items: flex-end;
-  flex-wrap: wrap;
   gap: 12px;
   min-width: 0;
 }
@@ -476,6 +475,18 @@ button:disabled {
 
 .meal-form-secondary-row .btn-primary {
   flex: 0 0 auto;
+  width: 34px;
+  padding: 6px;
+}
+
+.food-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.food-search input {
+  flex: 1;
 }
 
 #voice-toggle.active {

@@ -137,6 +137,7 @@
     "deleted": "Food deleted",
     "inUse": "This food is used by meal entries and can't be deleted.",
     "search": "Search foods...",
+    "clearSearch": "Clear search",
     "per100g": "{{calories}} kcal/100g",
     "details": "{{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "saturatedFat": "Sat. fat",
