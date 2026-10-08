@@ -65,7 +65,7 @@ header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .language-switcher {
@@ -81,6 +81,15 @@ header {
   justify-content: center;
   gap: 12px;
   align-items: center;
+  min-width: 0;
+}
+
+.header-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -126,7 +135,7 @@ header h1 {
 
 .subtitle {
   color: var(--muted);
-  margin: 4px 0 0;
+  margin: 2px 0 0;
 }
 
 .card {
@@ -168,6 +177,7 @@ header h1 {
 .area-summary,
 .area-target,
 .area-add-meal,
+.area-foods,
 .area-meals {
   border-top: 3px solid var(--section-accent, var(--primary));
   background-image: radial-gradient(circle at 100% 0, color-mix(in srgb, var(--section-accent, var(--primary)) 12%, transparent), transparent 38%);
@@ -185,6 +195,10 @@ header h1 {
   --section-accent: #10b981;
 }
 
+.area-foods {
+  --section-accent: #14b8a6;
+}
+
 .area-meals {
   --section-accent: #f59e0b;
 }
@@ -192,6 +206,7 @@ header h1 {
 .area-summary .section-icon,
 .area-target .section-icon,
 .area-add-meal .section-icon,
+.area-foods .section-icon,
 .area-meals .section-icon {
   color: var(--section-accent);
   background: color-mix(in srgb, var(--section-accent) 14%, transparent);
@@ -826,7 +841,6 @@ button:disabled {
 
   .meal-group-total {
     flex-basis: 100%;
-    padding-left: 30px;
   }
 }
 
@@ -1068,12 +1082,16 @@ button:disabled {
   order: 3;
 }
 
-.area-meals {
+.area-foods {
   order: 4;
 }
 
+.area-meals {
+  order: 5;
+}
+
 .area-meals .list,
-.area-add-meal #food-list {
+.area-foods #food-list {
   max-height: 60vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -1134,7 +1152,7 @@ button:disabled {
   }
 
   .area-meals .list,
-  .area-add-meal #food-list {
+  .area-foods #food-list {
     max-height: none;
     overflow-y: visible;
   }
@@ -1155,8 +1173,9 @@ button:disabled {
     justify-content: center;
   }
 
-  .user-area span {
-    max-width: min(320px, calc(100vw - 200px));
+  .user-area {
+    flex-basis: 100%;
+    justify-content: center;
   }
 
   .mobile-nav {
@@ -1240,7 +1259,7 @@ button:disabled {
   }
 
   .area-meals,
-  .area-add-meal {
+  .area-foods {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -1257,7 +1276,7 @@ button:disabled {
     overscroll-behavior: contain;
   }
 
-  .area-add-meal #food-list {
+  .area-foods #food-list {
     max-height: none;
     overflow: visible;
   }
