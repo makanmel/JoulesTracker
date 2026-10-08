@@ -19,12 +19,14 @@
         <div id="user-area" class="user-area hidden">
           <span id="user-email"></span>
         </div>
+        <div class="header-buttons">
         <div id="language-switcher" class="language-switcher" role="group" aria-label="Language" data-i18n-aria-label="app.language">
           <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
           <button type="button" class="lang-btn" data-lang="uk" aria-pressed="false">UKR</button>
         </div>
-        <button type="button" id="settings-toggle" class="btn-icon" data-i18n-aria-label="settings.title" data-i18n-title="settings.title" aria-label="Settings" title="Settings" aria-expanded="false" aria-controls="settings-section"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg></button>
+        <button type="button" id="settings-toggle" class="btn-icon" data-i18n-aria-label="settings.title" data-i18n-title="settings.title" aria-label="Settings" title="Settings" aria-expanded="false" aria-controls="settings-section"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="17" r="3" /><circle cx="7" cy="7" r="3" /></svg></button>
         <button type="button" id="logout-btn" class="btn-icon hidden" data-i18n-aria-label="auth.logout" data-i18n-title="auth.logout" aria-label="Logout" title="Logout"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg></button>
+        </div>
       </div>
     </header>
 
@@ -237,9 +239,11 @@
                   <button type="submit" class="btn-primary" data-i18n-aria-label="addMeal.submit" data-i18n-title="addMeal.submit" aria-label="Add" title="Add"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></button>
                 </div>
               </form>
+            </section>
 
+            <section id="foods-section" class="card area-foods">
               <div class="section-header foods-header">
-                <h3><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3v8m-3-8v5a3 3 0 0 0 6 0V3M7 11v10M16 3c3 2 4 6 4 10h-4V3Zm0 10v8" /></svg><span data-i18n="foods.title">Foods</span></h3>
+                <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3v8m-3-8v5a3 3 0 0 0 6 0V3M7 11v10M16 3c3 2 4 6 4 10h-4V3Zm0 10v8" /></svg><span data-i18n="foods.title">Foods</span></h2>
                 <button type="button" id="toggle-food-form" class="btn-icon" data-i18n-aria-label="foods.new" data-i18n-title="foods.new" aria-label="Add new food" title="Add new food"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></button>
               </div>
               <form id="food-form" class="grid-form hidden">
