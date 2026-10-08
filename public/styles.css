@@ -460,6 +460,11 @@ button:disabled {
   min-width: 0;
 }
 
+.meal-form-row select,
+.meal-form-row input {
+  width: 100%;
+}
+
 .meal-food-field {
   flex: 1 1 auto;
 }
@@ -834,6 +839,7 @@ button:disabled {
 .meal-group-title {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   margin: 12px 0 4px;
   padding: 6px 10px;
@@ -877,6 +883,7 @@ button:disabled {
 .meal-group-total {
   font-weight: normal;
   text-transform: none;
+  font-size: 0.8rem;
 }
 
 #food-search {
@@ -1099,6 +1106,11 @@ button:disabled {
   .inline-form:has(.btn-icon) {
     flex-direction: row;
     align-items: flex-end;
+    flex-wrap: nowrap;
+  }
+
+  .inline-form:has(.btn-icon) label {
+    min-width: 0;
   }
 
   .grid-form {
@@ -1140,12 +1152,11 @@ button:disabled {
   }
 
   .header-controls {
-    flex-wrap: nowrap;
     justify-content: center;
   }
 
   .user-area span {
-    max-width: min(320px, calc(100vw - 180px));
+    max-width: min(320px, calc(100vw - 200px));
   }
 
   .mobile-nav {
