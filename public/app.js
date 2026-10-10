@@ -429,9 +429,14 @@ function prefillFoodForm(food) {
   setFoodFormVisible(true);
 }
 
-async function handleBarcodeLookup(e) {
-  e.preventDefault();
+const BARCODE_PATTERN = /^\d{8,14}$/;
+
+let barcodeScannerStream;
+let barcodeDetector;
+
+async function lookupBarcode() {
   const barcode = $('#barcode-input').value.trim();
+  if (!BARCODE_PATTERN.test(barcode)) return;
   try {
     const data = await api(`/foods/barcode/${encodeURIComponent(barcode)}`);
     if (data.saved) {
@@ -450,6 +455,55 @@ async function handleBarcodeLookup(e) {
     }
     showToast(err.message, 'error');
   }
+}
+
+function handleBarcodeLookup(e) {
+  e.preventDefault();
+  lookupBarcode();
+}
+
+async function openBarcodeScanner() {
+  const dialog = $('#barcode-scanner');
+  if (!('BarcodeDetector' in window)) {
+    showToast(t('foods.scanUnsupported'), 'error');
+    return;
+  }
+  const stream = await navigator.mediaDevices
+    .getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .catch(() => null);
+  if (!stream) {
+    showToast(t('foods.scanDenied'), 'error');
+    return;
+  }
+  barcodeDetector = barcodeDetector || new BarcodeDetector({
+    formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'qr_code'],
+  });
+  barcodeScannerStream = stream;
+  $('#scanner-video').srcObject = stream;
+  dialog.showModal();
+  scanBarcodeFrame();
+}
+
+function scanBarcodeFrame() {
+  if (!barcodeScannerStream) return;
+  barcodeDetector
+    .detect($('#scanner-video'))
+    .then((codes) => {
+      const code = codes[0]?.rawValue;
+      if (code) {
+        $('#barcode-input').value = code;
+        stopBarcodeScanner();
+        lookupBarcode();
+        return;
+      }
+      scanBarcodeFrame();
+    })
+    .catch(() => stopBarcodeScanner());
+}
+
+function stopBarcodeScanner() {
+  const dialog = $('#barcode-scanner');
+  if (dialog.open) dialog.close();
 }
 
 async function loadProfile() {
@@ -1107,6 +1161,14 @@ async function init() {
     input.focus();
   });
   $('#barcode-form').addEventListener('submit', handleBarcodeLookup);
+  $('#barcode-input').addEventListener('input', debounce(lookupBarcode, SEARCH_DEBOUNCE_MS));
+  $('#scan-barcode-btn').addEventListener('click', openBarcodeScanner);
+  $('#scanner-close').addEventListener('click', stopBarcodeScanner);
+  $('#barcode-scanner').addEventListener('close', () => {
+    barcodeScannerStream?.getTracks().forEach((track) => track.stop());
+    barcodeScannerStream = undefined;
+    $('#scanner-video').srcObject = null;
+  });
   toast.addEventListener('click', () => toast.classList.add('hidden'));
 
   if (accessToken) {
