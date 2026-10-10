@@ -929,11 +929,19 @@ button:disabled {
   background: rgba(0, 0, 0, 0.5);
 }
 
+.scanner-region {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: calc(var(--radius) / 2);
+  background: #000;
+}
+
 .scanner video {
   display: block;
   width: 100%;
-  border-radius: calc(var(--radius) / 2);
-  background: #000;
+  height: 100%;
+  object-fit: cover;
 }
 
 .scanner .btn-secondary {
