@@ -917,6 +917,30 @@ button:disabled {
   padding: 0 8px;
 }
 
+.scanner {
+  border: none;
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--card);
+  width: min(92vw, 420px);
+}
+
+.scanner::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.scanner video {
+  display: block;
+  width: 100%;
+  border-radius: calc(var(--radius) / 2);
+  background: #000;
+}
+
+.scanner .btn-secondary {
+  margin-top: 12px;
+  width: 100%;
+}
+
 .lists-scroll > :first-child {
   margin-top: 0;
 }
