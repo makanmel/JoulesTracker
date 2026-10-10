@@ -431,8 +431,8 @@ function prefillFoodForm(food) {
 
 const BARCODE_PATTERN = /^\d{8,14}$/;
 
-let barcodeScannerStream;
-let barcodeDetector;
+let html5QrScanner;
+let scannerLibPromise;
 
 async function lookupBarcode() {
   const barcode = $('#barcode-input').value.trim();
@@ -462,43 +462,76 @@ function handleBarcodeLookup(e) {
   lookupBarcode();
 }
 
+function loadScannerLib() {
+  scannerLibPromise =
+    scannerLibPromise ||
+    new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'vendor/html5-qrcode.min.js';
+      script.onload = resolve;
+      script.onerror = () => {
+        scannerLibPromise = undefined;
+        reject();
+      };
+      document.head.append(script);
+    });
+  return scannerLibPromise;
+}
+
 async function openBarcodeScanner() {
   const dialog = $('#barcode-scanner');
-  if (!('BarcodeDetector' in window)) {
+  const lib = await loadScannerLib()
+    .then(() => window.Html5Qrcode)
+    .catch(() => null);
+  if (!lib) {
     showToast(t('foods.scanUnsupported'), 'error');
     return;
   }
-  const stream = await navigator.mediaDevices
-    .getUserMedia({ video: { facingMode: 'environment' }, audio: false })
-    .catch(() => null);
-  if (!stream) {
-    showToast(t('foods.scanDenied'), 'error');
-    return;
-  }
-  barcodeDetector = barcodeDetector || new BarcodeDetector({
-    formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'qr_code'],
-  });
-  barcodeScannerStream = stream;
-  $('#scanner-video').srcObject = stream;
+  html5QrScanner =
+    html5QrScanner ||
+    new Html5Qrcode('scanner-region', {
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.ITF,
+      ],
+      useBarCodeDetectorIfSupported: true,
+      verbose: false,
+    });
   dialog.showModal();
-  scanBarcodeFrame();
-}
-
-function scanBarcodeFrame() {
-  if (!barcodeScannerStream) return;
-  barcodeDetector
-    .detect($('#scanner-video'))
-    .then((codes) => {
-      const code = codes[0]?.rawValue;
-      if (code) {
-        $('#barcode-input').value = code;
+  const started = await html5QrScanner
+    .start(
+      { facingMode: 'environment' },
+      {
+        fps: 10,
+        qrbox: (width, height) => Math.floor(Math.min(width, height) * 0.8),
+      },
+      (decodedText) => {
+        if (!BARCODE_PATTERN.test(decodedText)) return;
+        $('#barcode-input').value = decodedText;
         stopBarcodeScanner();
         lookupBarcode();
-        return;
-      }
-      scanBarcodeFrame();
-    })
-    .catch(() => stopBarcodeScanner());
+      },
+      () => {},
+    )
+    .then(() => true)
+    .catch(() => false);
+  if (started) {
+    if (!dialog.open) {
+      html5QrScanner
+        .stop()
+        .then(() => html5QrScanner.clear())
+        .catch(() => {});
+    }
+    return;
+  }
+  if (dialog.open) {
+    stopBarcodeScanner();
+    showToast(t('foods.scanDenied'), 'error');
+  }
 }
 
 function stopBarcodeScanner() {
@@ -1165,9 +1198,10 @@ async function init() {
   $('#scan-barcode-btn').addEventListener('click', openBarcodeScanner);
   $('#scanner-close').addEventListener('click', stopBarcodeScanner);
   $('#barcode-scanner').addEventListener('close', () => {
-    barcodeScannerStream?.getTracks().forEach((track) => track.stop());
-    barcodeScannerStream = undefined;
-    $('#scanner-video').srcObject = null;
+    html5QrScanner
+      ?.stop()
+      .then(() => html5QrScanner.clear())
+      .catch(() => {});
   });
   toast.addEventListener('click', () => toast.classList.add('hidden'));
 
