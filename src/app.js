@@ -24,7 +24,8 @@ export function createApp() {
   app.set('trust proxy', 1);
 
   app.use(cors());
-  app.use(express.json());
+  // Photo scans upload a base64 image — keep the limit tight but sufficient.
+  app.use(express.json({ limit: '4mb' }));
 
   app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
