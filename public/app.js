@@ -4,7 +4,6 @@ import { initTheme } from './theme.js';
 const API_BASE = '/api/v1';
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_EXTERNAL_QUERY = 2;
-const WAKE_NOTICE_DELAY_MS = 4000;
 const WAKE_RETRY_DELAY_MS = 3000;
 const WAKE_RETRY_LIMIT = 15;
 const AI_PROVIDER_KEY = 'joulesAiProvider';
@@ -75,31 +74,24 @@ function showToast(message, type = 'info', action = null) {
 }
 
 let pendingFetches = 0;
-let wakeNoticeTimer = null;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function startServerNotice() {
   pendingFetches += 1;
-  if (!wakeNoticeTimer) {
-    wakeNoticeTimer = setTimeout(() => serverNotice.classList.remove('hidden'), WAKE_NOTICE_DELAY_MS);
-  }
 }
 
 function finishServerNotice() {
   pendingFetches -= 1;
   if (pendingFetches === 0) {
-    clearTimeout(wakeNoticeTimer);
-    wakeNoticeTimer = null;
     serverNotice.classList.add('hidden');
   }
 }
 
 // fetch rejects (TypeError) when the Render instance is cold-starting; retry until it wakes.
+// The notice is shown only on actual network failures — slow AI requests must not trigger it.
 function fetchWithRetry(url, options, attempt = 0) {
   return fetch(url, options).catch(async (err) => {
     if (err instanceof TypeError && attempt < WAKE_RETRY_LIMIT) {
-      clearTimeout(wakeNoticeTimer);
-      wakeNoticeTimer = null;
       serverNotice.classList.remove('hidden');
       await sleep(WAKE_RETRY_DELAY_MS);
       return fetchWithRetry(url, options, attempt + 1);
