@@ -148,8 +148,12 @@ const num = (value) => {
 const macro = (cls, value) => `<span class="macro macro-${cls}">${num(value)}</span>`;
 const micro = (cls, value) => `<span class="macro micro-${cls}">${num(value)}</span>`;
 
+function foodName(food) {
+  return document.documentElement.lang === 'uk' && food.nameUk ? food.nameUk : food.name;
+}
+
 function foodLabel(food) {
-  return food.brand ? `${food.name} · ${food.brand}` : food.name;
+  return food.brand ? `${foodName(food)} · ${food.brand}` : foodName(food);
 }
 
 function resizeImage(file, maxWidth, quality) {
@@ -209,6 +213,7 @@ async function handleScanPhoto(file) {
         method: 'POST',
         body: JSON.stringify({
           name: food.name,
+          nameUk: food.nameUk || null,
           caloriesPer100g: food.caloriesPer100g || 0,
           proteinPer100g: food.proteinPer100g || 0,
           carbsPer100g: food.carbsPer100g || 0,
@@ -227,7 +232,7 @@ async function handleScanPhoto(file) {
     await loadFoods();
     $('#meal-food').value = foodId;
     $('#meal-quantity').value = weightGrams > 0 ? weightGrams : '';
-    showToast(t('photoScan.recognized', { name: food.name, weight: weightGrams }));
+    showToast(t('photoScan.recognized', { name: foodName(food), weight: weightGrams }));
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -498,6 +503,7 @@ async function startEditFood() {
 
 function prefillFoodForm(food) {
   $('#food-name').value = food.name || '';
+  $('#food-name-uk').value = food.nameUk || '';
   $('#food-calories').value = food.caloriesPer100g ?? '';
   $('#food-protein').value = food.proteinPer100g ?? 0;
   $('#food-carbs').value = food.carbsPer100g ?? 0;
@@ -525,7 +531,7 @@ async function lookupBarcode() {
   try {
     const data = await api(`/foods/barcode/${encodeURIComponent(barcode)}`);
     if (data.saved) {
-      showToast(t('foods.barcodeFound', { name: data.food.name }));
+      showToast(t('foods.barcodeFound', { name: foodName(data.food) }));
       $('#food-search').value = data.food.name;
       loadFoods(data.food.name);
       return;
@@ -654,6 +660,7 @@ async function handleCreateFood(e) {
   e.preventDefault();
   const body = {
     name: $('#food-name').value,
+    nameUk: $('#food-name-uk').value.trim() || null,
     caloriesPer100g: parseFloat($('#food-calories').value),
     proteinPer100g: parseFloat($('#food-protein').value) || 0,
     carbsPer100g: parseFloat($('#food-carbs').value) || 0,
@@ -936,7 +943,7 @@ async function loadMeals(date) {
         });
         div.innerHTML = `
           <div>
-            ${escapeHtml(meal.food.name)}<br />
+            ${escapeHtml(foodName(meal.food))}<br />
             <span class="muted">${entry}</span>
           </div>
           <button type="button" class="btn-danger" data-id="${meal.id}" aria-label="${t('meals.delete')}" title="${t('meals.delete')}"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg></button>

@@ -29,6 +29,7 @@ model User {
 model Food {
   id                  String  @id @default(uuid())
   name                String
+  nameUk              String?
   caloriesPer100g     Float
   proteinPer100g      Float   @default(0)
   carbsPer100g        Float   @default(0)

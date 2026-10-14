@@ -19,9 +19,14 @@ function findLocalByBarcode(barcode, userId) {
   });
 }
 
+function nameMatches(name) {
+  const like = { contains: name, mode: 'insensitive' };
+  return { OR: [{ name: like }, { nameUk: like }] };
+}
+
 function findLocalByName(name, userId) {
   return prisma.food.findFirst({
-    where: { AND: [{ name: { contains: name, mode: 'insensitive' } }, visibleTo(userId)] },
+    where: { AND: [nameMatches(name), visibleTo(userId)] },
     orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
   });
 }
@@ -34,7 +39,7 @@ router.get('/', async (req, res, next) => {
     const mealType = req.query.mealType || null;
 
     const where = {
-      AND: [{ name: { contains: q, mode: 'insensitive' } }, visibleTo(req.user.id)],
+      AND: [nameMatches(q), visibleTo(req.user.id)],
     };
 
     // Own + community foods rank before shared defaults; with mealType, fetch all matches and sort by usage in JS before paging.
@@ -266,7 +271,8 @@ router.post('/recognize-photo', async (req, res, next) => {
     }
 
     const fallback = {
-      name: ai.name,
+      name: ai.nameEn,
+      nameUk: locale === 'uk' ? ai.name : null,
       source: 'ai',
       caloriesPer100g: ai.caloriesPer100g ?? 0,
       proteinPer100g: ai.proteinPer100g ?? 0,
