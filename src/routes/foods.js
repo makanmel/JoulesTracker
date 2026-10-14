@@ -29,7 +29,7 @@ function findLocalByName(name, userId) {
 router.get('/', async (req, res, next) => {
   try {
     const q = req.query.q || '';
-    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 500);
     const offset = parseInt(req.query.offset, 10) || 0;
     const mealType = req.query.mealType || null;
 
@@ -37,11 +37,11 @@ router.get('/', async (req, res, next) => {
       AND: [{ name: { contains: q, mode: 'insensitive' } }, visibleTo(req.user.id)],
     };
 
-    // With mealType, fetch all matches and sort by usage in JS before paging.
+    // Own + community foods rank before shared defaults; with mealType, fetch all matches and sort by usage in JS before paging.
     const [items, total] = await Promise.all([
       prisma.food.findMany({
         where,
-        orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
+        orderBy: [{ isDefault: 'desc' }, { createdById: { sort: 'desc', nulls: 'last' } }, { name: 'asc' }],
         ...(mealType ? {} : { take: limit, skip: offset }),
       }),
       prisma.food.count({ where }),
