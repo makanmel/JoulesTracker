@@ -232,6 +232,27 @@ async function handleScanPhoto(file) {
     statusEl.classList.add('hidden');
     $('#photo-scan-name').textContent = foodName(food);
     $('#photo-scan-weight').textContent = `${weightGrams} g`;
+    const ratio = weightGrams / 100;
+    $('#photo-scan-per100').innerHTML = t('foods.details', {
+      kcal: macro('kcal', food.caloriesPer100g),
+      protein: macro('p', food.proteinPer100g),
+      fat: macro('f', food.fatPer100g),
+      carbs: macro('c', food.carbsPer100g),
+      fiber: micro('fiber', food.fiberPer100g),
+      salt: micro('salt', food.saltPer100g),
+      saturated: micro('saturated', food.saturatedFatPer100g),
+      sugar: micro('sugar', food.sugarPer100g),
+    });
+    $('#photo-scan-serving').innerHTML = t('foods.details', {
+      kcal: macro('kcal', (food.caloriesPer100g ?? 0) * ratio),
+      protein: macro('p', (food.proteinPer100g ?? 0) * ratio),
+      fat: macro('f', (food.fatPer100g ?? 0) * ratio),
+      carbs: macro('c', (food.carbsPer100g ?? 0) * ratio),
+      fiber: micro('fiber', (food.fiberPer100g ?? 0) * ratio),
+      salt: micro('salt', (food.saltPer100g ?? 0) * ratio),
+      saturated: micro('saturated', (food.saturatedFatPer100g ?? 0) * ratio),
+      sugar: micro('sugar', (food.sugarPer100g ?? 0) * ratio),
+    });
     resultEl.classList.remove('hidden');
     useBtn.classList.remove('hidden');
 
