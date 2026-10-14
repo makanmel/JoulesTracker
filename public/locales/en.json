@@ -158,7 +158,8 @@
     "import": "Import",
     "imported": "Product imported",
     "barcodeFound": "Found in your foods: {{name}}",
-    "barcodeNotFound": "Product not found. Fill in the details to create it as a custom food."
+    "barcodeNotFound": "Product not found. Fill in the details to create it as a custom food.",
+    "public": "Share with all users"
   },
   "voice": {
     "start": "Voice input",

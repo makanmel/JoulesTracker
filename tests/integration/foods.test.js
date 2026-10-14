@@ -187,4 +187,30 @@ describe('Food endpoints', () => {
     expect(res.body.weightGrams).toBe(250);
     expect(res.body.food.name).toBe('Buckwheat (cooked)');
   });
+
+  it('shares public foods with other users while keeping private foods hidden', async () => {
+    const shared = await request(app)
+      .post('/api/v1/foods')
+      .set('Authorization', authHeader)
+      .send({ name: 'Shared zzz stew', caloriesPer100g: 100, isPublic: true });
+    await request(app)
+      .post('/api/v1/foods')
+      .set('Authorization', authHeader)
+      .send({ name: 'Private zzz stew', caloriesPer100g: 100 });
+
+    const { token: otherToken } = await registerAndLogin(app);
+    const otherHeader = `Bearer ${otherToken}`;
+
+    const sharedRes = await request(app).get('/api/v1/foods?q=Shared+zzz').set('Authorization', otherHeader);
+    expect(sharedRes.body.items.some((f) => f.name === 'Shared zzz stew')).toBe(true);
+
+    const privateRes = await request(app).get('/api/v1/foods?q=Private+zzz').set('Authorization', otherHeader);
+    expect(privateRes.body.items.some((f) => f.name === 'Private zzz stew')).toBe(false);
+
+    const patchRes = await request(app)
+      .patch(`/api/v1/foods/${shared.body.id}`)
+      .set('Authorization', otherHeader)
+      .send({ caloriesPer100g: 1 });
+    expect(patchRes.status).toBe(403);
+  });
 });

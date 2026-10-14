@@ -204,7 +204,7 @@ async function handleScanPhoto(file) {
     const food = result.food;
     const weightGrams = result.weightGrams || 0;
     let foodId = food.id;
-    if (result.source !== 'local' || food.isDefault) {
+    if (result.source !== 'local') {
       const created = await api('/foods', {
         method: 'POST',
         body: JSON.stringify({
@@ -367,8 +367,14 @@ async function loadFoods(query = '') {
     const select = $('#meal-food');
     list.innerHTML = '';
     select.innerHTML = `<option value="">${t('addMeal.select')}</option>`;
-    data.items.filter((food) => !food.isDefault).forEach((food) => {
+    data.items.forEach((food) => {
       const per100g = t('foods.per100g', { calories: num(food.caloriesPer100g) });
+      const option = document.createElement('option');
+      option.value = food.id;
+      option.textContent = `${foodLabel(food)} (${per100g})`;
+      select.appendChild(option);
+
+      if (food.isDefault) return;
       const details = t('foods.details', {
         kcal: macro('kcal', food.caloriesPer100g),
         protein: macro('p', food.proteinPer100g),
@@ -397,11 +403,6 @@ async function loadFoods(query = '') {
         deleteFood(food, li);
       });
       list.appendChild(li);
-
-      const option = document.createElement('option');
-      option.value = food.id;
-      option.textContent = `${foodLabel(food)} (${per100g})`;
-      select.appendChild(option);
     });
   } catch (err) {
     showToast(err.message, 'error');
@@ -508,6 +509,7 @@ function prefillFoodForm(food) {
   $('#food-brand').value = food.brand || '';
   $('#food-category').value = food.category || '';
   $('#food-barcode').value = food.barcode || '';
+  $('#food-public').checked = Boolean(food.isPublic);
   setFoodFormVisible(true);
 }
 
@@ -663,6 +665,7 @@ async function handleCreateFood(e) {
     brand: $('#food-brand').value.trim() || null,
     category: $('#food-category').value.trim() || null,
     barcode: $('#food-barcode').value.trim() || null,
+    isPublic: $('#food-public').checked,
   };
   const wasEditing = Boolean(editingFoodId);
   try {

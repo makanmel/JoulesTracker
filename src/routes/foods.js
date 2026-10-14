@@ -9,7 +9,7 @@ import { recognizePhoto } from '../lib/photoRecognizer.js';
 const router = Router();
 
 function visibleTo(userId) {
-  return { OR: [{ isDefault: true }, { createdById: userId }] };
+  return { OR: [{ isDefault: true }, { isPublic: true }, { createdById: userId }] };
 }
 
 function findLocalByBarcode(barcode, userId) {

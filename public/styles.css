@@ -484,6 +484,15 @@ button:disabled {
   flex: 1 1 auto;
 }
 
+.check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+
 .meal-type-field {
   flex: 1 1 0;
   min-width: 136px;

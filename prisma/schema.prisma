@@ -42,6 +42,7 @@ model Food {
   category            String?
   source              String  @default("local") // local | openfoodfacts
   isDefault           Boolean @default(false)
+  isPublic            Boolean @default(false)
 
   createdById String?
   createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
@@ -52,6 +53,7 @@ model Food {
   meals MealEntry[]
 
   @@index([isDefault])
+  @@index([isPublic])
   @@index([barcode])
 }
 
