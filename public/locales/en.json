@@ -182,8 +182,11 @@
     "saveSettings": "Save"
   },
   "photoScan": {
+    "title": "Recognize photo",
     "processing": "Recognizing...",
+    "analyzing": "Analyzing photo…",
     "recognized": "Recognized {{name}} · {{weight}} g",
+    "addToMeal": "Add to meal",
     "invalid": "Please select a valid image",
     "readFailed": "Could not read the image"
   },
