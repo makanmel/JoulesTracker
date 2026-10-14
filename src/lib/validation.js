@@ -28,6 +28,7 @@ export const foodSchema = z.object({
   brand: z.string().max(200).nullable().optional(),
   category: z.string().max(500).nullable().optional(),
   source: z.enum(['local', 'openfoodfacts']).default('local'),
+  isPublic: z.boolean().default(false),
 });
 
 export const foodUpdateSchema = foodSchema.partial();
