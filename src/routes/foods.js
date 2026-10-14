@@ -2,8 +2,9 @@ import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { parseRequest, foodSchema, foodUpdateSchema } from '../lib/validation.js';
 import { AppError } from '../lib/errors.js';
-import { searchProducts, getProductByBarcode, isValidBarcode } from '../lib/openFoodFacts.js';
+import { searchProducts, getProductByBarcode, isValidBarcode, mapProduct } from '../lib/openFoodFacts.js';
 import { parseVoiceInput } from '../lib/voiceParser.js';
+import { recognizePhoto } from '../lib/photoRecognizer.js';
 
 const router = Router();
 
@@ -15,6 +16,13 @@ function findLocalByBarcode(barcode, userId) {
   return prisma.food.findFirst({
     where: { AND: [{ barcode }, visibleTo(userId)] },
     orderBy: [{ createdById: 'desc' }, { isDefault: 'desc' }],
+  });
+}
+
+function findLocalByName(name, userId) {
+  return prisma.food.findFirst({
+    where: { AND: [{ name: { contains: name, mode: 'insensitive' } }, visibleTo(userId)] },
+    orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
   });
 }
 
@@ -212,6 +220,73 @@ router.post('/parse-voice', async (req, res, next) => {
     const apiKey = req.headers['x-ai-key'];
     const items = await parseVoiceInput({ transcript, locale, provider, apiKey });
     res.json({ items });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/recognize-photo', async (req, res, next) => {
+  try {
+    const image = String(req.body.image || '');
+    if (!image.startsWith('data:image/')) {
+      throw new AppError('Invalid image data', 400);
+    }
+    const [header, base64] = image.split(',');
+    const mime = header.match(/data:([^;]+)/)?.[1] || 'image/jpeg';
+    if (!base64 || base64.length < 100) {
+      throw new AppError('Invalid image data', 400);
+    }
+
+    const locale = req.body.locale === 'uk' ? 'uk' : 'en';
+    const provider = req.headers['x-ai-provider'];
+    const apiKey = req.headers['x-ai-key'];
+    const ai = await recognizePhoto({ imageBase64: base64, mime, locale, provider, apiKey });
+
+    const local = await findLocalByName(ai.name, req.user.id);
+    if (local) {
+      return res.json({
+        source: 'local',
+        saved: true,
+        food: local,
+        weightGrams: ai.weightGrams,
+        confidence: ai.confidence,
+      });
+    }
+
+    const search = await searchProducts(ai.name, { limit: 5, page: 1 });
+    const product = search.items.map(mapProduct).find(Boolean);
+    if (product) {
+      return res.json({
+        source: 'openfoodfacts',
+        saved: false,
+        food: product,
+        weightGrams: ai.weightGrams,
+        confidence: ai.confidence,
+      });
+    }
+
+    const fallback = {
+      name: ai.name,
+      source: 'ai',
+      caloriesPer100g: ai.caloriesPer100g ?? 0,
+      proteinPer100g: ai.proteinPer100g ?? 0,
+      carbsPer100g: ai.carbsPer100g ?? 0,
+      fatPer100g: ai.fatPer100g ?? 0,
+      saturatedFatPer100g: 0,
+      sugarPer100g: 0,
+      fiberPer100g: 0,
+      saltPer100g: 0,
+      brand: null,
+      category: null,
+      barcode: null,
+    };
+    res.json({
+      source: 'ai',
+      saved: false,
+      food: fallback,
+      weightGrams: ai.weightGrams,
+      confidence: ai.confidence,
+    });
   } catch (err) {
     next(err);
   }

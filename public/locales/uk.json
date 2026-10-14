@@ -178,6 +178,12 @@
     "apiKey": "API-ключ",
     "saveSettings": "Зберегти"
   },
+  "photoScan": {
+    "processing": "Розпізнаю...",
+    "recognized": "Розпізнано {{name}} · {{weight}} г",
+    "invalid": "Виберіть коректне зображення",
+    "readFailed": "Не вдалося прочитати зображення"
+  },
   "common": {
     "undo": "Відмінити"
   },

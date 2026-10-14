@@ -10,6 +10,7 @@ const WAKE_RETRY_LIMIT = 15;
 const AI_PROVIDER_KEY = 'joulesAiProvider';
 const AI_API_KEY_KEY = 'joulesAiApiKey';
 const MEAL_TYPE_KEY = 'joulesMealType';
+const MAX_PHOTO_WIDTH = 1024;
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -149,6 +150,87 @@ const micro = (cls, value) => `<span class="macro micro-${cls}">${num(value)}</s
 
 function foodLabel(food) {
   return food.brand ? `${food.name} · ${food.brand}` : food.name;
+}
+
+function resizeImage(file, maxWidth, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width;
+      let h = img.height;
+      if (w > maxWidth) {
+        h = Math.round((h * maxWidth) / w);
+        w = maxWidth;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error(t('photoScan.readFailed')));
+    };
+    img.src = url;
+  });
+}
+
+async function handleScanPhoto(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    showToast(t('photoScan.invalid'), 'error');
+    return;
+  }
+  showToast(t('photoScan.processing'), 'info');
+  const dataUrl = await resizeImage(file, MAX_PHOTO_WIDTH, 0.85);
+  const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
+  const provider = localStorage.getItem(AI_PROVIDER_KEY) || '';
+  const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
+  const options = {
+    method: 'POST',
+    body: JSON.stringify({ image: dataUrl, locale }),
+  };
+  if (provider || apiKey) {
+    options.headers = {
+      'x-ai-provider': provider,
+      'x-ai-key': apiKey,
+    };
+  }
+
+  try {
+    const result = await api('/foods/recognize-photo', options);
+    const food = result.food;
+    const weightGrams = result.weightGrams || 0;
+    let foodId = food.id;
+    if (result.source !== 'local' || food.isDefault) {
+      const created = await api('/foods', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: food.name,
+          caloriesPer100g: food.caloriesPer100g || 0,
+          proteinPer100g: food.proteinPer100g || 0,
+          carbsPer100g: food.carbsPer100g || 0,
+          fatPer100g: food.fatPer100g || 0,
+          saturatedFatPer100g: food.saturatedFatPer100g || 0,
+          sugarPer100g: food.sugarPer100g || 0,
+          fiberPer100g: food.fiberPer100g || 0,
+          saltPer100g: food.saltPer100g || 0,
+          brand: food.brand || null,
+          category: food.category || null,
+          barcode: food.barcode || null,
+        }),
+      });
+      foodId = created.id;
+    }
+    await loadFoods();
+    $('#meal-food').value = foodId;
+    $('#meal-quantity').value = weightGrams > 0 ? weightGrams : '';
+    showToast(t('photoScan.recognized', { name: food.name, weight: weightGrams }));
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
 function formatDate(date) {
@@ -1191,6 +1273,12 @@ async function init() {
   $('#barcode-form').addEventListener('submit', handleBarcodeLookup);
   $('#barcode-input').addEventListener('input', debounce(lookupBarcode, SEARCH_DEBOUNCE_MS));
   $('#scan-barcode-btn').addEventListener('click', openBarcodeScanner);
+  $('#scan-photo-btn').addEventListener('click', () => $('#scan-photo-input').click());
+  $('#scan-photo-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (file) handleScanPhoto(file);
+  });
   $('#scanner-close').addEventListener('click', stopBarcodeScanner);
   $('#barcode-scanner').addEventListener('close', () => {
     const scanner = html5QrScanner;
