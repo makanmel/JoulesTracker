@@ -123,6 +123,7 @@
     "title": "Foods",
     "new": "Add new food",
     "name": "Name",
+    "nameUk": "Name (Ukrainian)",
     "kcal": "kcal",
     "protein": "Protein",
     "carbs": "Carbs",

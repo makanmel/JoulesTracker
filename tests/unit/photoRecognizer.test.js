@@ -35,7 +35,8 @@ describe('photo recognizer', () => {
           {
             message: {
               content: JSON.stringify({
-                name: 'Buckwheat (cooked)',
+                name: 'Гречка (варена)',
+                nameEn: 'Buckwheat (cooked)',
                 weightGrams: 250,
                 caloriesPer100g: 132,
                 proteinPer100g: 4.5,

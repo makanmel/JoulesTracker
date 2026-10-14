@@ -16,6 +16,7 @@ export const loginSchema = z.object({
 
 export const foodSchema = z.object({
   name: z.string().min(1).max(200),
+  nameUk: z.string().min(1).max(200).nullable().optional(),
   caloriesPer100g: z.number().nonnegative(),
   proteinPer100g: z.number().nonnegative().default(0),
   carbsPer100g: z.number().nonnegative().default(0),

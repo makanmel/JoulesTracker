@@ -11,6 +11,7 @@ Estimate the total weight in grams of the visible food, and estimate macros per 
 Respond ONLY with a JSON object, no markdown, no explanation:
 {
   "name": "short localized food name in the requested locale",
+  "nameEn": "canonical English food name (may equal name for en locale)",
   "weightGrams": number,
   "caloriesPer100g": number|null,
   "proteinPer100g": number|null,
@@ -170,6 +171,7 @@ export async function recognizePhoto({
 
   return {
     name,
+    nameEn: String(parsed.nameEn || '').trim() || name,
     weightGrams: Number(parsed.weightGrams) || 0,
     caloriesPer100g: parsed.caloriesPer100g == null ? null : Number(parsed.caloriesPer100g),
     proteinPer100g: parsed.proteinPer100g == null ? null : Number(parsed.proteinPer100g),
