@@ -67,19 +67,33 @@ async function callOpenAI({ apiKey, imageBase64, mime, locale, fetchImpl }) {
   return data?.choices?.[0]?.message?.content;
 }
 
-async function resolveGeminiModel({ apiKey, fetchImpl }) {
+const GEMINI_MODEL_CACHE = new Map();
+
+async function listGeminiModels({ apiKey, fetchImpl }) {
   const url = `${GEMINI_API_BASE}/models?key=${encodeURIComponent(apiKey)}`;
   const response = await fetchImpl(url, { headers: { 'Content-Type': 'application/json' } });
-  if (!response.ok) return GEMINI_MODEL;
+  if (!response.ok) return [];
   const data = await response.json().catch(() => null);
-  const models = (data?.models || [])
-    .filter((model) => model.supportedGenerationMethods?.includes('generateContent'))
-    .map((model) => model.name.replace(/^models\//, ''));
-  return models.includes(GEMINI_MODEL) ? GEMINI_MODEL : models[0] || GEMINI_MODEL;
+  return data?.models || [];
 }
 
-async function callGemini({ apiKey, imageBase64, mime, locale, fetchImpl }) {
-  const model = await resolveGeminiModel({ apiKey, fetchImpl });
+async function resolveGeminiModels({ apiKey, fetchImpl }) {
+  const cached = GEMINI_MODEL_CACHE.get(apiKey);
+  if (cached) return cached;
+
+  const available = (await listGeminiModels({ apiKey, fetchImpl }))
+    .filter((model) => model.supportedGenerationMethods?.includes('generateContent'))
+    .map((model) => model.name.replace(/^models\//, ''));
+
+  const preferred = available.includes(GEMINI_MODEL)
+    ? [GEMINI_MODEL, ...available.filter((name) => name !== GEMINI_MODEL)]
+    : [GEMINI_MODEL, ...available];
+
+  GEMINI_MODEL_CACHE.set(apiKey, preferred);
+  return preferred;
+}
+
+async function generateGeminiContent({ apiKey, model, imageBase64, mime, locale, fetchImpl }) {
   const url = `${GEMINI_API_BASE}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
   const response = await fetchImpl(url, {
     method: 'POST',
@@ -106,11 +120,27 @@ async function callGemini({ apiKey, imageBase64, mime, locale, fetchImpl }) {
 
   if (!response.ok) {
     const text = await response.text().catch(() => 'unknown');
-    throw new AppError(`AI photo recognition failed (${response.status}): ${providerErrorMessage(text)}`, 502);
+    return { ok: false, status: response.status, text };
   }
 
   const data = await response.json().catch(() => null);
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  return { ok: true, content: data?.candidates?.[0]?.content?.parts?.[0]?.text };
+}
+
+async function callGemini({ apiKey, imageBase64, mime, locale, fetchImpl }) {
+  const candidates = await resolveGeminiModels({ apiKey, fetchImpl });
+  let lastError = 'unknown';
+
+  for (const model of candidates) {
+    const result = await generateGeminiContent({ apiKey, model, imageBase64, mime, locale, fetchImpl });
+    if (result.ok) {
+      GEMINI_MODEL_CACHE.set(apiKey, [model]);
+      return result.content;
+    }
+    lastError = `${result.status}: ${providerErrorMessage(result.text)}`;
+  }
+
+  throw new AppError(`AI photo recognition failed: ${lastError}`, 502);
 }
 
 function extractJson(text) {
