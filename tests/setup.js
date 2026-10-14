@@ -13,7 +13,9 @@ const defaultFoods = topFoods.map((food) => ({ ...food, isDefault: true, isPubli
 async function seedDefaultFoods() {
   for (const food of defaultFoods) {
     const existing = await prisma.food.findFirst({ where: { name: food.name, isDefault: true } });
-    if (!existing) {
+    if (existing) {
+      await prisma.food.update({ where: { id: existing.id }, data: food });
+    } else {
       await prisma.food.create({ data: food });
     }
   }
