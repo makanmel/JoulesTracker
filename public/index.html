@@ -297,13 +297,15 @@
                 <img id="photo-scan-preview" class="photo-scan-preview" alt="" />
                 <p id="photo-scan-status" class="muted" data-i18n="photoScan.analyzing">Analyzing photo…</p>
                 <div id="photo-scan-result" class="photo-scan-result hidden">
-                  <strong id="photo-scan-name"></strong>
-                  <span id="photo-scan-weight" class="muted"></span>
+                  <div class="photo-scan-head">
+                    <strong id="photo-scan-name"></strong>
+                    <span id="photo-scan-weight" class="muted"></span>
+                  </div>
                   <div class="photo-scan-row">
                     <span class="muted" data-i18n="photoScan.per100">per 100 g</span>
                     <span id="photo-scan-per100"></span>
                   </div>
-                  <div class="photo-scan-row">
+                  <div class="photo-scan-row" id="photo-scan-serving-row">
                     <span class="muted" data-i18n="photoScan.serving">this serving</span>
                     <span id="photo-scan-serving"></span>
                   </div>
