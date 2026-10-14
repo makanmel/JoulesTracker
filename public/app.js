@@ -174,13 +174,26 @@ function resizeImage(file, maxWidth, quality) {
   });
 }
 
+let photoScanAbort = null;
+
 async function handleScanPhoto(file) {
   if (!file || !file.type.startsWith('image/')) {
     showToast(t('photoScan.invalid'), 'error');
     return;
   }
-  showToast(t('photoScan.processing'), 'info');
+  const modal = $('#photo-scan-modal');
+  const statusEl = $('#photo-scan-status');
+  const resultEl = $('#photo-scan-result');
+  const useBtn = $('#photo-scan-use');
+  const cancelBtn = $('#photo-scan-cancel');
+
   const dataUrl = await resizeImage(file, MAX_PHOTO_WIDTH, 0.85);
+  $('#photo-scan-preview').src = dataUrl;
+  statusEl.classList.remove('hidden');
+  resultEl.classList.add('hidden');
+  useBtn.classList.add('hidden');
+  if (!modal.open) modal.showModal();
+
   const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
   const provider = localStorage.getItem(AI_PROVIDER_KEY) || '';
   const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
@@ -195,10 +208,35 @@ async function handleScanPhoto(file) {
     };
   }
 
+  photoScanAbort = new AbortController();
+  options.signal = photoScanAbort.signal;
+
+  const choice = new Promise((resolve) => {
+    useBtn.onclick = () => resolve(true);
+    cancelBtn.onclick = () => {
+      photoScanAbort?.abort();
+      resolve(false);
+    };
+    modal.oncancel = () => {
+      photoScanAbort?.abort();
+      resolve(false);
+    };
+  });
+
   try {
     const result = await api('/foods/recognize-photo', options);
+    photoScanAbort = null;
     const food = result.food;
     const weightGrams = result.weightGrams || 0;
+
+    statusEl.classList.add('hidden');
+    $('#photo-scan-name').textContent = foodName(food);
+    $('#photo-scan-weight').textContent = `${weightGrams} g`;
+    resultEl.classList.remove('hidden');
+    useBtn.classList.remove('hidden');
+
+    if (!(await choice)) return;
+
     let foodId = food.id;
     if (result.source !== 'local') {
       const created = await api('/foods', {
@@ -226,7 +264,10 @@ async function handleScanPhoto(file) {
     $('#meal-quantity').value = weightGrams > 0 ? weightGrams : '';
     showToast(t('photoScan.recognized', { name: foodName(food), weight: weightGrams }));
   } catch (err) {
-    showToast(err.message, 'error');
+    if (err.name !== 'AbortError') showToast(err.message, 'error');
+  } finally {
+    photoScanAbort = null;
+    if (modal.open) modal.close();
   }
 }
 

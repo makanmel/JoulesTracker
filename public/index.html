@@ -293,6 +293,18 @@
                 <div id="scanner-region" class="scanner-region"></div>
                 <button type="button" id="scanner-close" class="btn-secondary" data-i18n="foods.cancel">Cancel</button>
               </dialog>
+              <dialog id="photo-scan-modal" class="scanner photo-modal" aria-label="Recognize photo" data-i18n-aria-label="photoScan.title">
+                <img id="photo-scan-preview" class="photo-scan-preview" alt="" />
+                <p id="photo-scan-status" class="muted" data-i18n="photoScan.analyzing">Analyzing photo…</p>
+                <div id="photo-scan-result" class="photo-scan-result hidden">
+                  <strong id="photo-scan-name"></strong>
+                  <span id="photo-scan-weight" class="muted"></span>
+                </div>
+                <div class="photo-scan-actions">
+                  <button type="button" id="photo-scan-cancel" class="btn-secondary" data-i18n="foods.cancel">Cancel</button>
+                  <button type="button" id="photo-scan-use" class="btn-primary hidden" data-i18n="photoScan.addToMeal">Add to meal</button>
+                </div>
+              </dialog>
             </section>
           </div>
         </div>
