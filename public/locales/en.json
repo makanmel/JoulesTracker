@@ -116,7 +116,8 @@
     "quantity": "Grams",
     "date": "Date",
     "type": "Type",
-    "submit": "Add"
+    "submit": "Add",
+    "scanPhoto": "Scan photo"
   },
   "foods": {
     "title": "Foods",
@@ -177,6 +178,12 @@
     },
     "apiKey": "API key",
     "saveSettings": "Save"
+  },
+  "photoScan": {
+    "processing": "Recognizing...",
+    "recognized": "Recognized {{name}} · {{weight}} g",
+    "invalid": "Please select a valid image",
+    "readFailed": "Could not read the image"
   },
   "common": {
     "undo": "Undo"

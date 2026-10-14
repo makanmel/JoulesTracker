@@ -147,4 +147,44 @@ describe('Food endpoints', () => {
 
     expect(res.status).toBe(409);
   });
+
+  it('recognizes a photo and prefers a local matching food', async () => {
+    process.env.OPENAI_API_KEY = 'test-key';
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => 'unused',
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                name: 'Buckwheat (cooked)',
+                weightGrams: 250,
+                caloriesPer100g: 132,
+                proteinPer100g: 4.5,
+                carbsPer100g: 24,
+                fatPer100g: 1.6,
+                confidence: 'high',
+              }),
+            },
+          },
+        ],
+      }),
+    });
+
+    const res = await request(app)
+      .post('/api/v1/foods/recognize-photo')
+      .set('Authorization', authHeader)
+      .send({ image: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDAREAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBEQCEAwEPwAB//9k=' });
+
+    globalThis.fetch = originalFetch;
+
+    expect(res.status).toBe(200);
+    expect(res.body.source).toBe('local');
+    expect(res.body.saved).toBe(true);
+    expect(res.body.weightGrams).toBe(250);
+    expect(res.body.food.name).toBe('Buckwheat (cooked)');
+  });
 });
