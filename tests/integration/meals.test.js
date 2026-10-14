@@ -11,7 +11,7 @@ let food;
 beforeEach(async () => {
   const { token } = await registerAndLogin(app);
   authHeader = `Bearer ${token}`;
-  food = await prisma.food.findFirst({ where: { isDefault: true } });
+  food = await prisma.food.findFirst({ where: { isDefault: true, name: 'Chicken breast' } });
 });
 
 describe('Meal endpoints', () => {
