@@ -53,7 +53,8 @@ describe('photo recognizer', () => {
     const result = await recognizePhoto({ imageBase64, locale: 'en', fetchImpl });
 
     expect(result).toMatchObject({
-      name: 'Buckwheat (cooked)',
+      name: 'Гречка (варена)',
+      nameEn: 'Buckwheat (cooked)',
       weightGrams: 250,
       caloriesPer100g: 132,
       confidence: 'high',
