@@ -131,13 +131,28 @@ async function callGemini({ apiKey, imageBase64, mime, locale, fetchImpl }) {
   const candidates = await resolveGeminiModels({ apiKey, fetchImpl });
   let lastError = 'unknown';
 
-  for (const model of candidates) {
-    const result = await generateGeminiContent({ apiKey, model, imageBase64, mime, locale, fetchImpl });
-    if (result.ok) {
-      GEMINI_MODEL_CACHE.set(apiKey, [model]);
-      return result.content;
+  // Google occasionally returns transient 5xx; run a second pass over the
+  // candidates when the first failed with server-side errors only.
+  for (let pass = 0; pass < 2; pass++) {
+    let sawServerError = false;
+    for (const model of candidates) {
+      const result = await generateGeminiContent({
+        apiKey,
+        model,
+        imageBase64,
+        mime,
+        locale,
+        fetchImpl,
+      });
+      if (result.ok) {
+        GEMINI_MODEL_CACHE.set(apiKey, [model]);
+        return result.content;
+      }
+      sawServerError = sawServerError || result.status >= 500;
+      lastError = `${model} -> ${result.status}: ${providerErrorMessage(result.text)}`;
+      console.warn(`Gemini photo model ${model} failed: ${result.status}`);
     }
-    lastError = `${result.status}: ${providerErrorMessage(result.text)}`;
+    if (!sawServerError) break;
   }
 
   throw new AppError(`AI photo recognition failed: ${lastError}`, 502);
