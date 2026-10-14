@@ -965,27 +965,34 @@ button:disabled {
 .photo-scan-preview {
   display: block;
   width: 100%;
-  max-height: 220px;
-  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  background: #000;
   border-radius: var(--radius);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .photo-scan-result {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin: 8px 0;
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.photo-scan-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
   font-size: 16px;
 }
 
 .photo-scan-row {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  margin-top: 6px;
-  font-size: 14px;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
 }
 
 .photo-scan-actions {

@@ -253,6 +253,7 @@ async function handleScanPhoto(file) {
       saturated: micro('saturated', (food.saturatedFatPer100g ?? 0) * ratio),
       sugar: micro('sugar', (food.sugarPer100g ?? 0) * ratio),
     });
+    $('#photo-scan-serving-row').classList.toggle('hidden', Math.round(weightGrams) === 100);
     resultEl.classList.remove('hidden');
     useBtn.classList.remove('hidden');
 
