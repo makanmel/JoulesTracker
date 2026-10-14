@@ -124,7 +124,13 @@ async function generateGeminiContent({ apiKey, model, imageBase64, mime, locale,
   }
 
   const data = await response.json().catch(() => null);
-  return { ok: true, content: data?.candidates?.[0]?.content?.parts?.[0]?.text };
+  const parts = data?.candidates?.[0]?.content?.parts || [];
+  const content = parts
+    .map((part) => part.text)
+    .filter(Boolean)
+    .join('\n');
+  if (!content) return { ok: false, status: 200, text: 'empty candidates' };
+  return { ok: true, content };
 }
 
 async function callGemini({ apiKey, imageBase64, mime, locale, fetchImpl }) {
@@ -206,6 +212,7 @@ export async function recognizePhoto({
   try {
     parsed = JSON.parse(extractJson(content));
   } catch {
+    console.warn('AI photo recognition raw output:', String(content).slice(0, 500));
     throw new AppError('AI photo recognition returned malformed JSON', 502);
   }
 
