@@ -1160,6 +1160,60 @@ button:disabled {
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
+.settings-details {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.settings-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  min-height: var(--touch-target);
+  list-style: none;
+}
+
+.settings-summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings-summary::after {
+  content: '';
+  margin-left: auto;
+  border: solid var(--muted);
+  border-width: 0 2px 2px 0;
+  padding: 3px;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.settings-details[open] > .settings-summary::after {
+  transform: rotate(225deg);
+}
+
+.settings-details[open] > .settings-summary {
+  margin-bottom: 8px;
+}
+
+.about-release {
+  font-weight: 600;
+  margin: 12px 0 4px;
+}
+
+.about-items {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.about-items li {
+  margin: 2px 0;
+}
+
 .dashboard-grid {
   display: flex;
   flex-direction: column;

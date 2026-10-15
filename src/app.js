@@ -8,6 +8,9 @@ import userRoutes from './routes/users.js';
 import { authenticate } from './middleware/auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { rateLimit } from 'express-rate-limit';
+import { createRequire } from 'node:module';
+
+const pkg = createRequire(import.meta.url)('../package.json');
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -28,7 +31,7 @@ export function createApp() {
   app.use(express.json({ limit: '4mb' }));
 
   app.get('/health', (req, res) => {
-    res.json({ status: 'ok' });
+    res.json({ status: 'ok', version: pkg.version });
   });
 
   app.use('/api/v1', apiLimiter);

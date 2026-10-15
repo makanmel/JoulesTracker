@@ -1,4 +1,5 @@
 import { DEFAULT_THEME_ID, THEMES } from './themes.js';
+import { t } from './i18n.js';
 
 export const STORAGE_KEY = 'joulesTheme';
 
@@ -46,6 +47,12 @@ export function applyTheme(id) {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', String(active));
   });
+
+  const currentLabel = document.querySelector('#theme-current');
+  if (currentLabel) {
+    currentLabel.dataset.i18n = theme.nameKey;
+    currentLabel.textContent = t(theme.nameKey);
+  }
 
   return theme;
 }

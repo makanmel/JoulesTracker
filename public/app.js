@@ -1,5 +1,6 @@
 import { t, initI18n, onLanguageChange } from './i18n.js';
 import { initTheme } from './theme.js';
+import { APP_VERSION, CHANGELOG } from './version.js';
 
 const API_BASE = '/api/v1';
 const SEARCH_DEBOUNCE_MS = 300;
@@ -1280,10 +1281,43 @@ function initMobileNav() {
   });
 }
 
+function renderAbout(version) {
+  const versionEl = $('#about-version');
+  if (versionEl) versionEl.textContent = version;
+  const changelogEl = $('#about-changelog');
+  if (!changelogEl) return;
+  changelogEl.replaceChildren();
+  CHANGELOG.forEach((release) => {
+    const heading = document.createElement('p');
+    heading.className = 'about-release';
+    heading.textContent = `v${release.version} · ${release.date}`;
+    const list = document.createElement('ul');
+    list.className = 'about-items';
+    release.items.forEach((key) => {
+      const item = document.createElement('li');
+      item.textContent = t(key);
+      list.appendChild(item);
+    });
+    changelogEl.append(heading, list);
+  });
+}
+
+async function initAbout() {
+  renderAbout(`v${APP_VERSION}`);
+  // Prefer the deployed server version — it is the true source of truth.
+  const version = await fetch('/health')
+    .then((res) => (res.ok ? res.json() : null))
+    .then((body) => body?.version ?? null)
+    .catch(() => null);
+  if (version) renderAbout(`v${version}`);
+}
+
 async function init() {
   initTheme();
   initMobileNav();
   await initI18n();
+  initAbout();
+  onLanguageChange(() => renderAbout($('#about-version')?.textContent || `v${APP_VERSION}`));
   onLanguageChange(refreshDashboard);
 
   tabLogin.addEventListener('click', () => switchTab('login'));
