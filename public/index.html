@@ -33,8 +33,14 @@
     <main>
       <section id="settings-section" class="card hidden">
         <h2 data-i18n="settings.title">Settings</h2>
-        <p class="muted" data-i18n="settings.themeHint">Choose a visual theme for the app.</p>
-        <div id="theme-selector" class="theme-selector" role="group" aria-label="Theme" data-i18n-aria-label="settings.theme"></div>
+        <details id="theme-details" class="settings-details">
+          <summary class="settings-summary">
+            <span class="settings-summary-label" data-i18n="settings.theme">Theme</span>
+            <span id="theme-current" class="muted"></span>
+          </summary>
+          <p class="muted" data-i18n="settings.themeHint">Choose a visual theme for the app.</p>
+          <div id="theme-selector" class="theme-selector" role="group" aria-label="Theme" data-i18n-aria-label="settings.theme"></div>
+        </details>
 
         <h3 data-i18n="profile.title">Profile</h3>
         <form id="profile-form" class="grid-form">
@@ -168,6 +174,14 @@
             <button type="submit" class="btn-secondary" data-i18n="voice.saveSettings">Save</button>
           </form>
         </div>
+
+        <details id="about-details" class="settings-details">
+          <summary class="settings-summary">
+            <span class="settings-summary-label" data-i18n="about.title">About</span>
+            <span id="about-version" class="muted"></span>
+          </summary>
+          <div id="about-changelog"></div>
+        </details>
       </section>
 
       <section id="auth-section" class="card">

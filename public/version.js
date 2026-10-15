@@ -1,0 +1,18 @@
+// Bundled version/changelog — shown in Settings > About.
+// APP_VERSION is a fallback for the version reported by /health and should be
+// kept in sync with package.json. Changelog item texts live in locales/*.json
+// as about.changes keys; keep entries short and user-facing.
+export const APP_VERSION = '0.2.0';
+
+export const CHANGELOG = [
+  {
+    version: '0.2.0',
+    date: '2026-10-15',
+    items: ['about.changes.v020.i1', 'about.changes.v020.i2', 'about.changes.v020.i3', 'about.changes.v020.i4', 'about.changes.v020.i5'],
+  },
+  {
+    version: '0.1.0',
+    date: '2026-09-28',
+    items: ['about.changes.v010.i1', 'about.changes.v010.i2'],
+  },
+];

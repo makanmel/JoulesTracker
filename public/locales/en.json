@@ -17,6 +17,18 @@
     "theme": "Theme",
     "themeHint": "Choose a visual theme for the app."
   },
+  "about": {
+    "title": "About",
+    "changes": {
+      "v020.i1": "Voice input and photo food recognition (Gemini or OpenAI)",
+      "v020.i2": "Visual themes — pick one here in Settings",
+      "v020.i3": "Search and import products from OpenFoodFacts",
+      "v020.i4": "Barcode scanning for packaged foods",
+      "v020.i5": "More reliable AI recognition when the service is busy",
+      "v010.i1": "Meal logging with calorie and macro targets",
+      "v010.i2": "Daily summary, food database and profile"
+    }
+  },
   "profile": {
     "title": "Profile",
     "weight": "Weight (kg)",
