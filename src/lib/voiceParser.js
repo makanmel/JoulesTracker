@@ -3,8 +3,13 @@ import { AppError } from './errors.js';
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1';
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+// v1beta is a superset of v1 for generateContent (previews, gemma, image
+// models). Some models listable on one version only generate on the other,
+// so a 404 is retried on the alternate version.
+const GEMINI_API_BASES = ['v1beta', 'v1'].map(
+  (version) => `https://generativelanguage.googleapis.com/${version}`,
+);
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const GEMINI_MODEL_CACHE = new Map();
 
 const SYSTEM_PROMPT = `You are a nutrition assistant for a calorie tracker. The user speaks in either Ukrainian or English.
@@ -36,7 +41,7 @@ function providerErrorMessage(text) {
   return clean.length > 200 ? `${clean.slice(0, 200)}...` : clean;
 }
 
-async function callOpenAI({ apiKey, transcript, locale, fetchImpl }) {
+async function callOpenAI({ apiKey, transcript, locale, model, fetchImpl }) {
   const response = await fetchImpl(OPENAI_API_URL, {
     method: 'POST',
     headers: {
@@ -44,7 +49,7 @@ async function callOpenAI({ apiKey, transcript, locale, fetchImpl }) {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: OPENAI_MODEL,
+      model: model || OPENAI_MODEL,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: userPrompt(transcript, locale) },
@@ -64,7 +69,7 @@ async function callOpenAI({ apiKey, transcript, locale, fetchImpl }) {
 }
 
 async function listGeminiModels({ apiKey, fetchImpl }) {
-  const url = `${GEMINI_API_BASE}/models?key=${encodeURIComponent(apiKey)}`;
+  const url = `${GEMINI_API_BASES[0]}/models?key=${encodeURIComponent(apiKey)}`;
   const response = await fetchImpl(url, { headers: { 'Content-Type': 'application/json' } });
   if (!response.ok) {
     const text = await response.text().catch(() => 'unknown');
@@ -74,8 +79,18 @@ async function listGeminiModels({ apiKey, fetchImpl }) {
   return data?.models || [];
 }
 
+// Cheaper, more reliable text models first; gemma/image/tts models last.
+function geminiModelRank(name, preferred) {
+  const n = name.toLowerCase();
+  if (n === preferred.toLowerCase()) return 0;
+  if (!n.startsWith('gemini-')) return 3;
+  if (/image|tts|embedding|aqa|robotics/.test(n)) return 3;
+  return n.includes('flash') ? 1 : 2;
+}
+
 async function resolveGeminiModels({ apiKey, requestedModel, fetchImpl }) {
-  const cached = GEMINI_MODEL_CACHE.get(apiKey);
+  const cacheKey = `${apiKey}:${requestedModel}`;
+  const cached = GEMINI_MODEL_CACHE.get(cacheKey);
   if (cached) return cached;
 
   const models = await listGeminiModels({ apiKey, fetchImpl });
@@ -87,16 +102,16 @@ async function resolveGeminiModels({ apiKey, requestedModel, fetchImpl }) {
     throw new AppError('No Gemini text-generation model available for this API key', 503);
   }
 
-  const preferred = available.includes(requestedModel)
-    ? [requestedModel, ...available.filter((name) => name !== requestedModel)]
-    : available;
+  const preferred = [...new Set([requestedModel, ...available])].sort(
+    (a, b) => geminiModelRank(a, requestedModel) - geminiModelRank(b, requestedModel),
+  );
 
-  GEMINI_MODEL_CACHE.set(apiKey, preferred);
+  GEMINI_MODEL_CACHE.set(cacheKey, preferred);
   return preferred;
 }
 
-async function generateGeminiContent({ apiKey, model, transcript, locale, fetchImpl }) {
-  const url = `${GEMINI_API_BASE}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+async function requestGeminiContent({ apiKey, model, transcript, locale, fetchImpl, baseUrl }) {
+  const url = `${baseUrl}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
   const response = await fetchImpl(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -124,17 +139,43 @@ async function generateGeminiContent({ apiKey, model, transcript, locale, fetchI
   }
 
   const data = await response.json().catch(() => null);
-  return { ok: true, content: data?.candidates?.[0]?.content?.parts?.[0]?.text };
+  const parts = data?.candidates?.[0]?.content?.parts || [];
+  // Thinking models emit reasoning parts flagged with `thought: true` — they
+  // are not the answer and break JSON parsing if concatenated.
+  const content = parts
+    .filter((part) => part.thought !== true && typeof part.text === 'string')
+    .map((part) => part.text)
+    .join('\n');
+  if (!content) return { ok: false, status: 200, text: 'empty candidates' };
+  return { ok: true, content };
 }
 
-async function callGemini({ apiKey, transcript, locale, fetchImpl }) {
-  const candidates = await resolveGeminiModels({ apiKey, requestedModel: GEMINI_MODEL, fetchImpl });
+async function generateGeminiContent({ apiKey, model, transcript, locale, fetchImpl }) {
+  let lastResult = null;
+  for (const baseUrl of GEMINI_API_BASES) {
+    const result = await requestGeminiContent({
+      apiKey,
+      model,
+      transcript,
+      locale,
+      fetchImpl,
+      baseUrl,
+    });
+    if (result.ok || result.status !== 404) return result;
+    lastResult = result;
+  }
+  return lastResult;
+}
+
+async function callGemini({ apiKey, transcript, locale, model, fetchImpl }) {
+  const requestedModel = model || GEMINI_MODEL;
+  const candidates = await resolveGeminiModels({ apiKey, requestedModel, fetchImpl });
   let lastError = 'unknown';
 
   for (const model of candidates) {
     const result = await generateGeminiContent({ apiKey, model, transcript, locale, fetchImpl });
     if (result.ok) {
-      GEMINI_MODEL_CACHE.set(apiKey, [model]);
+      GEMINI_MODEL_CACHE.set(`${apiKey}:${requestedModel}`, [model]);
       return result.content;
     }
     lastError = `${result.status}: ${providerErrorMessage(result.text)}`;
@@ -148,6 +189,7 @@ export async function parseVoiceInput({
   locale = 'en',
   provider,
   apiKey,
+  model,
   fetchImpl = fetch,
 } = {}) {
   const resolvedProvider = provider
@@ -158,14 +200,19 @@ export async function parseVoiceInput({
         ? 'gemini'
         : null;
   const resolvedKey = apiKey || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY;
+  // Model may come from the client; it is interpolated into a URL path, so
+  // keep only safe characters and ignore anything else.
+  const requestedModel = /^[a-zA-Z0-9._-]+$/.test(String(model || '').trim())
+    ? String(model).trim()
+    : null;
 
   if (!resolvedKey) {
     throw new AppError('Voice parsing is not configured on this server', 503);
   }
 
   const content = resolvedProvider === 'openai'
-    ? await callOpenAI({ apiKey: resolvedKey, transcript, locale, fetchImpl })
-    : await callGemini({ apiKey: resolvedKey, transcript, locale, fetchImpl });
+    ? await callOpenAI({ apiKey: resolvedKey, transcript, locale, model: requestedModel, fetchImpl })
+    : await callGemini({ apiKey: resolvedKey, transcript, locale, model: requestedModel, fetchImpl });
 
   if (!content) {
     throw new AppError('AI parsing returned an empty response', 502);
@@ -173,12 +220,34 @@ export async function parseVoiceInput({
 
   function extractJson(text) {
     const cleaned = text
-      .trim()
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```$/i, '')
+      .replace(/```(?:json)?/gi, '')
       .trim();
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    return match ? match[0] : cleaned;
+    const objects = [];
+    let depth = 0;
+    let start = -1;
+    let inString = false;
+    let escaped = false;
+    for (let i = 0; i < cleaned.length; i++) {
+      const ch = cleaned[i];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (ch === '\\') escaped = true;
+        else if (ch === '"') inString = false;
+      } else if (ch === '"') {
+        inString = true;
+      } else if (ch === '{') {
+        if (depth === 0) start = i;
+        depth++;
+      } else if (ch === '}' && depth > 0) {
+        depth--;
+        if (depth === 0) objects.push(cleaned.slice(start, i + 1));
+      }
+    }
+    // The actual answer comes last; earlier objects are schema echoes/reasoning.
+    for (let i = objects.length - 1; i >= 0; i--) {
+      if (/"items"\s*:/.test(objects[i])) return objects[i];
+    }
+    return objects[objects.length - 1] || cleaned;
   }
 
   let parsed;

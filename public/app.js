@@ -8,6 +8,7 @@ const WAKE_RETRY_DELAY_MS = 3000;
 const WAKE_RETRY_LIMIT = 15;
 const AI_PROVIDER_KEY = 'joulesAiProvider';
 const AI_API_KEY_KEY = 'joulesAiApiKey';
+const AI_MODEL_KEY = 'joulesAiModel';
 const MEAL_TYPE_KEY = 'joulesMealType';
 const MAX_PHOTO_WIDTH = 1024;
 
@@ -195,16 +196,18 @@ async function handleScanPhoto(file) {
   if (!modal.open) modal.showModal();
 
   const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
-  const provider = localStorage.getItem(AI_PROVIDER_KEY) || '';
+  const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
   const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
+  const model = localStorage.getItem(AI_MODEL_KEY) || '';
   const options = {
     method: 'POST',
     body: JSON.stringify({ image: dataUrl, locale }),
   };
-  if (provider || apiKey) {
+  if (provider || apiKey || model) {
     options.headers = {
       'x-ai-provider': provider,
       'x-ai-key': apiKey,
+      'x-ai-model': model,
     };
   }
 
@@ -297,13 +300,24 @@ function formatDate(date) {
   return date.toISOString().split('T')[0];
 }
 
+function syncModelOptions(provider) {
+  const modelInput = $('#voice-model');
+  if (modelInput) {
+    modelInput.setAttribute('list', provider === 'openai' ? 'model-options-openai' : 'model-options-gemini');
+  }
+}
+
 function loadVoiceSettings() {
   const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
   const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
+  const model = localStorage.getItem(AI_MODEL_KEY) || '';
   const providerSelect = $('#voice-provider');
   const apiKeyInput = $('#voice-api-key');
+  const modelInput = $('#voice-model');
   if (providerSelect) providerSelect.value = provider;
   if (apiKeyInput) apiKeyInput.value = apiKey;
+  if (modelInput) modelInput.value = model;
+  syncModelOptions(provider);
 }
 
 function loadMealTypePreference() {
@@ -316,6 +330,7 @@ function saveVoiceSettings(e) {
   e.preventDefault();
   localStorage.setItem(AI_PROVIDER_KEY, $('#voice-provider').value);
   localStorage.setItem(AI_API_KEY_KEY, $('#voice-api-key').value.trim());
+  localStorage.setItem(AI_MODEL_KEY, $('#voice-model').value.trim());
   showToast(t('voice.settingsSaved'));
 }
 
@@ -1137,14 +1152,16 @@ async function parseVoiceTranscript(transcript) {
     const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
     const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
     const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
+    const model = localStorage.getItem(AI_MODEL_KEY) || '';
     const options = {
       method: 'POST',
       body: JSON.stringify({ transcript, locale }),
     };
-    if (apiKey) {
+    if (apiKey || model) {
       options.headers = {
         'X-AI-Provider': provider,
         'X-AI-Key': apiKey,
+        'X-AI-Model': model,
       };
     }
     const data = await api('/foods/parse-voice', { ...options, wakeNotice: false });
@@ -1320,6 +1337,7 @@ async function init() {
   $('#voice-toggle').addEventListener('click', toggleVoiceInput);
   $('#voice-confirm').addEventListener('click', confirmVoiceResults);
   $('#voice-settings-form').addEventListener('submit', saveVoiceSettings);
+  $('#voice-provider').addEventListener('change', (e) => syncModelOptions(e.target.value));
   $('#food-form').addEventListener('submit', handleCreateFood);
   $('#edit-food-btn').addEventListener('click', startEditFood);
   $('#toggle-food-form').addEventListener('click', () => setFoodFormVisible($('#food-form').classList.contains('hidden')));

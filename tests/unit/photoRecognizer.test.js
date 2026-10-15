@@ -106,6 +106,121 @@ describe('photo recognizer', () => {
     expect(fetchImpl.mock.calls[0][0]).toContain('generativelanguage.googleapis.com');
   });
 
+  it('retries a model on the alternate API version after a 404', async () => {
+    process.env.GEMINI_API_KEY = 'gemini-test-key';
+    const generateUrls = [];
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(
+          jsonResponse({
+            models: [{ name: 'models/gemini-9-preview', supportedGenerationMethods: ['generateContent'] }],
+          }),
+        );
+      }
+      generateUrls.push(url);
+      if (url.includes('/v1beta/')) {
+        return Promise.resolve(jsonResponse({ error: { message: 'not found' } }, 404));
+      }
+      return Promise.resolve(
+        jsonResponse({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  { text: JSON.stringify({ name: 'Pizza', weightGrams: 100, confidence: 'medium' }) },
+                ],
+              },
+            },
+          ],
+        }),
+      );
+    });
+
+    const result = await recognizePhoto({
+      imageBase64,
+      provider: 'gemini',
+      apiKey: 'version-fallback-key',
+      fetchImpl,
+    });
+
+    expect(result.name).toBe('Pizza');
+    expect(generateUrls[0]).toContain('/v1beta/');
+    expect(generateUrls[1]).toContain('/v1/');
+  });
+
+  it('skips thought parts and parses JSON after a reasoning preamble', async () => {
+    process.env.GEMINI_API_KEY = 'gemini-test-key';
+    const answer = JSON.stringify({ name: 'Black coffee', weightGrams: 250, caloriesPer100g: 2 });
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(
+          jsonResponse({
+            models: [{ name: 'models/gemma-think', supportedGenerationMethods: ['generateContent'] }],
+          }),
+        );
+      }
+      return Promise.resolve(
+        jsonResponse({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  { thought: true, text: 'The image shows a mug of black coffee. {"name": "schema echo"}' },
+                  { text: `Analysis: mug with dark liquid. {"name": "Coffee draft"}\n${answer}` },
+                ],
+              },
+            },
+          ],
+        }),
+      );
+    });
+
+    const result = await recognizePhoto({
+      imageBase64,
+      provider: 'gemini',
+      apiKey: 'thought-parts-key',
+      fetchImpl,
+    });
+
+    expect(result).toMatchObject({ name: 'Black coffee', weightGrams: 250 });
+  });
+
+  it('tries a UI-selected model first for Gemini', async () => {
+    process.env.GEMINI_API_KEY = 'gemini-test-key';
+    const generateUrls = [];
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(
+          jsonResponse({
+            models: [
+              { name: 'models/gemini-2.5-flash', supportedGenerationMethods: ['generateContent'] },
+              { name: 'models/gemini-9-custom', supportedGenerationMethods: ['generateContent'] },
+            ],
+          }),
+        );
+      }
+      generateUrls.push(url);
+      return Promise.resolve(
+        jsonResponse({
+          candidates: [
+            { content: { parts: [{ text: JSON.stringify({ name: 'Pizza', weightGrams: 100 }) }] } },
+          ],
+        }),
+      );
+    });
+
+    const result = await recognizePhoto({
+      imageBase64,
+      provider: 'gemini',
+      apiKey: 'ui-model-key',
+      model: 'gemini-9-custom',
+      fetchImpl,
+    });
+
+    expect(result.name).toBe('Pizza');
+    expect(generateUrls[0]).toContain('gemini-9-custom');
+  });
+
   it('throws when AI returns empty name', async () => {
     process.env.OPENAI_API_KEY = 'openai-test-key';
     const fetchImpl = vi.fn().mockResolvedValue(
