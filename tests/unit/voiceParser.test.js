@@ -97,7 +97,7 @@ describe('voice parser', () => {
     });
 
     expect(items).toHaveLength(1);
-    expect(fetchImpl.mock.calls[0][0]).toContain('generativelanguage.googleapis.com/v1/models');
+    expect(fetchImpl.mock.calls[0][0]).toContain('generativelanguage.googleapis.com/v1beta/models');
     expect(fetchImpl.mock.calls[0][0]).toContain('explicit-gemini-key');
   });
 
@@ -189,8 +189,42 @@ describe('voice parser', () => {
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({ name: 'Apple' });
     const generateCalls = fetchImpl.mock.calls.filter(([callUrl]) => callUrl.includes(':generateContent'));
-    expect(generateCalls).toHaveLength(2);
-    expect(generateCalls[1][0]).toContain('gemini-3.8-flash');
+    // 404 on v1beta retries on v1 before moving to the next model.
+    expect(generateCalls).toHaveLength(3);
+    expect(generateCalls[0][0]).toContain('/v1beta/models/gemini-2.5-flash:generateContent');
+    expect(generateCalls[1][0]).toContain('/v1/models/gemini-2.5-flash:generateContent');
+    expect(generateCalls[2][0]).toContain('gemini-3.8-flash');
+  });
+
+  it('tries a UI-selected model first for Gemini', async () => {
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(geminiModelListResponse(['gemini-1.5-flash', 'gemini-9-custom']));
+      }
+      return Promise.resolve(
+        jsonResponse({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: JSON.stringify({ items: [{ name: 'Apple', quantityGrams: 150 }] }) }],
+              },
+            },
+          ],
+        }),
+      );
+    });
+
+    const items = await parseVoiceInput({
+      transcript: 'one apple',
+      provider: 'gemini',
+      apiKey: 'ui-model-key',
+      model: 'gemini-9-custom',
+      fetchImpl,
+    });
+
+    expect(items).toHaveLength(1);
+    const generateCalls = fetchImpl.mock.calls.filter(([callUrl]) => callUrl.includes(':generateContent'));
+    expect(generateCalls[0][0]).toContain('gemini-9-custom');
   });
 
   it('throws 502 when all Gemini models return 404', async () => {

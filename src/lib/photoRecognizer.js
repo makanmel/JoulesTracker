@@ -3,8 +3,13 @@ import { AppError } from './errors.js';
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1';
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+// v1beta is a superset of v1 for generateContent (previews, gemma, image
+// models). Some models listable on one version only generate on the other,
+// so a 404 is retried on the alternate version.
+const GEMINI_API_BASES = ['v1beta', 'v1'].map(
+  (version) => `https://generativelanguage.googleapis.com/${version}`,
+);
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 const SYSTEM_PROMPT = `You are a nutrition assistant. Look at the food photo and identify the main dish or the most prominent food item on the plate.
 Estimate the total weight in grams of the visible food, and estimate macros per 100g for that food.
@@ -27,9 +32,9 @@ function providerErrorMessage(text) {
   return clean.length > 200 ? `${clean.slice(0, 200)}...` : clean;
 }
 
-function buildOpenAIBody({ imageBase64, mime, locale }) {
+function buildOpenAIBody({ imageBase64, mime, locale, model }) {
   return {
-    model: OPENAI_MODEL,
+    model: model || OPENAI_MODEL,
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       {
@@ -48,14 +53,14 @@ function buildOpenAIBody({ imageBase64, mime, locale }) {
   };
 }
 
-async function callOpenAI({ apiKey, imageBase64, mime, locale, fetchImpl }) {
+async function callOpenAI({ apiKey, imageBase64, mime, locale, model, fetchImpl }) {
   const response = await fetchImpl(OPENAI_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify(buildOpenAIBody({ imageBase64, mime, locale })),
+    body: JSON.stringify(buildOpenAIBody({ imageBase64, mime, locale, model })),
   });
 
   if (!response.ok) {
@@ -70,31 +75,50 @@ async function callOpenAI({ apiKey, imageBase64, mime, locale, fetchImpl }) {
 const GEMINI_MODEL_CACHE = new Map();
 
 async function listGeminiModels({ apiKey, fetchImpl }) {
-  const url = `${GEMINI_API_BASE}/models?key=${encodeURIComponent(apiKey)}`;
+  const url = `${GEMINI_API_BASES[0]}/models?key=${encodeURIComponent(apiKey)}`;
   const response = await fetchImpl(url, { headers: { 'Content-Type': 'application/json' } });
   if (!response.ok) return [];
   const data = await response.json().catch(() => null);
   return data?.models || [];
 }
 
-async function resolveGeminiModels({ apiKey, fetchImpl }) {
-  const cached = GEMINI_MODEL_CACHE.get(apiKey);
+// Cheaper, more reliable vision models first; gemma/image/tts models last —
+// they either reject images or are rate-limited on most keys.
+function geminiModelRank(name, preferred) {
+  const n = name.toLowerCase();
+  if (n === preferred.toLowerCase()) return 0;
+  if (!n.startsWith('gemini-')) return 3;
+  if (/image|tts|embedding|aqa|robotics/.test(n)) return 3;
+  return n.includes('flash') ? 1 : 2;
+}
+
+async function resolveGeminiModels({ apiKey, requestedModel, fetchImpl }) {
+  const cacheKey = `${apiKey}:${requestedModel}`;
+  const cached = GEMINI_MODEL_CACHE.get(cacheKey);
   if (cached) return cached;
 
   const available = (await listGeminiModels({ apiKey, fetchImpl }))
     .filter((model) => model.supportedGenerationMethods?.includes('generateContent'))
     .map((model) => model.name.replace(/^models\//, ''));
 
-  const preferred = available.includes(GEMINI_MODEL)
-    ? [GEMINI_MODEL, ...available.filter((name) => name !== GEMINI_MODEL)]
-    : [GEMINI_MODEL, ...available];
+  const preferred = [...new Set([requestedModel, ...available])].sort(
+    (a, b) => geminiModelRank(a, requestedModel) - geminiModelRank(b, requestedModel),
+  );
 
-  GEMINI_MODEL_CACHE.set(apiKey, preferred);
+  GEMINI_MODEL_CACHE.set(cacheKey, preferred);
   return preferred;
 }
 
-async function generateGeminiContent({ apiKey, model, imageBase64, mime, locale, fetchImpl }) {
-  const url = `${GEMINI_API_BASE}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+async function requestGeminiContent({
+  apiKey,
+  model,
+  imageBase64,
+  mime,
+  locale,
+  fetchImpl,
+  baseUrl,
+}) {
+  const url = `${baseUrl}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
   const response = await fetchImpl(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -125,16 +149,37 @@ async function generateGeminiContent({ apiKey, model, imageBase64, mime, locale,
 
   const data = await response.json().catch(() => null);
   const parts = data?.candidates?.[0]?.content?.parts || [];
+  // Thinking models emit reasoning parts flagged with `thought: true` — they
+  // are not the answer and break JSON parsing if concatenated.
   const content = parts
+    .filter((part) => part.thought !== true && typeof part.text === 'string')
     .map((part) => part.text)
-    .filter(Boolean)
     .join('\n');
   if (!content) return { ok: false, status: 200, text: 'empty candidates' };
   return { ok: true, content };
 }
 
-async function callGemini({ apiKey, imageBase64, mime, locale, fetchImpl }) {
-  const candidates = await resolveGeminiModels({ apiKey, fetchImpl });
+async function generateGeminiContent({ apiKey, model, imageBase64, mime, locale, fetchImpl }) {
+  let lastResult = null;
+  for (const baseUrl of GEMINI_API_BASES) {
+    const result = await requestGeminiContent({
+      apiKey,
+      model,
+      imageBase64,
+      mime,
+      locale,
+      fetchImpl,
+      baseUrl,
+    });
+    if (result.ok || result.status !== 404) return result;
+    lastResult = result;
+  }
+  return lastResult;
+}
+
+async function callGemini({ apiKey, imageBase64, mime, locale, model, fetchImpl }) {
+  const requestedModel = model || GEMINI_MODEL;
+  const candidates = await resolveGeminiModels({ apiKey, requestedModel, fetchImpl });
   let lastError = 'unknown';
 
   // Google occasionally returns transient 5xx; run a second pass over the
@@ -151,7 +196,7 @@ async function callGemini({ apiKey, imageBase64, mime, locale, fetchImpl }) {
         fetchImpl,
       });
       if (result.ok) {
-        GEMINI_MODEL_CACHE.set(apiKey, [model]);
+        GEMINI_MODEL_CACHE.set(`${apiKey}:${requestedModel}`, [model]);
         return result.content;
       }
       sawServerError = sawServerError || result.status >= 500;
@@ -164,14 +209,44 @@ async function callGemini({ apiKey, imageBase64, mime, locale, fetchImpl }) {
   throw new AppError(`AI photo recognition failed: ${lastError}`, 502);
 }
 
+// Returns each top-level balanced {...} block, ignoring braces inside
+// strings. Models that emit a reasoning preamble may echo the JSON schema,
+// so a naive first-`{`-to-last-`}` regex produces unparseable text.
+function extractJsonObjects(text) {
+  const objects = [];
+  let depth = 0;
+  let start = -1;
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === '"') inString = false;
+    } else if (ch === '"') {
+      inString = true;
+    } else if (ch === '{') {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (ch === '}' && depth > 0) {
+      depth--;
+      if (depth === 0) objects.push(text.slice(start, i + 1));
+    }
+  }
+  return objects;
+}
+
 function extractJson(text) {
   const cleaned = text
-    .trim()
-    .replace(/^```(?:json)?\s*/i, '')
-    .replace(/\s*```$/i, '')
+    .replace(/```(?:json)?/gi, '')
     .trim();
-  const match = cleaned.match(/\{[\s\S]*\}/);
-  return match ? match[0] : cleaned;
+  const objects = extractJsonObjects(cleaned);
+  // The actual answer comes last; earlier objects are schema echoes/reasoning.
+  for (let i = objects.length - 1; i >= 0; i--) {
+    if (/"name"\s*:/.test(objects[i])) return objects[i];
+  }
+  return objects[objects.length - 1] || cleaned;
 }
 
 export async function recognizePhoto({
@@ -180,6 +255,7 @@ export async function recognizePhoto({
   locale = 'en',
   provider,
   apiKey,
+  model,
   fetchImpl = fetch,
 } = {}) {
   if (!imageBase64 || imageBase64.length < 100) {
@@ -194,6 +270,11 @@ export async function recognizePhoto({
         ? 'gemini'
         : null;
   const resolvedKey = apiKey || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY;
+  // Model may come from the client; it is interpolated into a URL path, so
+  // keep only safe characters and ignore anything else.
+  const requestedModel = /^[a-zA-Z0-9._-]+$/.test(String(model || '').trim())
+    ? String(model).trim()
+    : null;
 
   if (!resolvedKey) {
     throw new AppError('Photo recognition is not configured on this server', 503);
@@ -201,8 +282,8 @@ export async function recognizePhoto({
 
   const content =
     resolvedProvider === 'openai'
-      ? await callOpenAI({ apiKey: resolvedKey, imageBase64, mime, locale, fetchImpl })
-      : await callGemini({ apiKey: resolvedKey, imageBase64, mime, locale, fetchImpl });
+      ? await callOpenAI({ apiKey: resolvedKey, imageBase64, mime, locale, model: requestedModel, fetchImpl })
+      : await callGemini({ apiKey: resolvedKey, imageBase64, mime, locale, model: requestedModel, fetchImpl });
 
   if (!content) {
     throw new AppError('AI photo recognition returned an empty response', 502);

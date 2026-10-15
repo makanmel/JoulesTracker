@@ -179,6 +179,7 @@
       "openai": "OpenAI"
     },
     "apiKey": "API key",
+    "model": "Model (optional)",
     "saveSettings": "Save"
   },
   "photoScan": {

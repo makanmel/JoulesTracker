@@ -223,7 +223,8 @@ router.post('/parse-voice', async (req, res, next) => {
     const locale = req.body.locale === 'uk' ? 'uk' : 'en';
     const provider = req.headers['x-ai-provider'];
     const apiKey = req.headers['x-ai-key'];
-    const items = await parseVoiceInput({ transcript, locale, provider, apiKey });
+    const model = req.headers['x-ai-model'];
+    const items = await parseVoiceInput({ transcript, locale, provider, apiKey, model });
     res.json({ items });
   } catch (err) {
     next(err);
@@ -245,7 +246,8 @@ router.post('/recognize-photo', async (req, res, next) => {
     const locale = req.body.locale === 'uk' ? 'uk' : 'en';
     const provider = req.headers['x-ai-provider'];
     const apiKey = req.headers['x-ai-key'];
-    const ai = await recognizePhoto({ imageBase64: base64, mime, locale, provider, apiKey });
+    const model = req.headers['x-ai-model'];
+    const ai = await recognizePhoto({ imageBase64: base64, mime, locale, provider, apiKey, model });
 
     const local = await findLocalByName(ai.name, req.user.id);
     if (local) {
