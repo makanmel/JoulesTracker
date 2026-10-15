@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { assertSafeTestDatabase } from './helpers/databaseSafety.js';
+import { assertSafeTestDatabase, assertConnectedDatabaseIsTest } from './helpers/databaseSafety.js';
 
 process.env.NODE_ENV = 'test';
 dotenv.config({ path: '.env.test', override: true });
@@ -22,6 +22,7 @@ async function seedDefaultFoods() {
 }
 
 beforeEach(async () => {
+  await assertConnectedDatabaseIsTest(prisma);
   await prisma.mealEntry.deleteMany({});
   await prisma.dailyTarget.deleteMany({});
   await prisma.food.deleteMany({ where: { isDefault: false } });
