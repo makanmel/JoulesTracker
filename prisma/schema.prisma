@@ -98,3 +98,19 @@ model DailyTarget {
 
   @@unique([userId, targetDate])
 }
+
+// Written by the audit_row_deletes() trigger on every DELETE against
+// user-data tables. Declared here so `migrate dev` does not flag it as
+// drift; it is never queried through Prisma by the app.
+model DeleteAudit {
+  id              Int       @id @default(autoincrement())
+  tableName       String    @map("tableName")
+  rowCount        Int       @map("rowCount")
+  deletedAt       DateTime  @default(now()) @db.Timestamptz(3) @map("deletedAt")
+  applicationName String?   @map("applicationName")
+  clientAddr      String?   @map("clientAddr")
+  dbUser          String?   @map("dbUser")
+  sessionUser     String?   @map("sessionUser")
+
+  @@map("_DeleteAudit")
+}
