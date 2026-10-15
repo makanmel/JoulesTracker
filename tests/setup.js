@@ -1,10 +1,5 @@
-import dotenv from 'dotenv';
-import { assertSafeTestDatabase, assertConnectedDatabaseIsTest } from './helpers/databaseSafety.js';
-
-process.env.NODE_ENV = 'test';
-dotenv.config({ path: '.env.test', override: true });
-assertSafeTestDatabase(process.env.DATABASE_URL, process.env.NODE_ENV);
-
+import './loadEnv.js';
+import { assertConnectedDatabaseIsTest } from './helpers/databaseSafety.js';
 import { prisma } from '../src/lib/prisma.js';
 import { topFoods } from '../prisma/topFoods.js';
 
