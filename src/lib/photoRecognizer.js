@@ -10,6 +10,11 @@ const GEMINI_API_BASES = ['v1beta', 'v1'].map(
   (version) => `https://generativelanguage.googleapis.com/${version}`,
 );
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const RETRY_DELAY_MS = 500;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 const SYSTEM_PROMPT = `You are a nutrition assistant. Look at the food photo and identify the main dish or the most prominent food item on the plate.
 Estimate the total weight in grams of the visible food, and estimate macros per 100g for that food.
@@ -83,12 +88,15 @@ async function listGeminiModels({ apiKey, fetchImpl }) {
 }
 
 // Cheaper, more reliable vision models first; gemma/image/tts models last —
-// they either reject images or are rate-limited on most keys.
+// they either reject images or are rate-limited on most keys. -latest aliases
+// rank below versioned models: they see heavier demand spikes and can be
+// repointed or retired without notice.
 function geminiModelRank(name, preferred) {
   const n = name.toLowerCase();
   if (n === preferred.toLowerCase()) return 0;
   if (!n.startsWith('gemini-')) return 3;
   if (/image|tts|embedding|aqa|robotics/.test(n)) return 3;
+  if (n.endsWith('-latest')) return 2;
   return n.includes('flash') ? 1 : 2;
 }
 
@@ -185,6 +193,7 @@ async function callGemini({ apiKey, imageBase64, mime, locale, model, fetchImpl 
   // Google occasionally returns transient 5xx; run a second pass over the
   // candidates when the first failed with server-side errors only.
   for (let pass = 0; pass < 2; pass++) {
+    if (pass > 0) await sleep(RETRY_DELAY_MS);
     let sawServerError = false;
     for (const model of candidates) {
       const result = await generateGeminiContent({
