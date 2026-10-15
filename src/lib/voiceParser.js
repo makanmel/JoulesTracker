@@ -11,6 +11,11 @@ const GEMINI_API_BASES = ['v1beta', 'v1'].map(
 );
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const GEMINI_MODEL_CACHE = new Map();
+const RETRY_DELAY_MS = 500;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 const SYSTEM_PROMPT = `You are a nutrition assistant for a calorie tracker. The user speaks in either Ukrainian or English.
 Parse the input into food items with estimated macros per the described portion.
@@ -80,11 +85,14 @@ async function listGeminiModels({ apiKey, fetchImpl }) {
 }
 
 // Cheaper, more reliable text models first; gemma/image/tts models last.
+// -latest aliases rank below versioned models: they see heavier demand
+// spikes and can be repointed or retired without notice.
 function geminiModelRank(name, preferred) {
   const n = name.toLowerCase();
   if (n === preferred.toLowerCase()) return 0;
   if (!n.startsWith('gemini-')) return 3;
   if (/image|tts|embedding|aqa|robotics/.test(n)) return 3;
+  if (n.endsWith('-latest')) return 2;
   return n.includes('flash') ? 1 : 2;
 }
 
@@ -172,13 +180,22 @@ async function callGemini({ apiKey, transcript, locale, model, fetchImpl }) {
   const candidates = await resolveGeminiModels({ apiKey, requestedModel, fetchImpl });
   let lastError = 'unknown';
 
-  for (const model of candidates) {
-    const result = await generateGeminiContent({ apiKey, model, transcript, locale, fetchImpl });
-    if (result.ok) {
-      GEMINI_MODEL_CACHE.set(`${apiKey}:${requestedModel}`, [model]);
-      return result.content;
+  // Google occasionally returns transient 5xx; run a second pass over the
+  // candidates when the first failed with server-side errors only.
+  for (let pass = 0; pass < 2; pass++) {
+    if (pass > 0) await sleep(RETRY_DELAY_MS);
+    let sawServerError = false;
+    for (const model of candidates) {
+      const result = await generateGeminiContent({ apiKey, model, transcript, locale, fetchImpl });
+      if (result.ok) {
+        GEMINI_MODEL_CACHE.set(`${apiKey}:${requestedModel}`, [model]);
+        return result.content;
+      }
+      sawServerError = sawServerError || result.status >= 500;
+      lastError = `${model} -> ${result.status}: ${providerErrorMessage(result.text)}`;
+      console.warn(`Gemini voice model ${model} failed: ${result.status}`);
     }
-    lastError = `${result.status}: ${providerErrorMessage(result.text)}`;
+    if (!sawServerError) break;
   }
 
   throw new AppError(`AI parsing failed: ${lastError}`, 502);

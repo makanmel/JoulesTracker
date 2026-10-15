@@ -4,6 +4,7 @@ const BASE_URL = (process.env.OPENFOODFACTS_BASE_URL || 'https://ua.openfoodfact
 const USER_AGENT = 'JoulesTracker/0.1.0 (https://github.com/makanmel/JoulesTracker)';
 const TIMEOUT_MS = 8000;
 const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 400;
 const RETRYABLE_STATUSES = new Set([429, 502, 503, 504]);
 const BARCODE_REGEX = /^\d{8,14}$/;
 
@@ -88,10 +89,18 @@ async function fetchResponse(url, fetchImpl) {
     .finally(() => clearTimeout(timer));
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function fetchJson(url, fetchImpl, attempt = 0) {
   const response = await fetchResponse(url, fetchImpl);
   if (!response || RETRYABLE_STATUSES.has(response.status)) {
-    if (attempt < MAX_RETRIES) return fetchJson(url, fetchImpl, attempt + 1);
+    if (attempt < MAX_RETRIES) {
+      // Immediate retries hit the same transient spike; back off linearly.
+      await sleep(RETRY_DELAY_MS * (attempt + 1));
+      return fetchJson(url, fetchImpl, attempt + 1);
+    }
     throw new AppError('OpenFoodFacts is temporarily unavailable', 502);
   }
   if (response.status === 404) return null;
