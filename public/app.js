@@ -177,6 +177,101 @@ function resizeImage(file, maxWidth, quality) {
 }
 
 let photoScanAbort = null;
+let photoScanItems = [];
+
+function photoScanKcal(food, grams) {
+  if (food.caloriesPer100g == null || !(grams > 0)) return '';
+  return `${Math.round((food.caloriesPer100g * grams) / 100)} kcal`;
+}
+
+function renderPhotoScanItems() {
+  const list = $('#photo-scan-items');
+  list.replaceChildren();
+  photoScanItems.forEach((entry, index) => {
+    const grams = entry.weightGrams || 0;
+    const li = document.createElement('li');
+    li.className = 'list-item photo-scan-item';
+
+    const label = document.createElement('label');
+    label.className = 'photo-scan-item-label';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = true;
+    checkbox.dataset.index = index;
+    const name = document.createElement('span');
+    name.className = 'photo-scan-item-name';
+    name.textContent = foodName(entry.food);
+    label.append(checkbox, name);
+
+    const gramsInput = document.createElement('input');
+    gramsInput.type = 'text';
+    gramsInput.inputMode = 'decimal';
+    gramsInput.className = 'photo-scan-grams';
+    gramsInput.dataset.index = index;
+    gramsInput.value = grams || '';
+    gramsInput.setAttribute('aria-label', 'g');
+
+    const kcal = document.createElement('span');
+    kcal.className = 'muted photo-scan-kcal';
+    kcal.textContent = photoScanKcal(entry.food, grams);
+
+    gramsInput.addEventListener('input', () => {
+      kcal.textContent = photoScanKcal(entry.food, parseFloat(gramsInput.value));
+    });
+
+    li.append(label, gramsInput, kcal);
+    list.appendChild(li);
+  });
+}
+
+async function ensurePhotoScanFood(entry) {
+  if (entry.source === 'local' && entry.food.id) return entry.food.id;
+  const food = entry.food;
+  const created = await api('/foods', {
+    method: 'POST',
+    body: JSON.stringify({
+      name: food.name,
+      nameUk: food.nameUk || null,
+      caloriesPer100g: food.caloriesPer100g || 0,
+      proteinPer100g: food.proteinPer100g || 0,
+      carbsPer100g: food.carbsPer100g || 0,
+      fatPer100g: food.fatPer100g || 0,
+      saturatedFatPer100g: food.saturatedFatPer100g || 0,
+      sugarPer100g: food.sugarPer100g || 0,
+      fiberPer100g: food.fiberPer100g || 0,
+      saltPer100g: food.saltPer100g || 0,
+      brand: food.brand || null,
+      category: food.category || null,
+      barcode: food.barcode || null,
+    }),
+  });
+  return created.id;
+}
+
+async function addPhotoScanSelections() {
+  const checkboxes = [...$('#photo-scan-items').querySelectorAll('input[type="checkbox"]:checked')];
+  const mealDate = $('#summary-date').value;
+  const mealType = $('#meal-type').value;
+  let added = 0;
+  for (const checkbox of checkboxes) {
+    const index = Number(checkbox.dataset.index);
+    const gramsInput = $(`#photo-scan-items .photo-scan-grams[data-index="${index}"]`);
+    const grams = parseFloat(gramsInput?.value);
+    if (!(grams > 0)) continue;
+    const foodId = await ensurePhotoScanFood(photoScanItems[index]);
+    await api('/meals', {
+      method: 'POST',
+      body: JSON.stringify({ foodId, quantityGrams: grams, mealDate, mealType }),
+    });
+    added++;
+  }
+  if (added) {
+    showToast(t('photoScan.added', { count: added }));
+    loadSummary(mealDate);
+    loadMeals(mealDate);
+    loadFoods($('#food-search').value);
+  }
+}
 
 async function handleScanPhoto(file) {
   if (!file || !file.type.startsWith('image/')) {
@@ -230,65 +325,21 @@ async function handleScanPhoto(file) {
   try {
     const result = await api('/foods/recognize-photo', options);
     photoScanAbort = null;
-    const food = result.food;
-    const weightGrams = result.weightGrams || 0;
+    photoScanItems = result.items || [];
+
+    if (!photoScanItems.length) {
+      showToast(t('photoScan.notRecognized'), 'error');
+      return;
+    }
 
     statusEl.classList.add('hidden');
-    $('#photo-scan-name').textContent = foodName(food);
-    $('#photo-scan-weight').textContent = `${weightGrams} g`;
-    const ratio = weightGrams / 100;
-    $('#photo-scan-per100').innerHTML = t('foods.details', {
-      kcal: macro('kcal', food.caloriesPer100g),
-      protein: macro('p', food.proteinPer100g),
-      fat: macro('f', food.fatPer100g),
-      carbs: macro('c', food.carbsPer100g),
-      fiber: micro('fiber', food.fiberPer100g),
-      salt: micro('salt', food.saltPer100g),
-      saturated: micro('saturated', food.saturatedFatPer100g),
-      sugar: micro('sugar', food.sugarPer100g),
-    });
-    $('#photo-scan-serving').innerHTML = t('foods.details', {
-      kcal: macro('kcal', (food.caloriesPer100g ?? 0) * ratio),
-      protein: macro('p', (food.proteinPer100g ?? 0) * ratio),
-      fat: macro('f', (food.fatPer100g ?? 0) * ratio),
-      carbs: macro('c', (food.carbsPer100g ?? 0) * ratio),
-      fiber: micro('fiber', (food.fiberPer100g ?? 0) * ratio),
-      salt: micro('salt', (food.saltPer100g ?? 0) * ratio),
-      saturated: micro('saturated', (food.saturatedFatPer100g ?? 0) * ratio),
-      sugar: micro('sugar', (food.sugarPer100g ?? 0) * ratio),
-    });
-    $('#photo-scan-serving-row').classList.toggle('hidden', Math.round(weightGrams) === 100);
+    renderPhotoScanItems();
     resultEl.classList.remove('hidden');
     useBtn.classList.remove('hidden');
 
     if (!(await choice)) return;
 
-    let foodId = food.id;
-    if (result.source !== 'local') {
-      const created = await api('/foods', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: food.name,
-          nameUk: food.nameUk || null,
-          caloriesPer100g: food.caloriesPer100g || 0,
-          proteinPer100g: food.proteinPer100g || 0,
-          carbsPer100g: food.carbsPer100g || 0,
-          fatPer100g: food.fatPer100g || 0,
-          saturatedFatPer100g: food.saturatedFatPer100g || 0,
-          sugarPer100g: food.sugarPer100g || 0,
-          fiberPer100g: food.fiberPer100g || 0,
-          saltPer100g: food.saltPer100g || 0,
-          brand: food.brand || null,
-          category: food.category || null,
-          barcode: food.barcode || null,
-        }),
-      });
-      foodId = created.id;
-    }
-    await loadFoods();
-    $('#meal-food').value = foodId;
-    $('#meal-quantity').value = weightGrams > 0 ? weightGrams : '';
-    showToast(t('photoScan.recognized', { name: foodName(food), weight: weightGrams }));
+    await addPhotoScanSelections();
   } catch (err) {
     if (err.name !== 'AbortError') showToast(err.message, 'error');
   } finally {

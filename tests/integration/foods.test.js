@@ -186,10 +186,11 @@ describe('Food endpoints', () => {
     globalThis.fetch = originalFetch;
 
     expect(res.status).toBe(200);
-    expect(res.body.source).toBe('local');
-    expect(res.body.saved).toBe(true);
-    expect(res.body.weightGrams).toBe(250);
-    expect(res.body.food.name).toBe('Buckwheat (cooked)');
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body.items[0].source).toBe('local');
+    expect(res.body.items[0].saved).toBe(true);
+    expect(res.body.items[0].weightGrams).toBe(250);
+    expect(res.body.items[0].food.name).toBe('Buckwheat (cooked)');
   });
 
   it('shares public foods with other users while keeping private foods hidden', async () => {

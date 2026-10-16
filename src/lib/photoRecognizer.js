@@ -16,20 +16,24 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const SYSTEM_PROMPT = `You are a nutrition assistant. Look at the food photo and identify the main dish or the most prominent food item on the plate.
-Estimate the total weight in grams of the visible food, and estimate macros per 100g for that food.
+const SYSTEM_PROMPT = `You are a nutrition assistant. Look at the food photo and identify every distinct food item visible (e.g. a plate with rice, chicken and salad is 3 items; a single dish is 1 item).
+For each item estimate its portion weight in grams and its macros per 100g.
 Respond ONLY with a JSON object, no markdown, no explanation:
 {
-  "name": "short localized food name in the requested locale",
-  "nameEn": "canonical English food name (may equal name for en locale)",
-  "weightGrams": number,
-  "caloriesPer100g": number|null,
-  "proteinPer100g": number|null,
-  "carbsPer100g": number|null,
-  "fatPer100g": number|null,
+  "items": [
+    {
+      "name": "short localized food name in the requested locale",
+      "nameEn": "canonical English food name (may equal name for en locale)",
+      "weightGrams": number,
+      "caloriesPer100g": number|null,
+      "proteinPer100g": number|null,
+      "carbsPer100g": number|null,
+      "fatPer100g": number|null
+    }
+  ],
   "confidence": "high|medium|low"
 }
-Use the user's locale (en or uk). If multiple items are visible, pick the main one. If you cannot identify anything, set name to "".`;
+Use the user's locale (en or uk). List at most 8 items, most prominent first. If you cannot identify anything, set items to [].`;
 
 function providerErrorMessage(text) {
   const message = String(text).match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/)?.[1];
@@ -306,19 +310,25 @@ export async function recognizePhoto({
     throw new AppError('AI photo recognition returned malformed JSON', 502);
   }
 
-  const name = String(parsed.name || '').trim();
-  if (!name) {
+  // Preferred shape is {items: [...]}; models that ignore it and return a
+  // single flat object are treated as a one-item list.
+  const rawItems = Array.isArray(parsed.items) ? parsed.items : [parsed];
+  const items = rawItems
+    .map((entry) => ({
+      name: String(entry?.name || '').trim(),
+      nameEn: String(entry?.nameEn || '').trim() || String(entry?.name || '').trim(),
+      weightGrams: Number(entry?.weightGrams) || 0,
+      caloriesPer100g: entry?.caloriesPer100g == null ? null : Number(entry.caloriesPer100g),
+      proteinPer100g: entry?.proteinPer100g == null ? null : Number(entry.proteinPer100g),
+      carbsPer100g: entry?.carbsPer100g == null ? null : Number(entry.carbsPer100g),
+      fatPer100g: entry?.fatPer100g == null ? null : Number(entry.fatPer100g),
+    }))
+    .filter((entry) => entry.name)
+    .slice(0, 8);
+
+  if (!items.length) {
     throw new AppError('Could not recognize the food in the photo', 422);
   }
 
-  return {
-    name,
-    nameEn: String(parsed.nameEn || '').trim() || name,
-    weightGrams: Number(parsed.weightGrams) || 0,
-    caloriesPer100g: parsed.caloriesPer100g == null ? null : Number(parsed.caloriesPer100g),
-    proteinPer100g: parsed.proteinPer100g == null ? null : Number(parsed.proteinPer100g),
-    carbsPer100g: parsed.carbsPer100g == null ? null : Number(parsed.carbsPer100g),
-    fatPer100g: parsed.fatPer100g == null ? null : Number(parsed.fatPer100g),
-    confidence: String(parsed.confidence || 'low'),
-  };
+  return { items, confidence: String(parsed.confidence || 'low') };
 }
