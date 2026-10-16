@@ -515,15 +515,45 @@ async function loadFoods(query = '') {
           ${escapeHtml(foodLabel(food))}<br />
           <span class="muted">${details}</span>
         </div>
-        <button type="button" class="btn-danger" aria-label="${t('foods.delete')}" title="${t('foods.delete')}"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg></button>
+        <button type="button" class="btn-icon meal-actions-btn" aria-label="${t('foods.actions')}" title="${t('foods.actions')}" aria-expanded="false" aria-haspopup="menu"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg></button>
+        <div class="meal-menu hidden" role="menu"></div>
       `;
+      const actionsBtn = li.querySelector('.meal-actions-btn');
+      const menu = li.querySelector('.meal-menu');
+      const editItem = document.createElement('button');
+      editItem.type = 'button';
+      editItem.className = 'meal-menu-item';
+      editItem.setAttribute('role', 'menuitem');
+      editItem.innerHTML = `<svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>${escapeHtml(t('foods.edit'))}`;
+      editItem.addEventListener('click', (event) => {
+        event.stopPropagation();
+        closeMealMenus();
+        $('#meal-food').value = food.id;
+        startEditFood();
+      });
+      const deleteItem = document.createElement('button');
+      deleteItem.type = 'button';
+      deleteItem.className = 'meal-menu-item meal-menu-delete';
+      deleteItem.setAttribute('role', 'menuitem');
+      deleteItem.innerHTML = `<svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg>${escapeHtml(t('foods.delete'))}`;
+      deleteItem.addEventListener('click', (event) => {
+        event.stopPropagation();
+        closeMealMenus();
+        deleteFood(food, li);
+      });
+      menu.appendChild(editItem);
+      menu.appendChild(deleteItem);
       li.addEventListener('click', () => {
         $('#meal-food').value = food.id;
         $('#meal-quantity').focus();
       });
-      li.querySelector('button').addEventListener('click', (e) => {
-        e.stopPropagation();
-        deleteFood(food, li);
+      actionsBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const opening = menu.classList.contains('hidden');
+        closeMealMenus();
+        menu.classList.toggle('meal-menu-up', !li.nextElementSibling);
+        menu.classList.toggle('hidden', !opening);
+        actionsBtn.setAttribute('aria-expanded', String(opening));
       });
       list.appendChild(li);
     });

@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v025": {
+        "i1": "Food list items have an actions menu for editing or deleting"
+      },
       "v024": {
         "i1": "Meal entries have an actions menu for moving or deleting"
       },
@@ -164,6 +167,7 @@
     "cancel": "Cancel",
     "created": "Food created",
     "edit": "Edit food",
+    "actions": "Food actions",
     "update": "Update food",
     "updated": "Food updated",
     "selectToEdit": "Select a food to edit",
