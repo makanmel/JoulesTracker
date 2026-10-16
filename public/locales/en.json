@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v022": {
+        "i1": "Move a logged meal between breakfast, lunch, dinner and snack"
+      },
       "v021": {
         "i1": "Consistent food names in English and Ukrainian",
         "i2": "New foods are shared with all users by default"
@@ -97,6 +100,8 @@
     "delete": "Delete",
     "added": "Meal added",
     "deleted": "Meal deleted",
+    "move": "Move to another meal",
+    "moved": "Meal moved",
     "entry": "<strong>{{grams}} g</strong> · {{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "groupTotal": "{{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "types": {

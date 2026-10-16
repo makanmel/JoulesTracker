@@ -95,6 +95,26 @@ describe('Meal endpoints', () => {
     expect(res.body.calculatedCalories).toBe(330);
   });
 
+  it('moves a meal entry between meal types', async () => {
+    const meal = await request(app)
+      .post('/api/v1/meals')
+      .set('Authorization', authHeader)
+      .send({
+        foodId: food.id,
+        quantityGrams: 100,
+        mealDate: '2026-09-21',
+        mealType: 'breakfast',
+      });
+
+    const res = await request(app)
+      .patch(`/api/v1/meals/${meal.body.id}`)
+      .set('Authorization', authHeader)
+      .send({ mealType: 'dinner' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.mealType).toBe('dinner');
+  });
+
   it('blocks editing another user meal', async () => {
     const other = await registerAndLogin(app);
     const meal = await request(app)

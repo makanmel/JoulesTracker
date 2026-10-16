@@ -833,6 +833,16 @@ button:disabled {
   flex-basis: 14px;
 }
 
+.list-item .meal-move {
+  width: auto;
+  flex-shrink: 0;
+  min-height: 0;
+  margin-left: auto;
+  margin-right: 28px;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+}
+
 @media (max-width: 767px) {
   #meals-list .list-item .muted {
     display: block;
