@@ -22,7 +22,7 @@
         <div class="header-buttons">
         <div id="language-switcher" class="language-switcher" role="group" aria-label="Language" data-i18n-aria-label="app.language">
           <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
-          <button type="button" class="lang-btn" data-lang="uk" aria-pressed="false">UKR</button>
+          <button type="button" class="lang-btn" data-lang="uk" aria-pressed="false">UA</button>
         </div>
         <button type="button" id="settings-toggle" class="btn-icon" data-i18n-aria-label="settings.title" data-i18n-title="settings.title" aria-label="Settings" title="Settings" aria-expanded="false" aria-controls="settings-section"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="17" r="3" /><circle cx="7" cy="7" r="3" /></svg></button>
         <button type="button" id="logout-btn" class="btn-icon hidden" data-i18n-aria-label="auth.logout" data-i18n-title="auth.logout" aria-label="Logout" title="Logout"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg></button>
@@ -34,21 +34,25 @@
       <section id="settings-section" class="card hidden">
         <div class="settings-head">
           <h2 data-i18n="settings.title">Settings</h2>
-          <span id="about-version" class="muted"></span>
+          <div class="settings-head-side">
+            <span id="about-version" class="muted"></span>
+            <button type="button" id="settings-close" class="btn-icon" data-i18n-aria-label="common.close" data-i18n-title="common.close" aria-label="Close" title="Close"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
+          </div>
         </div>
-        <details id="theme-details" class="settings-details">
-          <summary class="settings-summary">
-            <span class="settings-summary-label" data-i18n="settings.theme">Theme</span>
-            <span id="theme-current" class="muted"></span>
-          </summary>
+        <div class="tabs settings-tabs" role="tablist" aria-label="Settings">
+          <button type="button" class="tab settings-tab active" data-pane="settings-pane-theme" role="tab" aria-selected="true" data-i18n="settings.theme">Theme</button>
+          <button type="button" class="tab settings-tab" data-pane="settings-pane-profile" role="tab" aria-selected="false" data-i18n="profile.title">Profile</button>
+          <button type="button" class="tab settings-tab" data-pane="settings-pane-target" role="tab" aria-selected="false" data-i18n="target.title">Target</button>
+          <button type="button" class="tab settings-tab" data-pane="settings-pane-voice" role="tab" aria-selected="false" data-i18n="voice.settingsTitle">Voice input</button>
+          <button type="button" class="tab settings-tab" data-pane="settings-pane-about" role="tab" aria-selected="false" data-i18n="about.title">About</button>
+        </div>
+        <div class="settings-pane" id="settings-pane-theme" role="tabpanel">
           <p class="muted" data-i18n="settings.themeHint">Choose a visual theme for the app.</p>
           <div id="theme-selector" class="theme-selector" role="group" aria-label="Theme" data-i18n-aria-label="settings.theme"></div>
-        </details>
+          <p id="theme-current" class="muted"></p>
+        </div>
 
-        <details id="profile-details" class="settings-details">
-          <summary class="settings-summary">
-            <span class="settings-summary-label" data-i18n="profile.title">Profile</span>
-          </summary>
+        <div class="settings-pane hidden" id="settings-pane-profile" role="tabpanel">
         <form id="profile-form" class="grid-form">
           <label><span data-i18n="profile.weight">Weight (kg)</span> <input type="text" inputmode="decimal" id="profile-weight" required /></label>
           <label><span data-i18n="profile.height">Height (cm)</span> <input type="text" inputmode="decimal" id="profile-height" required /></label>
@@ -74,13 +78,9 @@
           </div>
         </form>
         <p id="profile-message" class="muted"></p>
-        </details>
+        </div>
 
-        <details id="target-section" class="settings-details area-target">
-          <summary class="settings-summary">
-            <svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3 2M4 4l3 3m13-3-3 3" /></svg>
-            <span class="settings-summary-label" data-i18n="target.title">Target</span>
-          </summary>
+        <div class="settings-pane hidden" id="settings-pane-target" role="tabpanel">
           <form id="target-form" class="grid-form">
             <div class="target-row">
               <label><span data-i18n="target.kcal">Target kcal</span> <input type="text" inputmode="decimal" id="target-calories" required /></label>
@@ -149,12 +149,9 @@
             <button type="submit" class="btn-primary" data-i18n="target.set">Set target</button>
           </form>
           <p id="target-display" class="muted"></p>
-        </details>
+        </div>
 
-        <details id="voice-settings" class="settings-details">
-          <summary class="settings-summary">
-            <span class="settings-summary-label" data-i18n="voice.settingsTitle">Voice input</span>
-          </summary>
+        <div class="settings-pane hidden" id="settings-pane-voice" role="tabpanel">
           <p class="muted" data-i18n="voice.settingsHint">Choose the AI provider and enter your API key. The key is stored only in this browser.</p>
           <form id="voice-settings-form" class="inline-form">
             <label>
@@ -168,31 +165,13 @@
               <span data-i18n="voice.apiKey">API key</span>
               <input type="text" id="voice-api-key" autocomplete="off" />
             </label>
-            <label>
-              <span data-i18n="voice.model">Model (optional)</span>
-              <input type="text" id="voice-model" autocomplete="off" list="model-options-gemini" placeholder="gemini-2.5-flash / gpt-4o-mini" />
-            </label>
-            <datalist id="model-options-gemini">
-              <option value="gemini-2.5-flash"></option>
-              <option value="gemini-2.5-flash-lite"></option>
-              <option value="gemini-2.5-pro"></option>
-              <option value="gemini-2.0-flash"></option>
-            </datalist>
-            <datalist id="model-options-openai">
-              <option value="gpt-4o-mini"></option>
-              <option value="gpt-4o"></option>
-              <option value="gpt-4.1-mini"></option>
-            </datalist>
-            <button type="submit" class="btn-secondary" data-i18n="voice.saveSettings">Save</button>
+            <button type="submit" class="btn-primary" data-i18n="voice.saveSettings">Save</button>
           </form>
-        </details>
+        </div>
 
-        <details id="about-details" class="settings-details">
-          <summary class="settings-summary">
-            <span class="settings-summary-label" data-i18n="about.title">About</span>
-          </summary>
+        <div class="settings-pane hidden" id="settings-pane-about" role="tabpanel">
           <div id="about-changelog"></div>
-        </details>
+        </div>
       </section>
 
       <section id="auth-section" class="card">

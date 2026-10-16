@@ -20,6 +20,10 @@
   "about": {
     "title": "About",
     "changes": {
+      "v023": {
+        "i1": "Settings organized into tabs with a close button",
+        "i2": "Meal groups keep your expanded/collapsed choice"
+      },
       "v022": {
         "i1": "Move a logged meal between breakfast, lunch, dinner and snack"
       },
@@ -204,7 +208,6 @@
       "openai": "OpenAI"
     },
     "apiKey": "API key",
-    "model": "Model (optional)",
     "saveSettings": "Save"
   },
   "photoScan": {
@@ -222,7 +225,8 @@
     "readFailed": "Could not read the image"
   },
   "common": {
-    "undo": "Undo"
+    "undo": "Undo",
+    "close": "Close"
   },
   "errors": {
     "requestFailed": "Request failed ({{status}})",
