@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v024": {
+        "i1": "Meal entries have an actions menu for moving or deleting"
+      },
       "v023": {
         "i1": "Settings organized into tabs with a close button",
         "i2": "Meal groups keep your expanded/collapsed choice"
@@ -104,7 +107,7 @@
     "delete": "Delete",
     "added": "Meal added",
     "deleted": "Meal deleted",
-    "move": "Move to another meal",
+    "actions": "Meal actions",
     "moved": "Meal moved",
     "entry": "<strong>{{grams}} g</strong> · {{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "groupTotal": "{{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
