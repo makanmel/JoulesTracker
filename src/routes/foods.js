@@ -24,13 +24,6 @@ function nameMatches(name) {
   return { OR: [{ name: like }, { nameUk: like }] };
 }
 
-function findLocalByName(name, userId) {
-  return prisma.food.findFirst({
-    where: { AND: [nameMatches(name), visibleTo(userId)] },
-    orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
-  });
-}
-
 // Recognized items can arrive in either locale; try every variant.
 function findLocalByNames(names, userId) {
   const candidates = [...new Set(names.map((n) => String(n || '').trim()).filter(Boolean))];

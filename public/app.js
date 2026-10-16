@@ -9,7 +9,7 @@ const WAKE_RETRY_DELAY_MS = 3000;
 const WAKE_RETRY_LIMIT = 15;
 const AI_PROVIDER_KEY = 'joulesAiProvider';
 const AI_API_KEY_KEY = 'joulesAiApiKey';
-const AI_MODEL_KEY = 'joulesAiModel';
+const MEAL_GROUPS_KEY = 'joulesMealGroups';
 const MEAL_TYPE_KEY = 'joulesMealType';
 const MAX_PHOTO_WIDTH = 1024;
 
@@ -294,16 +294,14 @@ async function handleScanPhoto(file) {
   const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
   const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
   const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
-  const model = localStorage.getItem(AI_MODEL_KEY) || '';
   const options = {
     method: 'POST',
     body: JSON.stringify({ image: dataUrl, locale }),
   };
-  if (provider || apiKey || model) {
+  if (provider || apiKey) {
     options.headers = {
       'x-ai-provider': provider,
       'x-ai-key': apiKey,
-      'x-ai-model': model,
     };
   }
 
@@ -352,24 +350,17 @@ function formatDate(date) {
   return date.toISOString().split('T')[0];
 }
 
-function syncModelOptions(provider) {
-  const modelInput = $('#voice-model');
-  if (modelInput) {
-    modelInput.setAttribute('list', provider === 'openai' ? 'model-options-openai' : 'model-options-gemini');
-  }
-}
-
 function loadVoiceSettings() {
   const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
   const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
-  const model = localStorage.getItem(AI_MODEL_KEY) || '';
   const providerSelect = $('#voice-provider');
   const apiKeyInput = $('#voice-api-key');
-  const modelInput = $('#voice-model');
   if (providerSelect) providerSelect.value = provider;
   if (apiKeyInput) apiKeyInput.value = apiKey;
-  if (modelInput) modelInput.value = model;
-  syncModelOptions(provider);
+}
+
+function mealGroupStates() {
+  return JSON.parse(localStorage.getItem(MEAL_GROUPS_KEY) || '{}');
 }
 
 function loadMealTypePreference() {
@@ -382,7 +373,6 @@ function saveVoiceSettings(e) {
   e.preventDefault();
   localStorage.setItem(AI_PROVIDER_KEY, $('#voice-provider').value);
   localStorage.setItem(AI_API_KEY_KEY, $('#voice-api-key').value.trim());
-  localStorage.setItem(AI_MODEL_KEY, $('#voice-model').value.trim());
   showToast(t('voice.settingsSaved'));
 }
 
@@ -1022,12 +1012,13 @@ async function loadMeals(date) {
         sugar: micro('sugar', sum.sugar),
       });
       const group = document.createElement('div');
-      group.className = 'meal-group collapsed';
+      const isCollapsed = mealGroupStates()[mealType] !== false;
+      group.className = isCollapsed ? 'meal-group collapsed' : 'meal-group';
       const heading = document.createElement('h3');
       heading.className = 'meal-group-title';
       heading.setAttribute('role', 'button');
       heading.tabIndex = 0;
-      heading.setAttribute('aria-expanded', 'false');
+      heading.setAttribute('aria-expanded', String(!isCollapsed));
       heading.innerHTML = `
         <svg class="action-icon chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg>
         ${escapeHtml(t(`meals.types.${mealType}`))} <span class="meal-group-total">${totals}</span>
@@ -1037,6 +1028,9 @@ async function loadMeals(date) {
       const toggleGroup = () => {
         const collapsed = group.classList.toggle('collapsed');
         heading.setAttribute('aria-expanded', String(!collapsed));
+        const states = mealGroupStates();
+        states[mealType] = collapsed;
+        localStorage.setItem(MEAL_GROUPS_KEY, JSON.stringify(states));
       };
       heading.addEventListener('click', toggleGroup);
       heading.addEventListener('keydown', (e) => {
@@ -1229,16 +1223,14 @@ async function parseVoiceTranscript(transcript) {
     const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
     const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
     const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
-    const model = localStorage.getItem(AI_MODEL_KEY) || '';
     const options = {
       method: 'POST',
       body: JSON.stringify({ transcript, locale }),
     };
-    if (apiKey || model) {
+    if (apiKey) {
       options.headers = {
         'X-AI-Provider': provider,
         'X-AI-Key': apiKey,
-        'X-AI-Model': model,
       };
     }
     const data = await api('/foods/parse-voice', { ...options, wakeNotice: false });
@@ -1414,14 +1406,28 @@ async function init() {
     });
   });
   $('#profile-form').addEventListener('submit', handleSaveProfile);
-  $('#settings-toggle').addEventListener('click', async (event) => {
-    const expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';
-    event.currentTarget.setAttribute('aria-expanded', String(!expanded));
-    $('#settings-section').classList.toggle('hidden', expanded);
-    if (!expanded) {
+  const setSettingsOpen = async (open) => {
+    $('#settings-toggle').setAttribute('aria-expanded', String(open));
+    $('#settings-section').classList.toggle('hidden', !open);
+    if (open) {
       await loadProfile();
       await loadTarget(formatDate(new Date()));
     }
+  };
+  $('#settings-toggle').addEventListener('click', async (event) => {
+    await setSettingsOpen(event.currentTarget.getAttribute('aria-expanded') !== 'true');
+  });
+  $('#settings-close').addEventListener('click', () => setSettingsOpen(false));
+  $$('#settings-section .settings-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      $$('#settings-section .settings-tab').forEach((other) => {
+        other.classList.toggle('active', other === tab);
+        other.setAttribute('aria-selected', String(other === tab));
+      });
+      $$('#settings-section .settings-pane').forEach((pane) => {
+        pane.classList.toggle('hidden', pane.id !== tab.dataset.pane);
+      });
+    });
   });
 
   $('#summary-date').addEventListener('change', (e) => {
@@ -1448,7 +1454,6 @@ async function init() {
   $('#voice-toggle').addEventListener('click', toggleVoiceInput);
   $('#voice-confirm').addEventListener('click', confirmVoiceResults);
   $('#voice-settings-form').addEventListener('submit', saveVoiceSettings);
-  $('#voice-provider').addEventListener('change', (e) => syncModelOptions(e.target.value));
   $('#food-form').addEventListener('submit', handleCreateFood);
   $('#edit-food-btn').addEventListener('click', startEditFood);
   $('#toggle-food-form').addEventListener('click', () => setFoodFormVisible($('#food-form').classList.contains('hidden')));

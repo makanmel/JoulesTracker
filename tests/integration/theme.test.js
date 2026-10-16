@@ -42,6 +42,10 @@ describe('Visual themes', () => {
     expect(html.status).toBe(200);
     expect(html.text).toContain('id="theme-selector"');
     expect(html.text).toContain('id="settings-toggle"');
+    expect(html.text).toContain('id="settings-close"');
+    expect(html.text).toContain('class="tabs settings-tabs"');
+    expect(html.text).toContain('id="settings-pane-target"');
+    expect(html.text).not.toContain('id="voice-model"');
     expect(styles.status).toBe(200);
     expect(styles.text).toContain('var(--bg-image)');
     expect(styles.text).toContain('var(--card-blur)');
