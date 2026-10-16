@@ -10,6 +10,7 @@ const WAKE_RETRY_LIMIT = 15;
 const AI_PROVIDER_KEY = 'joulesAiProvider';
 const AI_API_KEY_KEY = 'joulesAiApiKey';
 const MEAL_GROUPS_KEY = 'joulesMealGroups';
+const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'];
 const MEAL_TYPE_KEY = 'joulesMealType';
 const MAX_PHOTO_WIDTH = 1024;
 
@@ -361,6 +362,11 @@ function loadVoiceSettings() {
 
 function mealGroupStates() {
   return JSON.parse(localStorage.getItem(MEAL_GROUPS_KEY) || '{}');
+}
+
+function closeMealMenus() {
+  $$('.meal-menu').forEach((menu) => menu.classList.add('hidden'));
+  $$('.meal-actions-btn').forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
 }
 
 function loadMealTypePreference() {
@@ -1062,22 +1068,41 @@ async function loadMeals(date) {
             ${escapeHtml(foodName(meal.food))}<br />
             <span class="muted">${entry}</span>
           </div>
-          <button type="button" class="btn-danger" data-id="${meal.id}" aria-label="${t('meals.delete')}" title="${t('meals.delete')}"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg></button>
+          <button type="button" class="btn-icon meal-actions-btn" aria-label="${t('meals.actions')}" title="${t('meals.actions')}" aria-expanded="false" aria-haspopup="menu"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg></button>
+          <div class="meal-menu hidden" role="menu"></div>
         `;
-        const moveSelect = document.createElement('select');
-        moveSelect.className = 'meal-move';
-        moveSelect.setAttribute('aria-label', t('meals.move'));
-        moveSelect.title = t('meals.move');
-        for (const type of ['breakfast', 'lunch', 'dinner', 'snack']) {
-          const option = document.createElement('option');
-          option.value = type;
-          option.textContent = t(`meals.types.${type}`);
-          option.selected = type === meal.mealType;
-          moveSelect.appendChild(option);
+        const actionsBtn = div.querySelector('.meal-actions-btn');
+        const menu = div.querySelector('.meal-menu');
+        for (const type of MEAL_TYPES.filter((type) => type !== meal.mealType)) {
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'meal-menu-item';
+          item.setAttribute('role', 'menuitem');
+          item.textContent = t(`meals.types.${type}`);
+          item.addEventListener('click', () => {
+            closeMealMenus();
+            moveMeal(meal, type, date);
+          });
+          menu.appendChild(item);
         }
-        moveSelect.addEventListener('change', () => moveMeal(meal, moveSelect.value, date));
-        div.insertBefore(moveSelect, div.querySelector('button'));
-        div.querySelector('button').addEventListener('click', () => deleteMeal(meal, div, date));
+        const deleteItem = document.createElement('button');
+        deleteItem.type = 'button';
+        deleteItem.className = 'meal-menu-item meal-menu-delete';
+        deleteItem.setAttribute('role', 'menuitem');
+        deleteItem.innerHTML = `<svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg>${escapeHtml(t('meals.delete'))}`;
+        deleteItem.addEventListener('click', () => {
+          closeMealMenus();
+          deleteMeal(meal, div, date);
+        });
+        menu.appendChild(deleteItem);
+        actionsBtn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const opening = menu.classList.contains('hidden');
+          closeMealMenus();
+          menu.classList.toggle('meal-menu-up', !div.nextElementSibling);
+          menu.classList.toggle('hidden', !opening);
+          actionsBtn.setAttribute('aria-expanded', String(opening));
+        });
         body.appendChild(div);
       });
     }
@@ -1449,6 +1474,13 @@ async function init() {
   };
   $('#summary-prev-day').addEventListener('click', () => shiftSummaryDate(-1));
   $('#summary-next-day').addEventListener('click', () => shiftSummaryDate(1));
+
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.meal-menu') && !event.target.closest('.meal-actions-btn')) closeMealMenus();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeMealMenus();
+  });
 
   $('#meal-form').addEventListener('submit', handleCreateMeal);
   $('#voice-toggle').addEventListener('click', toggleVoiceInput);
