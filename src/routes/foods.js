@@ -249,52 +249,60 @@ router.post('/recognize-photo', async (req, res, next) => {
     const model = req.headers['x-ai-model'];
     const ai = await recognizePhoto({ imageBase64: base64, mime, locale, provider, apiKey, model });
 
-    const local = await findLocalByName(ai.name, req.user.id);
-    if (local) {
-      return res.json({
-        source: 'local',
-        saved: true,
-        food: local,
-        weightGrams: ai.weightGrams,
-        confidence: ai.confidence,
-      });
-    }
+    const resolved = await Promise.all(
+      ai.items.map(async (item) => ({
+        item,
+        local: await findLocalByName(item.name, req.user.id),
+        off: null,
+      })),
+    );
 
-    const search = await searchProducts(ai.name, { limit: 5, page: 1 });
-    const product = search.items.map(mapProduct).find(Boolean);
-    if (product) {
-      return res.json({
-        source: 'openfoodfacts',
+    // OpenFoodFacts lookups are slow; only query it for the first few items
+    // that have no local match — the rest fall back to AI macros.
+    await Promise.all(
+      resolved
+        .filter((entry) => !entry.local)
+        .slice(0, 3)
+        .map(async (entry) => {
+          entry.off = await searchProducts(entry.item.name, { limit: 5, page: 1 }).then(
+            (search) => search.items.map(mapProduct).find(Boolean) || null,
+            () => null,
+          );
+        }),
+    );
+
+    const items = resolved.map((entry) => {
+      const { item, local, off } = entry;
+      if (local) {
+        return { source: 'local', saved: true, food: local, weightGrams: item.weightGrams };
+      }
+      if (off) {
+        return { source: 'openfoodfacts', saved: false, food: off, weightGrams: item.weightGrams };
+      }
+      return {
+        source: 'ai',
         saved: false,
-        food: product,
-        weightGrams: ai.weightGrams,
-        confidence: ai.confidence,
-      });
-    }
-
-    const fallback = {
-      name: ai.nameEn,
-      nameUk: locale === 'uk' ? ai.name : null,
-      source: 'ai',
-      caloriesPer100g: ai.caloriesPer100g ?? 0,
-      proteinPer100g: ai.proteinPer100g ?? 0,
-      carbsPer100g: ai.carbsPer100g ?? 0,
-      fatPer100g: ai.fatPer100g ?? 0,
-      saturatedFatPer100g: 0,
-      sugarPer100g: 0,
-      fiberPer100g: 0,
-      saltPer100g: 0,
-      brand: null,
-      category: null,
-      barcode: null,
-    };
-    res.json({
-      source: 'ai',
-      saved: false,
-      food: fallback,
-      weightGrams: ai.weightGrams,
-      confidence: ai.confidence,
+        weightGrams: item.weightGrams,
+        food: {
+          name: item.nameEn,
+          nameUk: locale === 'uk' ? item.name : null,
+          source: 'ai',
+          caloriesPer100g: item.caloriesPer100g ?? 0,
+          proteinPer100g: item.proteinPer100g ?? 0,
+          carbsPer100g: item.carbsPer100g ?? 0,
+          fatPer100g: item.fatPer100g ?? 0,
+          saturatedFatPer100g: 0,
+          sugarPer100g: 0,
+          fiberPer100g: 0,
+          saltPer100g: 0,
+          brand: null,
+          category: null,
+          barcode: null,
+        },
+      };
     });
+
+    res.json({ items, confidence: ai.confidence });
   } catch (err) {
     next(err);
   }

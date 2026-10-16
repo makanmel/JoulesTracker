@@ -52,12 +52,13 @@ describe('photo recognizer', () => {
 
     const result = await recognizePhoto({ imageBase64, locale: 'en', fetchImpl });
 
-    expect(result).toMatchObject({
+    expect(result.confidence).toBe('high');
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatchObject({
       name: 'Гречка (варена)',
       nameEn: 'Buckwheat (cooked)',
       weightGrams: 250,
       caloriesPer100g: 132,
-      confidence: 'high',
     });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     const body = JSON.parse(fetchImpl.mock.calls[0][1].body);
@@ -102,7 +103,8 @@ describe('photo recognizer', () => {
 
     const result = await recognizePhoto({ imageBase64, provider: 'gemini', apiKey: 'explicit-key', locale: 'uk', fetchImpl });
 
-    expect(result).toMatchObject({ name: 'Roasted pork', weightGrams: 180, confidence: 'medium' });
+    expect(result.confidence).toBe('medium');
+    expect(result.items[0]).toMatchObject({ name: 'Roasted pork', weightGrams: 180 });
     expect(fetchImpl.mock.calls[0][0]).toContain('generativelanguage.googleapis.com');
   });
 
@@ -143,7 +145,7 @@ describe('photo recognizer', () => {
       fetchImpl,
     });
 
-    expect(result.name).toBe('Pizza');
+    expect(result.items[0].name).toBe('Pizza');
     expect(generateUrls[0]).toContain('/v1beta/');
     expect(generateUrls[1]).toContain('/v1/');
   });
@@ -182,7 +184,7 @@ describe('photo recognizer', () => {
       fetchImpl,
     });
 
-    expect(result).toMatchObject({ name: 'Black coffee', weightGrams: 250 });
+    expect(result.items[0]).toMatchObject({ name: 'Black coffee', weightGrams: 250 });
   });
 
   it('tries a UI-selected model first for Gemini', async () => {
@@ -217,8 +219,36 @@ describe('photo recognizer', () => {
       fetchImpl,
     });
 
-    expect(result.name).toBe('Pizza');
+    expect(result.items[0].name).toBe('Pizza');
     expect(generateUrls[0]).toContain('gemini-9-custom');
+  });
+
+  it('returns every item when the model responds with an items array', async () => {
+    process.env.OPENAI_API_KEY = 'openai-test-key';
+    const fetchImpl = vi.fn().mockResolvedValue(
+      jsonResponse({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                items: [
+                  { name: 'Rice', nameEn: 'Rice', weightGrams: 150, caloriesPer100g: 130 },
+                  { name: 'Chicken', nameEn: 'Chicken breast', weightGrams: 120, caloriesPer100g: 165 },
+                  { name: '', weightGrams: 50 },
+                ],
+                confidence: 'high',
+              }),
+            },
+          },
+        ],
+      }),
+    );
+
+    const result = await recognizePhoto({ imageBase64, locale: 'en', fetchImpl });
+
+    expect(result.items).toHaveLength(2);
+    expect(result.items.map((i) => i.name)).toEqual(['Rice', 'Chicken']);
+    expect(result.items[1].weightGrams).toBe(120);
   });
 
   it('throws when AI returns empty name', async () => {
