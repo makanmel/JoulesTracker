@@ -212,7 +212,7 @@ describe('OpenFoodFacts endpoints', () => {
     expect(list.body.items.filter((f) => f.barcode === BARCODE)).toHaveLength(1);
   });
 
-  it('does not expose another user imported product', async () => {
+  it('shares imported products with other users by default', async () => {
     fetchMock.mockResolvedValue(jsonResponse({ status: 1, product }));
     await request(app).post('/api/v1/foods/import').set('Authorization', authHeader).send({ barcode: BARCODE });
 
@@ -220,8 +220,9 @@ describe('OpenFoodFacts endpoints', () => {
     const res = await request(app).get(`/api/v1/foods/barcode/${BARCODE}`).set('Authorization', `Bearer ${other.token}`);
 
     expect(res.status).toBe(200);
-    expect(res.body.saved).toBe(false);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(res.body.saved).toBe(true);
+    expect(res.body.source).toBe('local');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 

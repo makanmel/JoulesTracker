@@ -1255,7 +1255,8 @@ async function confirmVoiceResults() {
   try {
     for (const item of selected) {
       const body = {
-        name: item.name,
+        name: item.nameEn || item.name,
+        nameUk: item.nameUk || null,
         caloriesPer100g: item.quantityGrams > 0 ? Math.round((item.calories / item.quantityGrams) * 100 * 10) / 10 : item.calories,
         proteinPer100g: item.quantityGrams > 0 ? Math.round((item.protein / item.quantityGrams) * 100 * 10) / 10 : 0,
         carbsPer100g: item.quantityGrams > 0 ? Math.round((item.carbs / item.quantityGrams) * 100 * 10) / 10 : 0,

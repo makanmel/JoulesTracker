@@ -193,15 +193,15 @@ describe('Food endpoints', () => {
     expect(res.body.items[0].food.name).toBe('Buckwheat (cooked)');
   });
 
-  it('shares public foods with other users while keeping private foods hidden', async () => {
+  it('shares foods by default while keeping opted-out private foods hidden', async () => {
     const shared = await request(app)
       .post('/api/v1/foods')
       .set('Authorization', authHeader)
-      .send({ name: 'Shared zzz stew', caloriesPer100g: 100, isPublic: true });
+      .send({ name: 'Shared zzz stew', caloriesPer100g: 100 });
     await request(app)
       .post('/api/v1/foods')
       .set('Authorization', authHeader)
-      .send({ name: 'Private zzz stew', caloriesPer100g: 100 });
+      .send({ name: 'Private zzz stew', caloriesPer100g: 100, isPublic: false });
 
     const { token: otherToken } = await registerAndLogin(app);
     const otherHeader = `Bearer ${otherToken}`;

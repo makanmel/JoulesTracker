@@ -24,6 +24,8 @@ Respond ONLY with a JSON object in this exact shape, no markdown, no explanation
   "items": [
     {
       "name": "short localized food name matching the requested locale",
+      "nameEn": "canonical English food name (may equal name for en locale)",
+      "nameUk": "Ukrainian food name (may equal name for uk locale)",
       "quantityGrams": number,
       "calories": number,
       "protein": number,
@@ -280,6 +282,8 @@ export async function parseVoiceInput({
 
   return parsed.items.map((item) => ({
     name: String(item.name || ''),
+    nameEn: String(item.nameEn || '').trim() || String(item.name || ''),
+    nameUk: String(item.nameUk || '').trim() || null,
     quantityGrams: Number(item.quantityGrams) || 0,
     calories: Number(item.calories) || 0,
     protein: Number(item.protein) || 0,

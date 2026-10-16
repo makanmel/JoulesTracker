@@ -22,10 +22,11 @@ const product = {
 const jsonResponse = (body, status = 200) => ({ ok: status < 400, status, json: async () => body });
 
 describe('OpenFoodFacts mapper', () => {
-  it('maps a product to the FoodItem shape preferring the Ukrainian name', () => {
+  it('maps a product to the FoodItem shape with canonical English name and Ukrainian nameUk', () => {
     const food = mapProduct(product);
     expect(food).toEqual({
-      name: 'Молоко Яготинське 2.6%',
+      name: 'Yagotynske Milk',
+      nameUk: 'Молоко Яготинське 2.6%',
       brand: 'Яготинське',
       category: 'Молочні продукти, Молоко',
       barcode: '4820000000000',
@@ -39,7 +40,7 @@ describe('OpenFoodFacts mapper', () => {
       saturatedFatPer100g: 1.6,
       saltPer100g: 0.1,
     });
-    expect(food.name).toMatch(/[\u0400-\u04FF]/);
+    expect(food.nameUk).toMatch(/[\u0400-\u04FF]/);
   });
 
   it('falls back to product_name and converts kJ when kcal is missing', () => {
@@ -110,7 +111,8 @@ describe('OpenFoodFacts client', () => {
     expect(url.searchParams.get('page_size')).toBe('5');
     expect(result.total).toBe(1);
     expect(result.items).toHaveLength(1);
-    expect(result.items[0].name).toBe('Молоко Яготинське 2.6%');
+    expect(result.items[0].name).toBe('Yagotynske Milk');
+    expect(result.items[0].nameUk).toBe('Молоко Яготинське 2.6%');
   });
 
   it('matches every word in multi-word searches regardless of order or field', async () => {
@@ -131,7 +133,7 @@ describe('OpenFoodFacts client', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(2);
     expect(fetchImpl.mock.calls.map(([url]) => new URL(url).searchParams.get('search_terms'))).toEqual(['bruggen', 'пластівці']);
     expect(result.items).toHaveLength(1);
-    expect(result.items[0]).toMatchObject({ barcode: 'multi-word-match', name: 'Пластівці вівсяні', brand: 'Brüggen' });
+    expect(result.items[0]).toMatchObject({ barcode: 'multi-word-match', nameUk: 'Пластівці вівсяні', brand: 'Brüggen' });
   });
 
   it('retries transient upstream failures', async () => {
