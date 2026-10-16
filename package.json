@@ -1,6 +1,6 @@
 {
   "name": "joulestracker",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Minimal calorie/energy tracker MVP",
   "type": "module",
   "main": "src/server.js",
