@@ -20,6 +20,10 @@
   "about": {
     "title": "About",
     "changes": {
+      "v021": {
+        "i1": "Consistent food names in English and Ukrainian",
+        "i2": "New foods are shared with all users by default"
+      },
       "v020": {
         "i1": "Voice input and photo food recognition (Gemini or OpenAI)",
         "i2": "Visual themes — pick one here in Settings",

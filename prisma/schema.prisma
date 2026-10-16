@@ -43,7 +43,7 @@ model Food {
   category            String?
   source              String  @default("local") // local | openfoodfacts
   isDefault           Boolean @default(false)
-  isPublic            Boolean @default(false)
+  isPublic            Boolean @default(true)
 
   createdById String?
   createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)

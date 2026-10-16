@@ -31,6 +31,16 @@ function findLocalByName(name, userId) {
   });
 }
 
+// Recognized items can arrive in either locale; try every variant.
+function findLocalByNames(names, userId) {
+  const candidates = [...new Set(names.map((n) => String(n || '').trim()).filter(Boolean))];
+  if (!candidates.length) return Promise.resolve(null);
+  return prisma.food.findFirst({
+    where: { AND: [{ OR: candidates.map(nameMatches) }, visibleTo(userId)] },
+    orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
+  });
+}
+
 router.get('/', async (req, res, next) => {
   try {
     const q = req.query.q || '';
@@ -252,7 +262,7 @@ router.post('/recognize-photo', async (req, res, next) => {
     const resolved = await Promise.all(
       ai.items.map(async (item) => ({
         item,
-        local: await findLocalByName(item.name, req.user.id),
+        local: await findLocalByNames([item.name, item.nameEn, item.nameUk], req.user.id),
         off: null,
       })),
     );
@@ -284,8 +294,8 @@ router.post('/recognize-photo', async (req, res, next) => {
         saved: false,
         weightGrams: item.weightGrams,
         food: {
-          name: item.nameEn,
-          nameUk: locale === 'uk' ? item.name : null,
+          name: item.nameEn || item.name,
+          nameUk: item.nameUk || (locale === 'uk' ? item.name : null),
           source: 'ai',
           caloriesPer100g: item.caloriesPer100g ?? 0,
           proteinPer100g: item.proteinPer100g ?? 0,

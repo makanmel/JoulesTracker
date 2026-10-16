@@ -24,6 +24,7 @@ Respond ONLY with a JSON object, no markdown, no explanation:
     {
       "name": "short localized food name in the requested locale",
       "nameEn": "canonical English food name (may equal name for en locale)",
+      "nameUk": "Ukrainian food name (may equal name for uk locale)",
       "weightGrams": number,
       "caloriesPer100g": number|null,
       "proteinPer100g": number|null,
@@ -314,15 +315,21 @@ export async function recognizePhoto({
   // single flat object are treated as a one-item list.
   const rawItems = Array.isArray(parsed.items) ? parsed.items : [parsed];
   const items = rawItems
-    .map((entry) => ({
-      name: String(entry?.name || '').trim(),
-      nameEn: String(entry?.nameEn || '').trim() || String(entry?.name || '').trim(),
-      weightGrams: Number(entry?.weightGrams) || 0,
-      caloriesPer100g: entry?.caloriesPer100g == null ? null : Number(entry.caloriesPer100g),
-      proteinPer100g: entry?.proteinPer100g == null ? null : Number(entry.proteinPer100g),
-      carbsPer100g: entry?.carbsPer100g == null ? null : Number(entry.carbsPer100g),
-      fatPer100g: entry?.fatPer100g == null ? null : Number(entry.fatPer100g),
-    }))
+    .map((entry) => {
+      const name = String(entry?.name || '').trim();
+      const nameEn = String(entry?.nameEn || '').trim() || name;
+      const nameUk = String(entry?.nameUk || '').trim() || (name !== nameEn ? name : null);
+      return {
+        name,
+        nameEn,
+        nameUk,
+        weightGrams: Number(entry?.weightGrams) || 0,
+        caloriesPer100g: entry?.caloriesPer100g == null ? null : Number(entry.caloriesPer100g),
+        proteinPer100g: entry?.proteinPer100g == null ? null : Number(entry.proteinPer100g),
+        carbsPer100g: entry?.carbsPer100g == null ? null : Number(entry.carbsPer100g),
+        fatPer100g: entry?.fatPer100g == null ? null : Number(entry.fatPer100g),
+      };
+    })
     .filter((entry) => entry.name)
     .slice(0, 8);
 

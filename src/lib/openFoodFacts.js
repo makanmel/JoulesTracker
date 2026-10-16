@@ -52,14 +52,16 @@ export function isValidBarcode(value) {
 export function mapProduct(product) {
   if (!product) return null;
   const n = product.nutriments || {};
-  const name = first(product.product_name_uk, product.product_name);
+  const name = first(product.product_name, product.product_name_uk);
   if (!name) return null;
+  const nameUk = product.product_name_uk && product.product_name_uk !== name ? product.product_name_uk : null;
 
   const kcal = n['energy-kcal_100g'];
   const calories = kcal != null && kcal !== '' ? num(kcal) : num(n.energy_100g) / 4.184;
 
   return {
     name,
+    nameUk,
     brand: first(product.brands),
     category: first(product.categories),
     barcode: first(product.code),
