@@ -12,7 +12,7 @@ describe('Static frontend', () => {
     expect(res.text).toContain('class="dashboard-grid"');
     expect(res.text).toContain('dashboard-col-main');
     expect(res.text).toContain('dashboard-col-side');
-    for (const area of ['area-target', 'area-summary', 'area-add-meal', 'area-meals']) {
+    for (const area of ['area-summary', 'area-add-meal', 'area-meals']) {
       expect(res.text).toContain(area);
     }
   });
@@ -30,8 +30,8 @@ describe('Static frontend', () => {
   it('serves dashboard section icons and visual accents', async () => {
     const [page, styles] = await Promise.all([request(app).get('/index.html'), request(app).get('/styles.css')]);
 
-    expect(page.text.match(/class="section-icon"/g)).toHaveLength(5);
-    for (const section of ['summary', 'target', 'add-meal', 'meals']) {
+    expect(page.text.match(/class="section-icon"/g)).toHaveLength(4);
+    for (const section of ['summary', 'add-meal', 'meals']) {
       expect(page.text).toMatch(new RegExp(`id="${section}-section"[\\s\\S]*?<svg class="section-icon"`));
     }
     // foods picker merged into the add-meal card
@@ -100,11 +100,11 @@ describe('Static frontend', () => {
     expect(html.text).toContain('id="profile-weight"');
     expect(html.text).toContain('id="profile-birthdate"');
     expect(html.text).toContain('id="profile-activity"');
-    expect(html.text).toContain('id="target-section"');
+    expect(html.text).toContain('id="settings-pane-target"');
     expect(html.text).toContain('id="target-suggestions"');
     expect(html.text).not.toContain('id="target-date"');
     expect(html.text).not.toContain('id="target-use-tdee"');
-    expect(html.text).toContain('id="voice-settings"');
+    expect(html.text).toContain('id="settings-pane-voice"');
     expect(html.text).toContain('id="voice-provider"');
     expect(html.text).toContain('id="voice-api-key"');
     expect(js.text).toContain('/daily-target/suggest?date=');
