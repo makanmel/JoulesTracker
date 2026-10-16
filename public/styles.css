@@ -1287,16 +1287,16 @@ button:disabled {
   order: 1;
 }
 
+.area-meals {
+  order: 2;
+}
+
 .area-add-meal {
   order: 3;
 }
 
 .area-foods {
   order: 4;
-}
-
-.area-meals {
-  order: 5;
 }
 
 .area-meals .list,
