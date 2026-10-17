@@ -1272,7 +1272,7 @@ function createSpeechRecognition() {
 let voiceRecognition = null;
 let lastVoiceResults = [];
 
-function toggleVoiceInput() {
+function toggleVoiceInput(isRetry = false) {
   if (voiceRecognition && voiceRecognition.listening) {
     voiceRecognition.stop();
     return;
@@ -1288,14 +1288,21 @@ function toggleVoiceInput() {
 
   let gotResult = false;
   const resetVoiceState = () => {
+    // Ignore stale callbacks after a retry has already replaced this instance.
+    if (voiceRecognition !== recognition) return;
     voiceRecognition = null;
     $('#voice-toggle').classList.remove('active');
   };
-  // Chrome's speech service can hang without firing any event — recover after 12s.
+  // Chrome's speech service can hang without firing any event — retry once, then fail.
   const hangTimer = setTimeout(() => {
     if (voiceRecognition !== recognition || gotResult) return;
     console.error('Speech recognition timed out with no events');
     recognition.abort();
+    if (isRetry !== true) {
+      voiceRecognition = null;
+      toggleVoiceInput(true);
+      return;
+    }
     showToast(t('voice.error'), 'error');
     resetVoiceState();
   }, 12000);
@@ -1310,6 +1317,7 @@ function toggleVoiceInput() {
   recognition.onerror = (event) => {
     console.error('Speech recognition error:', event.error);
     clearTimeout(hangTimer);
+    if (voiceRecognition !== recognition) return;
     showToast(t('voice.error'), 'error');
     resetVoiceState();
   };
@@ -1371,25 +1379,43 @@ function renderVoiceResults() {
   container.classList.remove('hidden');
 }
 
+function voiceFoodBody(item) {
+  const grams = item.quantityGrams > 0 ? item.quantityGrams : 0;
+  const per100 = (value) => Math.round((value / grams) * 100 * 10) / 10;
+  return {
+    name: item.nameEn || item.name,
+    nameUk: item.nameUk || null,
+    caloriesPer100g: grams ? per100(item.calories) : item.calories,
+    proteinPer100g: grams ? per100(item.protein) : 0,
+    carbsPer100g: grams ? per100(item.carbs) : 0,
+    fatPer100g: grams ? per100(item.fat) : 0,
+  };
+}
+
 async function confirmVoiceResults() {
   const checkboxes = [...$('#voice-results').querySelectorAll('input[type="checkbox"]:checked')];
   const selected = checkboxes.map((cb) => lastVoiceResults[Number(cb.dataset.index)]).filter(Boolean);
   if (!selected.length) return;
 
+  const mealDate = $('#summary-date').value;
+  const mealType = $('#meal-type').value;
   try {
     for (const item of selected) {
-      const body = {
-        name: item.nameEn || item.name,
-        nameUk: item.nameUk || null,
-        caloriesPer100g: item.quantityGrams > 0 ? Math.round((item.calories / item.quantityGrams) * 100 * 10) / 10 : item.calories,
-        proteinPer100g: item.quantityGrams > 0 ? Math.round((item.protein / item.quantityGrams) * 100 * 10) / 10 : 0,
-        carbsPer100g: item.quantityGrams > 0 ? Math.round((item.carbs / item.quantityGrams) * 100 * 10) / 10 : 0,
-        fatPer100g: item.quantityGrams > 0 ? Math.round((item.fat / item.quantityGrams) * 100 * 10) / 10 : 0,
-      };
-      await api('/foods', { method: 'POST', body: JSON.stringify(body) });
+      let foodId = item.foodId;
+      if (!foodId) {
+        const created = await api('/foods', { method: 'POST', body: JSON.stringify(voiceFoodBody(item)) });
+        foodId = created.id;
+      }
+      const quantityGrams = item.quantityGrams > 0 ? item.quantityGrams : 100;
+      await api('/meals', {
+        method: 'POST',
+        body: JSON.stringify({ foodId, quantityGrams, mealDate, mealType }),
+      });
     }
     showToast(t('voice.added'));
     $('#voice-results-form').classList.add('hidden');
+    loadSummary(mealDate);
+    loadMeals(mealDate);
     loadFoods($('#food-search').value);
   } catch (err) {
     showToast(err.message, 'error');

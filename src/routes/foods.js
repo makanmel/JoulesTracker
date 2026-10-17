@@ -232,7 +232,13 @@ router.post('/parse-voice', async (req, res, next) => {
     const apiKey = req.headers['x-ai-key'];
     const model = req.headers['x-ai-model'];
     const items = await parseVoiceInput({ transcript, locale, provider, apiKey, model });
-    res.json({ items });
+    const resolved = await Promise.all(
+      items.map(async (item) => {
+        const local = await findLocalByNames([item.name, item.nameEn, item.nameUk], req.user.id);
+        return local ? { ...item, foodId: local.id } : item;
+      }),
+    );
+    res.json({ items: resolved });
   } catch (err) {
     next(err);
   }
