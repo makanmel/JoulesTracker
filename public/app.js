@@ -1286,20 +1286,38 @@ function toggleVoiceInput() {
   voiceRecognition.listening = true;
   $('#voice-toggle').classList.add('active');
 
+  let gotResult = false;
+  const resetVoiceState = () => {
+    voiceRecognition = null;
+    $('#voice-toggle').classList.remove('active');
+  };
+  // Chrome's speech service can hang without firing any event — recover after 12s.
+  const hangTimer = setTimeout(() => {
+    if (voiceRecognition !== recognition || gotResult) return;
+    console.error('Speech recognition timed out with no events');
+    recognition.abort();
+    showToast(t('voice.error'), 'error');
+    resetVoiceState();
+  }, 12000);
+
   recognition.onresult = async (event) => {
-    const transcript = event.results[0][0].transcript;
-    await parseVoiceTranscript(transcript);
+    const result = event.results[0] && event.results[0][0];
+    if (!result || !result.transcript) return;
+    gotResult = true;
+    await parseVoiceTranscript(result.transcript);
   };
 
   recognition.onerror = (event) => {
+    console.error('Speech recognition error:', event.error);
+    clearTimeout(hangTimer);
     showToast(t('voice.error'), 'error');
-    voiceRecognition = null;
-    $('#voice-toggle').classList.remove('active');
+    resetVoiceState();
   };
 
+  recognition.onspeechend = () => recognition.stop();
   recognition.onend = () => {
-    voiceRecognition = null;
-    $('#voice-toggle').classList.remove('active');
+    clearTimeout(hangTimer);
+    resetVoiceState();
   };
 
   recognition.start();

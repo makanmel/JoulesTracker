@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v029": {
+        "i1": "Fixed voice dictation hanging without response"
+      },
       "v028": {
         "i1": "Fixed voice and photo buttons not responding"
       },
