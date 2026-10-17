@@ -275,6 +275,7 @@ async function addPhotoScanSelections() {
 }
 
 async function handleScanPhoto(file) {
+  if (!(await requireAiKey())) return;
   if (!file || !file.type.startsWith('image/')) {
     showToast(t('photoScan.invalid'), 'error');
     return;
@@ -386,10 +387,15 @@ function loadMealTypePreference() {
   if (mealType && select.querySelector(`option[value="${mealType}"]`)) select.value = mealType;
 }
 
+let aiServerConfigured = null;
+
 async function aiConfigured() {
   if (localStorage.getItem(AI_API_KEY_KEY)) return true;
-  const config = await api('/foods/ai-config').catch(() => ({ configured: true }));
-  return Boolean(config.configured);
+  if (aiServerConfigured === null) {
+    const config = await api('/foods/ai-config').catch(() => ({ configured: true }));
+    aiServerConfigured = Boolean(config.configured);
+  }
+  return aiServerConfigured;
 }
 
 async function requireAiKey() {
@@ -403,6 +409,7 @@ async function requireAiKey() {
 
 function saveVoiceSettings(e) {
   e.preventDefault();
+  aiServerConfigured = null;
   localStorage.setItem(AI_PROVIDER_KEY, $('#voice-provider').value);
   localStorage.setItem(AI_API_KEY_KEY, $('#voice-api-key').value.trim());
   showToast(t('voice.settingsSaved'));
@@ -1265,12 +1272,11 @@ function createSpeechRecognition() {
 let voiceRecognition = null;
 let lastVoiceResults = [];
 
-async function toggleVoiceInput() {
+function toggleVoiceInput() {
   if (voiceRecognition && voiceRecognition.listening) {
     voiceRecognition.stop();
     return;
   }
-  if (!(await requireAiKey())) return;
   const recognition = createSpeechRecognition();
   if (!recognition) {
     showToast(t('voice.unsupported'), 'error');
@@ -1300,6 +1306,7 @@ async function toggleVoiceInput() {
 }
 
 async function parseVoiceTranscript(transcript) {
+  if (!(await requireAiKey())) return;
   try {
     showToast(t('voice.parsing'), 'info');
     const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
@@ -1595,9 +1602,7 @@ async function init() {
   $('#barcode-form').addEventListener('submit', handleBarcodeLookup);
   $('#barcode-input').addEventListener('input', debounce(lookupBarcode, SEARCH_DEBOUNCE_MS));
   $('#scan-barcode-btn').addEventListener('click', openBarcodeScanner);
-  $('#scan-photo-btn').addEventListener('click', async () => {
-    if (await requireAiKey()) $('#scan-photo-input').click();
-  });
+  $('#scan-photo-btn').addEventListener('click', () => $('#scan-photo-input').click());
   $('#scan-photo-input').addEventListener('change', (e) => {
     const file = e.target.files[0];
     e.target.value = '';
