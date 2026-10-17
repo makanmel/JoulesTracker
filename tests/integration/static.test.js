@@ -115,6 +115,7 @@ describe('Static frontend', () => {
     expect(js.text).toContain('X-AI-Key');
     expect(js.text).toContain('meal-menu');
     expect(js.text).toContain('meal-actions-btn');
+    expect(js.text).toContain('actions-visible');
     expect(en.body.profile.save).toBe('Save profile');
     expect(uk.body.profile.save).toBe('Зберегти профіль');
     expect(en.body.voice.settingsTitle).toBe('AI');

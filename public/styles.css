@@ -843,7 +843,16 @@ button:disabled {
   padding: 3px;
   border: none;
   background: transparent;
-  opacity: 0.45;
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.list-item:hover .meal-actions-btn,
+.list-item:focus-within .meal-actions-btn,
+.list-item.actions-visible .meal-actions-btn {
+  opacity: 0.8;
+  pointer-events: auto;
 }
 
 .list-item .meal-actions-btn:hover,

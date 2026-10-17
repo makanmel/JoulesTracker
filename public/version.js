@@ -2,9 +2,14 @@
 // APP_VERSION is a fallback for the version reported by /health and should be
 // kept in sync with package.json. Changelog item texts live in locales/*.json
 // as about.changes keys; keep entries short and user-facing.
-export const APP_VERSION = '0.2.6';
+export const APP_VERSION = '0.2.7';
 
 export const CHANGELOG = [
+  {
+    version: '0.2.7',
+    date: '2026-10-17',
+    items: ['about.changes.v027.i1'],
+  },
   {
     version: '0.2.6',
     date: '2026-10-17',

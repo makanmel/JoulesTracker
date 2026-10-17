@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v027": {
+        "i1": "Row action icons appear on hover, or on swipe/long-press on touch"
+      },
       "v026": {
         "i1": "Warns to add an AI API key before using voice or photo features",
         "i2": "Voice settings renamed to AI"
