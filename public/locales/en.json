@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v028": {
+        "i1": "Fixed voice and photo buttons not responding"
+      },
       "v027": {
         "i1": "Row action icons appear on hover, or on swipe/long-press on touch"
       },
