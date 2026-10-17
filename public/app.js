@@ -369,6 +369,17 @@ function closeMealMenus() {
   $$('.meal-actions-btn').forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
 }
 
+function clearVisibleRowActions(except = null) {
+  $$('.list-item.actions-visible').forEach((el) => {
+    if (el !== except) el.classList.remove('actions-visible');
+  });
+}
+
+function showRowActions(row) {
+  clearVisibleRowActions(row);
+  row.classList.add('actions-visible');
+}
+
 function loadMealTypePreference() {
   const mealType = localStorage.getItem(MEAL_TYPE_KEY);
   const select = $('#meal-type');
@@ -1523,10 +1534,44 @@ async function init() {
 
   document.addEventListener('click', (event) => {
     if (!event.target.closest('.meal-menu') && !event.target.closest('.meal-actions-btn')) closeMealMenus();
+    if (!event.target.closest('.list-item.actions-visible')) clearVisibleRowActions();
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeMealMenus();
+    if (event.key === 'Escape') {
+      closeMealMenus();
+      clearVisibleRowActions();
+    }
   });
+
+  let rowPress = null;
+  document.addEventListener('touchstart', (event) => {
+    const row = event.target.closest('.list-item');
+    rowPress = row && row.querySelector('.meal-actions-btn')
+      ? {
+          row,
+          x: event.touches[0].clientX,
+          y: event.touches[0].clientY,
+          swiped: false,
+          timer: setTimeout(() => showRowActions(row), 550),
+        }
+      : null;
+  }, { passive: true });
+  document.addEventListener('touchmove', (event) => {
+    if (!rowPress || rowPress.swiped) return;
+    const dx = Math.abs(event.touches[0].clientX - rowPress.x);
+    const dy = Math.abs(event.touches[0].clientY - rowPress.y);
+    if (dx > 30 && dx > dy) {
+      rowPress.swiped = true;
+      clearTimeout(rowPress.timer);
+      showRowActions(rowPress.row);
+    }
+  }, { passive: true });
+  const endRowPress = () => {
+    if (rowPress) clearTimeout(rowPress.timer);
+    rowPress = null;
+  };
+  document.addEventListener('touchend', endRowPress);
+  document.addEventListener('touchcancel', endRowPress);
 
   $('#meal-form').addEventListener('submit', handleCreateMeal);
   $('#voice-toggle').addEventListener('click', toggleVoiceInput);
