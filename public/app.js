@@ -375,6 +375,21 @@ function loadMealTypePreference() {
   if (mealType && select.querySelector(`option[value="${mealType}"]`)) select.value = mealType;
 }
 
+async function aiConfigured() {
+  if (localStorage.getItem(AI_API_KEY_KEY)) return true;
+  const config = await api('/foods/ai-config').catch(() => ({ configured: true }));
+  return Boolean(config.configured);
+}
+
+async function requireAiKey() {
+  if (await aiConfigured()) return true;
+  showToast(t('ai.missingKey'), 'error');
+  const settingsTab = $('.settings-tab[data-pane="settings-pane-ai"]');
+  if (settingsTab && !settingsTab.classList.contains('active')) settingsTab.click();
+  if ($('#settings-toggle').getAttribute('aria-expanded') !== 'true') $('#settings-toggle').click();
+  return false;
+}
+
 function saveVoiceSettings(e) {
   e.preventDefault();
   localStorage.setItem(AI_PROVIDER_KEY, $('#voice-provider').value);
@@ -1239,11 +1254,12 @@ function createSpeechRecognition() {
 let voiceRecognition = null;
 let lastVoiceResults = [];
 
-function toggleVoiceInput() {
+async function toggleVoiceInput() {
   if (voiceRecognition && voiceRecognition.listening) {
     voiceRecognition.stop();
     return;
   }
+  if (!(await requireAiKey())) return;
   const recognition = createSpeechRecognition();
   if (!recognition) {
     showToast(t('voice.unsupported'), 'error');
@@ -1534,7 +1550,9 @@ async function init() {
   $('#barcode-form').addEventListener('submit', handleBarcodeLookup);
   $('#barcode-input').addEventListener('input', debounce(lookupBarcode, SEARCH_DEBOUNCE_MS));
   $('#scan-barcode-btn').addEventListener('click', openBarcodeScanner);
-  $('#scan-photo-btn').addEventListener('click', () => $('#scan-photo-input').click());
+  $('#scan-photo-btn').addEventListener('click', async () => {
+    if (await requireAiKey()) $('#scan-photo-input').click();
+  });
   $('#scan-photo-input').addEventListener('change', (e) => {
     const file = e.target.files[0];
     e.target.value = '';

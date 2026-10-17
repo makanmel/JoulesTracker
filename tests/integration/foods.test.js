@@ -12,6 +12,13 @@ beforeEach(async () => {
 });
 
 describe('Food endpoints', () => {
+  it('reports whether server-side AI keys are configured', async () => {
+    const res = await request(app).get('/api/v1/foods/ai-config').set('Authorization', authHeader);
+
+    expect(res.status).toBe(200);
+    expect(typeof res.body.configured).toBe('boolean');
+  });
+
   it('creates a custom food', async () => {
     const res = await request(app)
       .post('/api/v1/foods')

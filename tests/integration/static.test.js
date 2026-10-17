@@ -104,7 +104,7 @@ describe('Static frontend', () => {
     expect(html.text).toContain('id="target-suggestions"');
     expect(html.text).not.toContain('id="target-date"');
     expect(html.text).not.toContain('id="target-use-tdee"');
-    expect(html.text).toContain('id="settings-pane-voice"');
+    expect(html.text).toContain('id="settings-pane-ai"');
     expect(html.text).toContain('id="voice-provider"');
     expect(html.text).toContain('id="voice-api-key"');
     expect(js.text).toContain('/daily-target/suggest?date=');
@@ -117,8 +117,8 @@ describe('Static frontend', () => {
     expect(js.text).toContain('meal-actions-btn');
     expect(en.body.profile.save).toBe('Save profile');
     expect(uk.body.profile.save).toBe('Зберегти профіль');
-    expect(en.body.voice.settingsTitle).toBe('Voice input');
-    expect(uk.body.voice.settingsTitle).toBe('Голосовий ввід');
+    expect(en.body.voice.settingsTitle).toBe('AI');
+    expect(uk.body.voice.settingsTitle).toBe('ШІ');
   });
 
   it('serves eight always-visible summary metrics with proportional colored fills', async () => {

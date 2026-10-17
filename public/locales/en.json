@@ -20,6 +20,10 @@
   "about": {
     "title": "About",
     "changes": {
+      "v026": {
+        "i1": "Warns to add an AI API key before using voice or photo features",
+        "i2": "Voice settings renamed to AI"
+      },
       "v025": {
         "i1": "Food list items have an actions menu for editing or deleting"
       },
@@ -198,6 +202,9 @@
     "barcodeNotFound": "Product not found. Fill in the details to create it as a custom food.",
     "public": "Share with all users"
   },
+  "ai": {
+    "missingKey": "Add an AI API key in Settings → AI to use this feature"
+  },
   "voice": {
     "start": "Voice input",
     "parsing": "Parsing...",
@@ -207,7 +214,7 @@
     "resultsTitle": "Parsed items",
     "unsupported": "Voice input is not supported in this browser",
     "error": "Voice input failed",
-    "settingsTitle": "Voice input",
+    "settingsTitle": "AI",
     "settingsHint": "Choose the AI provider and enter your API key. The key is stored only in this browser.",
     "provider": "Provider",
     "providers": {

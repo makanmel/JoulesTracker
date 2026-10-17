@@ -159,6 +159,10 @@ router.post('/import', async (req, res, next) => {
   }
 });
 
+router.get('/ai-config', (req, res) => {
+  res.json({ configured: Boolean(process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY) });
+});
+
 router.get('/:id', async (req, res, next) => {
   try {
     const food = await prisma.food.findUnique({ where: { id: req.params.id } });
