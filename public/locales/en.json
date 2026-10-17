@@ -20,6 +20,10 @@
   "about": {
     "title": "About",
     "changes": {
+      "v030": {
+        "i1": "Voice results now add meal entries and reuse existing foods",
+        "i2": "Voice input retries once if dictation hangs"
+      },
       "v029": {
         "i1": "Fixed voice dictation hanging without response"
       },
