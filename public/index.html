@@ -236,6 +236,14 @@
                 <ul id="voice-results" class="list"></ul>
                 <button type="button" id="voice-confirm" class="btn-primary" data-i18n="voice.confirm">Add selected</button>
               </form>
+              <div id="voice-listening" class="voice-overlay hidden" role="dialog" aria-live="polite">
+                <div class="voice-card">
+                  <div class="voice-waves" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+                  <p id="voice-status" class="voice-status" data-i18n="voice.listening">Listening...</p>
+                  <p id="voice-transcript" class="voice-transcript muted"></p>
+                  <button type="button" id="voice-stop" class="btn-secondary" data-i18n="voice.stop">Stop</button>
+                </div>
+              </div>
               <form id="meal-form" class="meal-form">
                 <div class="meal-form-row meal-form-primary-row">
                   <label class="meal-food-field"><span data-i18n="addMeal.food">Food</span>

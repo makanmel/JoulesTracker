@@ -1264,13 +1264,31 @@ function createSpeechRecognition() {
   if (!SpeechRecognition) return null;
   const recognition = new SpeechRecognition();
   recognition.continuous = false;
-  recognition.interimResults = false;
+  recognition.interimResults = true;
   recognition.lang = document.documentElement.lang === 'uk' ? 'uk-UA' : 'en-US';
   return recognition;
 }
 
 let voiceRecognition = null;
 let lastVoiceResults = [];
+
+function setVoiceStatus(key) {
+  $('#voice-status').textContent = t(key);
+}
+
+function setVoiceTranscript(text) {
+  $('#voice-transcript').textContent = text;
+}
+
+function showVoiceOverlay() {
+  $('#voice-listening').classList.remove('hidden', 'processing');
+  setVoiceStatus('voice.listening');
+  setVoiceTranscript('');
+}
+
+function hideVoiceOverlay() {
+  $('#voice-listening').classList.add('hidden');
+}
 
 function toggleVoiceInput(isRetry = false) {
   if (voiceRecognition && voiceRecognition.listening) {
@@ -1285,6 +1303,7 @@ function toggleVoiceInput(isRetry = false) {
   voiceRecognition = recognition;
   voiceRecognition.listening = true;
   $('#voice-toggle').classList.add('active');
+  showVoiceOverlay();
 
   let gotResult = false;
   const resetVoiceState = () => {
@@ -1303,21 +1322,35 @@ function toggleVoiceInput(isRetry = false) {
       toggleVoiceInput(true);
       return;
     }
+    hideVoiceOverlay();
     showToast(t('voice.error'), 'error');
     resetVoiceState();
   }, 12000);
 
   recognition.onresult = async (event) => {
-    const result = event.results[0] && event.results[0][0];
-    if (!result || !result.transcript) return;
+    let interim = '';
+    let final = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const alt = event.results[i][0];
+      if (!alt) continue;
+      if (event.results[i].isFinal) final += alt.transcript;
+      else interim += alt.transcript;
+    }
+    if (interim) setVoiceTranscript(interim);
+    final = final.trim();
+    if (!final) return;
     gotResult = true;
-    await parseVoiceTranscript(result.transcript);
+    setVoiceStatus('voice.processing');
+    $('#voice-listening').classList.add('processing');
+    await parseVoiceTranscript(final);
+    hideVoiceOverlay();
   };
 
   recognition.onerror = (event) => {
     console.error('Speech recognition error:', event.error);
     clearTimeout(hangTimer);
     if (voiceRecognition !== recognition) return;
+    hideVoiceOverlay();
     showToast(t('voice.error'), 'error');
     resetVoiceState();
   };
@@ -1325,6 +1358,7 @@ function toggleVoiceInput(isRetry = false) {
   recognition.onspeechend = () => recognition.stop();
   recognition.onend = () => {
     clearTimeout(hangTimer);
+    if (!gotResult) hideVoiceOverlay();
     resetVoiceState();
   };
 
@@ -1626,6 +1660,9 @@ async function init() {
 
   $('#meal-form').addEventListener('submit', handleCreateMeal);
   $('#voice-toggle').addEventListener('click', toggleVoiceInput);
+  $('#voice-stop').addEventListener('click', () => {
+    if (voiceRecognition && voiceRecognition.listening) voiceRecognition.stop();
+  });
   $('#voice-confirm').addEventListener('click', confirmVoiceResults);
   $('#voice-settings-form').addEventListener('submit', saveVoiceSettings);
   $('#food-form').addEventListener('submit', handleCreateFood);
