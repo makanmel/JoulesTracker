@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v031": {
+        "i1": "Dictation shows a listening popup with live transcript"
+      },
       "v030": {
         "i1": "Voice results now add meal entries and reuse existing foods",
         "i2": "Voice input retries once if dictation hangs"
@@ -220,6 +223,9 @@
   },
   "voice": {
     "start": "Voice input",
+    "listening": "Listening...",
+    "processing": "Processing...",
+    "stop": "Stop",
     "parsing": "Parsing...",
     "empty": "No items recognized",
     "added": "Items added",
