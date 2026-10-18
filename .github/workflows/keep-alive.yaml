@@ -1,0 +1,20 @@
+name: Keep Alive
+
+# Free Render tier sleeps after ~15 min idle; ping /health to keep it warm.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        env:
+          APP_URL: ${{ vars.APP_URL || 'https://joulestracker.onrender.com' }}
+        run: |
+          status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$APP_URL/health")
+          echo "GET $APP_URL/health -> $status"
+          test "$status" -lt 500
