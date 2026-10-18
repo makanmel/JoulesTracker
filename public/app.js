@@ -1129,7 +1129,7 @@ async function loadMeals(date) {
         div.innerHTML = `
           <div>
             ${escapeHtml(foodName(meal.food))}<br />
-            <span class="muted">${entry}</span>
+            <button type="button" class="meal-entry" aria-label="${t('meals.editGrams')}" title="${t('meals.editGrams')}">${entry}</button>
           </div>
           <button type="button" class="btn-icon meal-actions-btn" aria-label="${t('meals.actions')}" title="${t('meals.actions')}" aria-expanded="false" aria-haspopup="menu"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg></button>
           <div class="meal-menu hidden" role="menu"></div>
@@ -1166,6 +1166,8 @@ async function loadMeals(date) {
           menu.classList.toggle('hidden', !opening);
           actionsBtn.setAttribute('aria-expanded', String(opening));
         });
+        const entryBtn = div.querySelector('.meal-entry');
+        entryBtn.addEventListener('click', () => startMealGramsEdit(meal, entryBtn, date));
         body.appendChild(div);
       });
     }
@@ -1211,6 +1213,52 @@ async function undoFoodDelete(food) {
   } catch (err) {
     showToast(err.message, 'error');
   }
+}
+
+function startMealGramsEdit(meal, entryBtn, date) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.inputMode = 'decimal';
+  input.className = 'meal-entry-input';
+  input.value = meal.quantityGrams;
+  input.setAttribute('aria-label', t('meals.editGrams'));
+  let done = false;
+  const cancel = () => {
+    if (done) return;
+    done = true;
+    loadMeals(date);
+  };
+  const commit = async () => {
+    if (done) return;
+    done = true;
+    const quantityGrams = parseFloat(input.value);
+    if (!(quantityGrams > 0) || quantityGrams === meal.quantityGrams) {
+      loadMeals(date);
+      return;
+    }
+    try {
+      await api(`/meals/${meal.id}`, { method: 'PATCH', body: JSON.stringify({ quantityGrams }) });
+      showToast(t('meals.updated'));
+      loadSummary(date);
+      loadMeals(date);
+    } catch (err) {
+      showToast(err.message, 'error');
+      loadMeals(date);
+    }
+  };
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      commit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancel();
+    }
+  });
+  input.addEventListener('blur', commit);
+  entryBtn.replaceWith(input);
+  input.focus();
+  input.select();
 }
 
 async function moveMeal(meal, mealType, date) {

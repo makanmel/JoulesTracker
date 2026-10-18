@@ -20,6 +20,9 @@
   "about": {
     "title": "Про застосунок",
     "changes": {
+      "v032": {
+        "i1": "Грами прийому їжі редагуються прямо в списку"
+      },
       "v031": {
         "i1": "Під час диктування показується вікно з живим текстом"
       },
@@ -132,6 +135,8 @@
     "deleted": "Прийом їжі видалено",
     "actions": "Дії з записом",
     "moved": "Прийом їжі перенесено",
+    "updated": "Прийом оновлено",
+    "editGrams": "Змінити грами",
     "entry": "<strong>{{grams}} г</strong> · {{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "groupTotal": "{{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "types": {

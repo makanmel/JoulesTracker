@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v032": {
+        "i1": "Edit meal grams inline by tapping the entry line"
+      },
       "v031": {
         "i1": "Dictation shows a listening popup with live transcript"
       },
@@ -132,6 +135,8 @@
     "deleted": "Meal deleted",
     "actions": "Meal actions",
     "moved": "Meal moved",
+    "updated": "Meal updated",
+    "editGrams": "Edit grams",
     "entry": "<strong>{{grams}} g</strong> · {{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "groupTotal": "{{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "types": {

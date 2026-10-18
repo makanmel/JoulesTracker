@@ -1216,6 +1216,32 @@ button:disabled {
   font-style: italic;
 }
 
+.meal-entry {
+  display: inline;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+}
+
+.meal-entry:hover,
+.meal-entry:focus-visible {
+  color: var(--primary);
+}
+
+.meal-entry-input {
+  width: 90px;
+  font: inherit;
+  color: var(--text);
+  padding: 2px 6px;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  background: var(--card);
+}
+
 .hidden {
   display: none !important;
 }
