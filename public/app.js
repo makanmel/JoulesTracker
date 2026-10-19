@@ -1361,10 +1361,39 @@ function hideVoiceOverlay() {
   $('#voice-listening').classList.add('hidden');
 }
 
-function toggleVoiceInput(isRetry = false) {
+async function ensureMicAccess() {
+  if (!navigator.mediaDevices?.getUserMedia) return null;
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).then(
+    (mediaStream) => mediaStream,
+    (err) => err,
+  );
+  if (stream instanceof MediaStream) {
+    stream.getTracks().forEach((track) => track.stop());
+    return null;
+  }
+  if (stream.name === 'NotAllowedError' || stream.name === 'SecurityError') return 'voice.micDenied';
+  return 'voice.noMic';
+}
+
+const VOICE_ERROR_KEYS = {
+  'not-allowed': 'voice.micDenied',
+  'service-not-allowed': 'voice.serviceUnavailable',
+  'audio-capture': 'voice.noMic',
+  'no-speech': 'voice.noSpeech',
+  network: 'voice.networkError',
+};
+
+async function toggleVoiceInput(isRetry = false) {
   if (voiceRecognition && voiceRecognition.listening) {
     voiceRecognition.stop();
     return;
+  }
+  if (!/Mobi|Android/i.test(navigator.userAgent)) {
+    const micError = await ensureMicAccess();
+    if (micError) {
+      showToast(t(micError), 'error');
+      return;
+    }
   }
   const recognition = createSpeechRecognition();
   if (!recognition) {
@@ -1377,27 +1406,32 @@ function toggleVoiceInput(isRetry = false) {
   showVoiceOverlay();
 
   let gotResult = false;
+  let audioStarted = false;
+  let hangTimer = null;
   const resetVoiceState = () => {
-    // Ignore stale callbacks after a retry has already replaced this instance.
     if (voiceRecognition !== recognition) return;
     voiceRecognition = null;
     $('#voice-toggle').classList.remove('active');
   };
-  // Chrome's speech service can hang without firing any event — retry once, then fail.
-  const hangTimer = setTimeout(() => {
-    if (voiceRecognition !== recognition || gotResult) return;
-    console.error('Speech recognition timed out with no events');
-    recognition.abort();
-    if (isRetry !== true) {
-      voiceRecognition = null;
-      toggleVoiceInput(true);
-      return;
-    }
-    hideVoiceOverlay();
-    showToast(t('voice.error'), 'error');
-    resetVoiceState();
-  }, 12000);
+  const armHangTimer = () => {
+    hangTimer = setTimeout(() => {
+      if (voiceRecognition !== recognition || gotResult) return;
+      console.error(`Speech recognition timed out (audiostart=${audioStarted}, lang=${recognition.lang})`);
+      recognition.abort();
+      if (isRetry !== true) {
+        voiceRecognition = null;
+        toggleVoiceInput(true);
+        return;
+      }
+      hideVoiceOverlay();
+      showToast(t(audioStarted ? 'voice.noSpeech' : 'voice.serviceUnavailable'), 'error');
+      resetVoiceState();
+    }, 12000);
+  };
 
+  recognition.onaudiostart = () => {
+    audioStarted = true;
+  };
   recognition.onresult = async (event) => {
     let interim = '';
     let final = '';
@@ -1416,7 +1450,6 @@ function toggleVoiceInput(isRetry = false) {
     await parseVoiceTranscript(final);
     hideVoiceOverlay();
   };
-
   recognition.onerror = (event) => {
     console.error(`Speech recognition error: ${event.error} (audiostart=${audioStarted}, lang=${recognition.lang})`);
     clearTimeout(hangTimer);
@@ -1425,7 +1458,6 @@ function toggleVoiceInput(isRetry = false) {
     showToast(t(VOICE_ERROR_KEYS[event.error] || 'voice.error'), 'error');
     resetVoiceState();
   };
-
   recognition.onspeechend = () => recognition.stop();
   recognition.onend = () => {
     clearTimeout(hangTimer);
@@ -1433,10 +1465,13 @@ function toggleVoiceInput(isRetry = false) {
     resetVoiceState();
   };
 
-  try {
-    recognition.start();
-  } catch (err) {
-    console.error('Speech recognition start failed:', err);
+  const started = await Promise.resolve()
+    .then(() => recognition.start())
+    .then(
+      () => true,
+      () => false,
+    );
+  if (!started) {
     hideVoiceOverlay();
     showToast(t('voice.error'), 'error');
     resetVoiceState();
