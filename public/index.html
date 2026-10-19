@@ -235,7 +235,10 @@
               <form id="voice-results-form" class="hidden">
                 <p data-i18n="voice.resultsTitle">Parsed items</p>
                 <ul id="voice-results" class="list"></ul>
-                <button type="button" id="voice-confirm" class="btn-primary" data-i18n="voice.confirm">Add selected</button>
+                <div class="voice-result-actions">
+                  <button type="button" id="voice-confirm" class="btn-primary" data-i18n="voice.confirm">Add selected</button>
+                  <button type="button" id="voice-cancel" class="btn-secondary" data-i18n="voice.cancel">Cancel</button>
+                </div>
               </form>
               <div id="voice-listening" class="voice-overlay hidden" role="dialog" aria-live="polite">
                 <div class="voice-card">
