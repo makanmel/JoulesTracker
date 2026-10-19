@@ -1450,7 +1450,7 @@ function renderVoiceResults() {
     const li = document.createElement('li');
     li.className = 'list-item voice-result';
     li.innerHTML = `
-      <label>
+      <label class="voice-result-label">
         <input type="checkbox" checked data-index="${index}" />
         <span class="voice-result-details">
           <span class="voice-result-name">${escapeHtml(item.name)}</span>
@@ -1722,6 +1722,11 @@ async function init() {
     if (voiceRecognition && voiceRecognition.listening) voiceRecognition.stop();
   });
   $('#voice-confirm').addEventListener('click', confirmVoiceResults);
+  $('#voice-cancel').addEventListener('click', () => {
+    lastVoiceResults = [];
+    $('#voice-results').replaceChildren();
+    $('#voice-results-form').classList.add('hidden');
+  });
   $('#voice-settings-form').addEventListener('submit', saveVoiceSettings);
   const apiKeyHint = $('#voice-api-key-hint');
   $('#voice-api-key-info').addEventListener('click', (event) => {

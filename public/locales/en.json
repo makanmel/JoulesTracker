@@ -255,6 +255,7 @@
     "empty": "No items recognized",
     "added": "Items added",
     "confirm": "Add selected",
+    "cancel": "Cancel",
     "resultsTitle": "Parsed items",
     "unsupported": "Voice input is not supported in this browser",
     "error": "Voice input failed",

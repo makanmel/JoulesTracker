@@ -531,6 +531,7 @@ button:disabled {
 
 .voice-result-label {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 10px;
   width: 100%;
@@ -539,6 +540,8 @@ button:disabled {
 
 .voice-result-label input[type='checkbox'] {
   flex: 0 0 auto;
+  width: auto;
+  min-height: 0;
   margin: 0;
 }
 
@@ -558,6 +561,12 @@ button:disabled {
   color: var(--muted);
   font-size: 0.85rem;
   line-height: 1.25;
+}
+
+.voice-result-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .section-header {
