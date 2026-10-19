@@ -415,6 +415,11 @@ function saveVoiceSettings(e) {
   showToast(t('voice.settingsSaved'));
 }
 
+function updateApiKeyHint() {
+  const provider = $('#voice-provider').value;
+  $('#voice-api-key-hint').innerHTML = t(`voice.apiKeyHint.${provider}`);
+}
+
 function saveMealTypePreference() {
   localStorage.setItem(MEAL_TYPE_KEY, $('#meal-type').value);
 }
@@ -1721,6 +1726,20 @@ async function init() {
   });
   $('#voice-confirm').addEventListener('click', confirmVoiceResults);
   $('#voice-settings-form').addEventListener('submit', saveVoiceSettings);
+  const apiKeyHint = $('#voice-api-key-hint');
+  $('#voice-api-key-info').addEventListener('click', (event) => {
+    event.preventDefault();
+    const opening = apiKeyHint.classList.contains('hidden');
+    updateApiKeyHint();
+    apiKeyHint.classList.toggle('hidden', !opening);
+    event.currentTarget.setAttribute('aria-expanded', String(opening));
+  });
+  $('#voice-provider').addEventListener('change', () => {
+    if (!apiKeyHint.classList.contains('hidden')) updateApiKeyHint();
+  });
+  onLanguageChange(() => {
+    if (!apiKeyHint.classList.contains('hidden')) updateApiKeyHint();
+  });
   $('#food-form').addEventListener('submit', handleCreateFood);
   $('#edit-food-btn').addEventListener('click', startEditFood);
   $('#toggle-food-form').addEventListener('click', () => setFoodFormVisible($('#food-form').classList.contains('hidden')));

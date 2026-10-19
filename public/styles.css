@@ -1242,6 +1242,26 @@ button:disabled {
   background: var(--card);
 }
 
+.info-btn {
+  display: inline-flex;
+  vertical-align: middle;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.info-btn:hover,
+.info-btn:focus-visible {
+  color: var(--primary);
+}
+
+.info-btn .action-icon {
+  width: 14px;
+  height: 14px;
+}
+
 .hidden {
   display: none !important;
 }
