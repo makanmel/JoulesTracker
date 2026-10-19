@@ -1395,11 +1395,44 @@ async function toggleVoiceInput() {
   const recorder = new MediaRecorder(stream);
   const chunks = [];
   let stopTimer;
+  let silenceTimer;
+  let audioContext;
+
+  // Auto-stop after ~1s of silence once speech has been detected, so the
+  // clip is submitted without waiting for the manual stop / max-duration.
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+  if (AudioContextCtor) {
+    audioContext = new AudioContextCtor();
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 512;
+    audioContext.createMediaStreamSource(stream).connect(analyser);
+    const samples = new Uint8Array(analyser.fftSize);
+    let heardSpeech = false;
+    let silentSince = 0;
+    silenceTimer = setInterval(() => {
+      analyser.getByteTimeDomainData(samples);
+      let peak = 0;
+      for (const value of samples) peak = Math.max(peak, Math.abs(value - 128) / 128);
+      const now = Date.now();
+      if (peak > 0.02) {
+        heardSpeech = true;
+        silentSince = 0;
+      } else if (heardSpeech && !silentSince) {
+        silentSince = now;
+      }
+      if (silentSince && now - silentSince > 1000 && recorder.state === 'recording') {
+        recorder.stop();
+      }
+    }, 100);
+  }
+
   recorder.addEventListener('dataavailable', (event) => {
     if (event.data.size) chunks.push(event.data);
   });
   recorder.addEventListener('stop', () => {
     clearTimeout(stopTimer);
+    clearInterval(silenceTimer);
+    if (audioContext) audioContext.close();
     stream.getTracks().forEach((track) => track.stop());
     voiceRecognition = null;
     $('#voice-toggle').classList.remove('active');
@@ -1416,7 +1449,9 @@ async function toggleVoiceInput() {
   $('#voice-toggle').classList.add('active');
   showVoiceOverlay();
   recorder.start();
-  stopTimer = setTimeout(() => recorder.stop(), 15000);
+  stopTimer = setTimeout(() => {
+    if (recorder.state === 'recording') recorder.stop();
+  }, 15000);
 }
 
 function setVoiceStatus(key) {

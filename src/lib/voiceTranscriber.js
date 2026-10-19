@@ -5,6 +5,7 @@ const GEMINI_API_BASES = ['v1beta', 'v1'].map(
   (version) => `https://generativelanguage.googleapis.com/${version}`,
 );
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_MODEL_CACHE = new Map();
 
 function providerErrorMessage(text) {
   const message = String(text).match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/)?.[1];
@@ -80,8 +81,12 @@ async function requestGeminiTranscription({ apiKey, audio, mimeType, locale, mod
 
 async function transcribeGemini({ apiKey, audio, mimeType, locale, model, fetchImpl }) {
   const requestedModel = /^[a-zA-Z0-9._-]+$/.test(String(model || '').trim()) ? String(model).trim() : GEMINI_MODEL;
-  let candidates = [requestedModel];
-  let discovered = false;
+  const cacheKey = `${apiKey}:${requestedModel}`;
+  const cached = GEMINI_MODEL_CACHE.get(cacheKey);
+  let candidates = cached || [requestedModel];
+  // A single pinned winner may be retired later — only a cached multi-model
+  // list counts as "already discovered".
+  let discovered = Boolean(cached && cached.length > 1);
   let lastError = 'unknown';
   for (let index = 0; index < candidates.length; index++) {
     const candidate = candidates[index];
@@ -95,15 +100,23 @@ async function transcribeGemini({ apiKey, audio, mimeType, locale, model, fetchI
         fetchImpl,
         baseUrl,
       });
-      if (result.ok) return result.transcript;
+      if (result.ok) {
+        GEMINI_MODEL_CACHE.set(cacheKey, [candidate]);
+        return result.transcript;
+      }
       lastError = `${candidate} -> ${result.status}: ${result.error}`;
       if (result.status !== 404) break;
     }
     if (!discovered && lastError.includes('-> 404:')) {
       discovered = true;
-      candidates = [...candidates, ...(await listGeminiTranscriptionModels({ apiKey, requestedModel, fetchImpl }))];
+      const extras = (await listGeminiTranscriptionModels({ apiKey, requestedModel, fetchImpl }))
+        .filter((name) => !candidates.includes(name));
+      candidates = [...candidates, ...extras];
+      GEMINI_MODEL_CACHE.set(cacheKey, candidates);
     }
   }
+  // Drop a stale cache entry so the next request re-discovers models.
+  GEMINI_MODEL_CACHE.delete(cacheKey);
   throw new AppError(`AI transcription failed: ${lastError}`, 502);
 }
 
