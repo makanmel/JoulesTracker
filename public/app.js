@@ -1418,11 +1418,11 @@ function toggleVoiceInput(isRetry = false) {
   };
 
   recognition.onerror = (event) => {
-    console.error('Speech recognition error:', event.error);
+    console.error(`Speech recognition error: ${event.error} (audiostart=${audioStarted}, lang=${recognition.lang})`);
     clearTimeout(hangTimer);
     if (voiceRecognition !== recognition) return;
     hideVoiceOverlay();
-    showToast(t('voice.error'), 'error');
+    showToast(t(VOICE_ERROR_KEYS[event.error] || 'voice.error'), 'error');
     resetVoiceState();
   };
 
@@ -1433,7 +1433,16 @@ function toggleVoiceInput(isRetry = false) {
     resetVoiceState();
   };
 
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (err) {
+    console.error('Speech recognition start failed:', err);
+    hideVoiceOverlay();
+    showToast(t('voice.error'), 'error');
+    resetVoiceState();
+    return;
+  }
+  armHangTimer();
 }
 
 async function parseVoiceTranscript(transcript) {
