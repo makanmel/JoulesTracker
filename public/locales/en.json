@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v034": {
+        "i1": "API key field has an info button with a link to get a key"
+      },
       "v033": {
         "i1": "App keeps the service awake while it's open in a tab"
       },
@@ -249,6 +252,11 @@
       "openai": "OpenAI"
     },
     "apiKey": "API key",
+    "apiKeyInfo": "Where to get an API key",
+    "apiKeyHint": {
+      "gemini": "Get a free key in {{link}} → \"Get API key\".",
+      "openai": "Get a key in the {{link}} → \"Create new secret key\"."
+    },
     "saveSettings": "Save"
   },
   "photoScan": {

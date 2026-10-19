@@ -415,6 +415,29 @@ function saveVoiceSettings(e) {
   showToast(t('voice.settingsSaved'));
 }
 
+const API_KEY_LINKS = {
+  gemini: 'https://aistudio.google.com/apikey',
+  openai: 'https://platform.openai.com/api-keys',
+};
+
+const API_KEY_LINK_LABELS = {
+  gemini: 'Google AI Studio',
+  openai: 'OpenAI Platform',
+};
+
+function updateApiKeyHint() {
+  const provider = $('#voice-provider').value;
+  const hint = $('#voice-api-key-hint');
+  const link = document.createElement('a');
+  link.href = API_KEY_LINKS[provider];
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.textContent = API_KEY_LINK_LABELS[provider];
+  const parts = t(`voice.apiKeyHint.${provider}`).split('{{link}}');
+  hint.textContent = '';
+  hint.append(parts[0], link, parts[1] ?? '');
+}
+
 function saveMealTypePreference() {
   localStorage.setItem(MEAL_TYPE_KEY, $('#meal-type').value);
 }
@@ -1721,6 +1744,20 @@ async function init() {
   });
   $('#voice-confirm').addEventListener('click', confirmVoiceResults);
   $('#voice-settings-form').addEventListener('submit', saveVoiceSettings);
+  const apiKeyHint = $('#voice-api-key-hint');
+  $('#voice-api-key-info').addEventListener('click', (event) => {
+    event.preventDefault();
+    const opening = apiKeyHint.classList.contains('hidden');
+    updateApiKeyHint();
+    apiKeyHint.classList.toggle('hidden', !opening);
+    event.currentTarget.setAttribute('aria-expanded', String(opening));
+  });
+  $('#voice-provider').addEventListener('change', () => {
+    if (!apiKeyHint.classList.contains('hidden')) updateApiKeyHint();
+  });
+  onLanguageChange(() => {
+    if (!apiKeyHint.classList.contains('hidden')) updateApiKeyHint();
+  });
   $('#food-form').addEventListener('submit', handleCreateFood);
   $('#edit-food-btn').addEventListener('click', startEditFood);
   $('#toggle-food-form').addEventListener('click', () => setFoodFormVisible($('#food-form').classList.contains('hidden')));
