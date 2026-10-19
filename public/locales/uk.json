@@ -254,8 +254,8 @@
     "apiKey": "API-ключ",
     "apiKeyInfo": "Де взяти API-ключ",
     "apiKeyHint": {
-      "gemini": "Безкоштовний ключ у <a href=\"https://aistudio.google.com/apikey\" target=\"_blank\" rel=\"noopener\">Google AI Studio</a> → «Get API key».",
-      "openai": "Ключ на <a href=\"https://platform.openai.com/api-keys\" target=\"_blank\" rel=\"noopener\">платформі OpenAI</a> → «Create new secret key»."
+      "gemini": "Безкоштовний ключ у {{link}} → «Get API key».",
+      "openai": "Ключ на {{link}} → «Create new secret key»."
     },
     "saveSettings": "Зберегти"
   },

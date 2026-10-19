@@ -415,9 +415,27 @@ function saveVoiceSettings(e) {
   showToast(t('voice.settingsSaved'));
 }
 
+const API_KEY_LINKS = {
+  gemini: 'https://aistudio.google.com/apikey',
+  openai: 'https://platform.openai.com/api-keys',
+};
+
+const API_KEY_LINK_LABELS = {
+  gemini: 'Google AI Studio',
+  openai: 'OpenAI Platform',
+};
+
 function updateApiKeyHint() {
   const provider = $('#voice-provider').value;
-  $('#voice-api-key-hint').innerHTML = t(`voice.apiKeyHint.${provider}`);
+  const hint = $('#voice-api-key-hint');
+  const link = document.createElement('a');
+  link.href = API_KEY_LINKS[provider];
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.textContent = API_KEY_LINK_LABELS[provider];
+  const parts = t(`voice.apiKeyHint.${provider}`).split('{{link}}');
+  hint.textContent = '';
+  hint.append(parts[0], link, parts[1] ?? '');
 }
 
 function saveMealTypePreference() {

@@ -254,8 +254,8 @@
     "apiKey": "API key",
     "apiKeyInfo": "Where to get an API key",
     "apiKeyHint": {
-      "gemini": "Get a free key in <a href=\"https://aistudio.google.com/apikey\" target=\"_blank\" rel=\"noopener\">Google AI Studio</a> → \"Get API key\".",
-      "openai": "Get a key in the <a href=\"https://platform.openai.com/api-keys\" target=\"_blank\" rel=\"noopener\">OpenAI platform</a> → \"Create new secret key\"."
+      "gemini": "Get a free key in {{link}} → \"Get API key\".",
+      "openai": "Get a key in the {{link}} → \"Create new secret key\"."
     },
     "saveSettings": "Save"
   },
