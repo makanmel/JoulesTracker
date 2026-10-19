@@ -1596,9 +1596,17 @@ async function initAbout() {
   if (version) renderAbout(`v${version}`);
 }
 
+// Keeps the Render free-tier service warm while the app is open in a tab.
+function startKeepAlive() {
+  const ping = () => fetch('/health').catch(() => {});
+  ping();
+  setInterval(ping, 10 * 60 * 1000);
+}
+
 async function init() {
   initTheme();
   initMobileNav();
+  startKeepAlive();
   await initI18n();
   initAbout();
   onLanguageChange(() => renderAbout($('#about-version')?.textContent || `v${APP_VERSION}`));
