@@ -33,6 +33,36 @@ describe('voice transcriber', () => {
     expect(body.contents[0].parts[1].inlineData.data).toBe(audioBase64);
   });
 
+  it('discovers and retries an available Gemini Flash model after a retired-model 404', async () => {
+    const retired = response({ error: { message: 'model is no longer available' } }, 404);
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/models?key=')) {
+        return Promise.resolve(response({
+          models: [
+            { name: 'models/gemini-3.8-pro', supportedGenerationMethods: ['generateContent'] },
+            { name: 'models/gemini-3.8-flash', supportedGenerationMethods: ['generateContent'] },
+          ],
+        }));
+      }
+      if (url.includes('gemini-3.8-flash:generateContent')) {
+        return Promise.resolve(response({ candidates: [{ content: { parts: [{ text: 'one banana' }] } }] }));
+      }
+      return Promise.resolve(retired);
+    });
+
+    const transcript = await transcribeVoiceAudio({
+      audioBase64,
+      mimeType: 'audio/webm',
+      provider: 'gemini',
+      apiKey: 'gemini-key',
+      fetchImpl,
+    });
+
+    expect(transcript).toBe('one banana');
+    expect(fetchImpl.mock.calls.some(([url]) => url.includes('/models?key='))).toBe(true);
+    expect(fetchImpl.mock.calls.some(([url]) => url.includes('gemini-3.8-flash:generateContent'))).toBe(true);
+  });
+
   it('uploads audio to OpenAI transcription', async () => {
     const fetchImpl = vi.fn().mockResolvedValue(response({ text: 'two hundred grams of oatmeal' }));
 

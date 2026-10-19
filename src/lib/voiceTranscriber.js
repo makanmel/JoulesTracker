@@ -31,40 +31,77 @@ async function transcribeOpenAI({ apiKey, audio, mimeType, locale, fetchImpl }) 
   return String(data?.text || '').trim();
 }
 
+async function listGeminiTranscriptionModels({ apiKey, requestedModel, fetchImpl }) {
+  const response = await fetchImpl(`${GEMINI_API_BASES[0]}/models?key=${encodeURIComponent(apiKey)}`);
+  if (!response.ok) return [];
+  const data = await response.json().catch(() => null);
+  return (data?.models || [])
+    .filter((item) => item.supportedGenerationMethods?.includes('generateContent'))
+    .map((item) => String(item.name || '').replace(/^models\//, ''))
+    .filter((name) => name.startsWith('gemini-') && !/image|tts|embedding|aqa|robotics/i.test(name))
+    .filter((name) => name !== requestedModel)
+    .sort((a, b) => {
+      const aRank = /flash/i.test(a) ? 0 : 1;
+      const bRank = /flash/i.test(b) ? 0 : 1;
+      return aRank - bRank;
+    });
+}
+
+async function requestGeminiTranscription({ apiKey, audio, mimeType, locale, model, fetchImpl, baseUrl }) {
+  const response = await fetchImpl(
+    `${baseUrl}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          role: 'user',
+          parts: [
+            { text: `Transcribe this ${locale === 'uk' ? 'Ukrainian' : 'English'} speech exactly. Return only the transcript.` },
+            { inlineData: { mimeType, data: audio.toString('base64') } },
+          ],
+        }],
+        generationConfig: { temperature: 0 },
+      }),
+    },
+  );
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'unknown');
+    return { ok: false, status: response.status, error: providerErrorMessage(text) };
+  }
+  const data = await response.json().catch(() => null);
+  const transcript = (data?.candidates?.[0]?.content?.parts || [])
+    .filter((part) => part.thought !== true && typeof part.text === 'string')
+    .map((part) => part.text)
+    .join(' ')
+    .trim();
+  return transcript ? { ok: true, transcript } : { ok: false, status: 200, error: 'empty transcript' };
+}
+
 async function transcribeGemini({ apiKey, audio, mimeType, locale, model, fetchImpl }) {
   const requestedModel = /^[a-zA-Z0-9._-]+$/.test(String(model || '').trim()) ? String(model).trim() : GEMINI_MODEL;
+  let candidates = [requestedModel];
+  let discovered = false;
   let lastError = 'unknown';
-  for (const baseUrl of GEMINI_API_BASES) {
-    const response = await fetchImpl(
-      `${baseUrl}/models/${requestedModel}:generateContent?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            role: 'user',
-            parts: [
-              { text: `Transcribe this ${locale === 'uk' ? 'Ukrainian' : 'English'} speech exactly. Return only the transcript.` },
-              { inlineData: { mimeType, data: audio.toString('base64') } },
-            ],
-          }],
-          generationConfig: { temperature: 0 },
-        }),
-      },
-    );
-    if (response.ok) {
-      const data = await response.json().catch(() => null);
-      const transcript = (data?.candidates?.[0]?.content?.parts || [])
-        .filter((part) => part.thought !== true && typeof part.text === 'string')
-        .map((part) => part.text)
-        .join(' ')
-        .trim();
-      if (transcript) return transcript;
-      lastError = 'empty transcript';
-    } else {
-      const text = await response.text().catch(() => 'unknown');
-      lastError = `${response.status}: ${providerErrorMessage(text)}`;
-      if (response.status !== 404) break;
+  for (let index = 0; index < candidates.length; index++) {
+    const candidate = candidates[index];
+    for (const baseUrl of GEMINI_API_BASES) {
+      const result = await requestGeminiTranscription({
+        apiKey,
+        audio,
+        mimeType,
+        locale,
+        model: candidate,
+        fetchImpl,
+        baseUrl,
+      });
+      if (result.ok) return result.transcript;
+      lastError = `${candidate} -> ${result.status}: ${result.error}`;
+      if (result.status !== 404) break;
+    }
+    if (!discovered && lastError.includes('-> 404:')) {
+      discovered = true;
+      candidates = [...candidates, ...(await listGeminiTranscriptionModels({ apiKey, requestedModel, fetchImpl }))];
     }
   }
   throw new AppError(`AI transcription failed: ${lastError}`, 502);
