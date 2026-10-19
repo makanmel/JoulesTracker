@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v037": {
+        "i1": "Voice input now records and uploads audio when browser speech recognition is unavailable, with separate camera and gallery photo buttons"
+      },
       "v036": {
         "i1": "Fixed desktop dictation startup and enabled choosing meal photos from the mobile gallery"
       },
@@ -190,7 +193,8 @@
     "type": "Type",
     "submit": "Add",
     "scanPhoto": "Scan photo",
-    "choosePhoto": "Choose photo from camera or gallery"
+    "takePhoto": "Take photo",
+    "chooseGallery": "Choose from gallery"
   },
   "foods": {
     "title": "Foods",

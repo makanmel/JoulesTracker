@@ -4,6 +4,7 @@ import { parseRequest, foodSchema, foodUpdateSchema } from '../lib/validation.js
 import { AppError } from '../lib/errors.js';
 import { searchProducts, getProductByBarcode, isValidBarcode, mapProduct } from '../lib/openFoodFacts.js';
 import { parseVoiceInput } from '../lib/voiceParser.js';
+import { transcribeVoiceAudio } from '../lib/voiceTranscriber.js';
 import { recognizePhoto } from '../lib/photoRecognizer.js';
 
 const router = Router();
@@ -219,6 +220,32 @@ router.delete('/:id', async (req, res, next) => {
     }
     next(err);
   }
+});
+
+router.post('/parse-voice-audio', async (req, res, next) => {
+  const locale = req.body.locale === 'uk' ? 'uk' : 'en';
+  const provider = req.headers['x-ai-provider'];
+  const apiKey = req.headers['x-ai-key'];
+  const model = req.headers['x-ai-model'];
+  const transcript = await transcribeVoiceAudio({
+    audioBase64: req.body.audio,
+    mimeType: req.body.mimeType,
+    locale,
+    provider,
+    apiKey,
+    model,
+  }).catch(next);
+  if (!transcript) return;
+  const items = await parseVoiceInput({ transcript, locale, provider, apiKey, model }).catch(next);
+  if (!items) return;
+  const resolved = await Promise.all(
+    items.map(async (item) => {
+      const local = await findLocalByNames([item.name, item.nameEn, item.nameUk], req.user.id);
+      return local ? { ...item, foodId: local.id } : item;
+    }),
+  ).catch(next);
+  if (!resolved) return;
+  res.json({ transcript, items: resolved });
 });
 
 router.post('/parse-voice', async (req, res, next) => {
