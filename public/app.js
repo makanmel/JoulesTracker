@@ -1330,18 +1330,94 @@ async function undoMealDelete(meal, date) {
   }
 }
 
-function createSpeechRecognition() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) return null;
-  const recognition = new SpeechRecognition();
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  recognition.lang = document.documentElement.lang === 'uk' ? 'uk-UA' : 'en-US';
-  return recognition;
-}
-
 let voiceRecognition = null;
 let lastVoiceResults = [];
+
+function blobDataUrl(blob) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function parseVoiceAudio(blob) {
+  setVoiceStatus('voice.processing');
+  $('#voice-listening').classList.add('processing');
+  const dataUrl = await blobDataUrl(blob);
+  const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
+  const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
+  const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
+  const options = {
+    method: 'POST',
+    body: JSON.stringify({ audio: dataUrl.split(',')[1], mimeType: blob.type, locale }),
+    wakeNotice: false,
+  };
+  if (apiKey) {
+    options.headers = {
+      'X-AI-Provider': provider,
+      'X-AI-Key': apiKey,
+    };
+  }
+
+  const data = await api('/foods/parse-voice-audio', options).then(
+    (result) => result,
+    (err) => {
+      showToast(err.message, 'error');
+      return null;
+    },
+  );
+  hideVoiceOverlay();
+  if (!data) return;
+  setVoiceTranscript(data.transcript || '');
+  lastVoiceResults = data.items || [];
+  renderVoiceResults();
+}
+
+async function toggleVoiceInput() {
+  if (voiceRecognition?.listening) {
+    voiceRecognition.stop();
+    return;
+  }
+  if (!(await requireAiKey())) return;
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    showToast(t('voice.unsupported'), 'error');
+    return;
+  }
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).then(
+    (mediaStream) => mediaStream,
+    (err) => {
+      showToast(t(err.name === 'NotAllowedError' || err.name === 'SecurityError' ? 'voice.micDenied' : 'voice.noMic'), 'error');
+      return null;
+    },
+  );
+  if (!stream) return;
+  const recorder = new MediaRecorder(stream);
+  const chunks = [];
+  let stopTimer;
+  recorder.addEventListener('dataavailable', (event) => {
+    if (event.data.size) chunks.push(event.data);
+  });
+  recorder.addEventListener('stop', () => {
+    clearTimeout(stopTimer);
+    stream.getTracks().forEach((track) => track.stop());
+    voiceRecognition = null;
+    $('#voice-toggle').classList.remove('active');
+    const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+    if (blob.size < 100) {
+      hideVoiceOverlay();
+      showToast(t('voice.noSpeech'), 'error');
+      return;
+    }
+    parseVoiceAudio(blob);
+  });
+  voiceRecognition = recorder;
+  voiceRecognition.listening = true;
+  $('#voice-toggle').classList.add('active');
+  showVoiceOverlay();
+  recorder.start();
+  stopTimer = setTimeout(() => recorder.stop(), 15000);
+}
 
 function setVoiceStatus(key) {
   $('#voice-status').textContent = t(key);
@@ -1359,150 +1435,6 @@ function showVoiceOverlay() {
 
 function hideVoiceOverlay() {
   $('#voice-listening').classList.add('hidden');
-}
-
-async function ensureMicAccess() {
-  if (!navigator.mediaDevices?.getUserMedia) return null;
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).then(
-    (mediaStream) => mediaStream,
-    (err) => err,
-  );
-  if (stream instanceof MediaStream) {
-    stream.getTracks().forEach((track) => track.stop());
-    return null;
-  }
-  if (stream.name === 'NotAllowedError' || stream.name === 'SecurityError') return 'voice.micDenied';
-  return 'voice.noMic';
-}
-
-const VOICE_ERROR_KEYS = {
-  'not-allowed': 'voice.micDenied',
-  'service-not-allowed': 'voice.serviceUnavailable',
-  'audio-capture': 'voice.noMic',
-  'no-speech': 'voice.noSpeech',
-  network: 'voice.networkError',
-};
-
-async function toggleVoiceInput(isRetry = false) {
-  if (voiceRecognition && voiceRecognition.listening) {
-    voiceRecognition.stop();
-    return;
-  }
-  if (!/Mobi|Android/i.test(navigator.userAgent)) {
-    const micError = await ensureMicAccess();
-    if (micError) {
-      showToast(t(micError), 'error');
-      return;
-    }
-  }
-  const recognition = createSpeechRecognition();
-  if (!recognition) {
-    showToast(t('voice.unsupported'), 'error');
-    return;
-  }
-  voiceRecognition = recognition;
-  voiceRecognition.listening = true;
-  $('#voice-toggle').classList.add('active');
-  showVoiceOverlay();
-
-  let gotResult = false;
-  let audioStarted = false;
-  let hangTimer = null;
-  const resetVoiceState = () => {
-    if (voiceRecognition !== recognition) return;
-    voiceRecognition = null;
-    $('#voice-toggle').classList.remove('active');
-  };
-  const armHangTimer = () => {
-    hangTimer = setTimeout(() => {
-      if (voiceRecognition !== recognition || gotResult) return;
-      console.error(`Speech recognition timed out (audiostart=${audioStarted}, lang=${recognition.lang})`);
-      recognition.abort();
-      if (isRetry !== true) {
-        voiceRecognition = null;
-        toggleVoiceInput(true);
-        return;
-      }
-      hideVoiceOverlay();
-      showToast(t(audioStarted ? 'voice.noSpeech' : 'voice.serviceUnavailable'), 'error');
-      resetVoiceState();
-    }, 12000);
-  };
-
-  recognition.onaudiostart = () => {
-    audioStarted = true;
-  };
-  recognition.onresult = async (event) => {
-    let interim = '';
-    let final = '';
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const alt = event.results[i][0];
-      if (!alt) continue;
-      if (event.results[i].isFinal) final += alt.transcript;
-      else interim += alt.transcript;
-    }
-    if (interim) setVoiceTranscript(interim);
-    final = final.trim();
-    if (!final) return;
-    gotResult = true;
-    setVoiceStatus('voice.processing');
-    $('#voice-listening').classList.add('processing');
-    await parseVoiceTranscript(final);
-    hideVoiceOverlay();
-  };
-  recognition.onerror = (event) => {
-    console.error(`Speech recognition error: ${event.error} (audiostart=${audioStarted}, lang=${recognition.lang})`);
-    clearTimeout(hangTimer);
-    if (voiceRecognition !== recognition) return;
-    hideVoiceOverlay();
-    showToast(t(VOICE_ERROR_KEYS[event.error] || 'voice.error'), 'error');
-    resetVoiceState();
-  };
-  recognition.onspeechend = () => recognition.stop();
-  recognition.onend = () => {
-    clearTimeout(hangTimer);
-    if (!gotResult) hideVoiceOverlay();
-    resetVoiceState();
-  };
-
-  const started = await Promise.resolve()
-    .then(() => recognition.start())
-    .then(
-      () => true,
-      () => false,
-    );
-  if (!started) {
-    hideVoiceOverlay();
-    showToast(t('voice.error'), 'error');
-    resetVoiceState();
-    return;
-  }
-  armHangTimer();
-}
-
-async function parseVoiceTranscript(transcript) {
-  if (!(await requireAiKey())) return;
-  try {
-    showToast(t('voice.parsing'), 'info');
-    const locale = document.documentElement.lang === 'uk' ? 'uk' : 'en';
-    const provider = localStorage.getItem(AI_PROVIDER_KEY) || 'gemini';
-    const apiKey = localStorage.getItem(AI_API_KEY_KEY) || '';
-    const options = {
-      method: 'POST',
-      body: JSON.stringify({ transcript, locale }),
-    };
-    if (apiKey) {
-      options.headers = {
-        'X-AI-Provider': provider,
-        'X-AI-Key': apiKey,
-      };
-    }
-    const data = await api('/foods/parse-voice', { ...options, wakeNotice: false });
-    lastVoiceResults = data.items || [];
-    renderVoiceResults();
-  } catch (err) {
-    showToast(err.message, 'error');
-  }
 }
 
 function renderVoiceResults() {
@@ -1820,11 +1752,14 @@ async function init() {
   $('#barcode-form').addEventListener('submit', handleBarcodeLookup);
   $('#barcode-input').addEventListener('input', debounce(lookupBarcode, SEARCH_DEBOUNCE_MS));
   $('#scan-barcode-btn').addEventListener('click', openBarcodeScanner);
+  $('#scan-camera-btn').addEventListener('click', () => $('#scan-camera-input').click());
   $('#scan-photo-btn').addEventListener('click', () => $('#scan-photo-input').click());
-  $('#scan-photo-input').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    e.target.value = '';
-    if (file) handleScanPhoto(file);
+  ['#scan-camera-input', '#scan-photo-input'].forEach((selector) => {
+    $(selector).addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      event.target.value = '';
+      if (file) handleScanPhoto(file);
+    });
   });
   $('#scanner-close').addEventListener('click', stopBarcodeScanner);
   $('#barcode-scanner').addEventListener('close', () => {

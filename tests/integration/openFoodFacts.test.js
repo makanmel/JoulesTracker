@@ -268,8 +268,8 @@ describe('Frontend product search', () => {
     expect(html.text).toContain('id="voice-toggle"');
     expect(html.text).toContain('id="voice-results-form"');
     expect(html.text).toContain('id="voice-confirm"');
-    expect(js.text).toContain('SpeechRecognition');
-    expect(js.text).toContain("/foods/parse-voice");
+    expect(js.text).toContain('MediaRecorder');
+    expect(js.text).toContain("/foods/parse-voice-audio");
     expect(en.body.voice.start).toBe('Voice input');
     expect(uk.body.voice.start).toBe('Голосовий ввід');
     expect(en.body.voice.unsupported).toBe('Voice input is not supported in this browser');
