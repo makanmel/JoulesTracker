@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v036": {
+        "i1": "Fixed desktop dictation startup and enabled choosing meal photos from the mobile gallery"
+      },
       "v035": {
         "i1": "Dictation reports the real cause (mic, permission, service) instead of a silent timeout"
       },
@@ -186,7 +189,8 @@
     "date": "Date",
     "type": "Type",
     "submit": "Add",
-    "scanPhoto": "Scan photo"
+    "scanPhoto": "Scan photo",
+    "choosePhoto": "Choose photo from camera or gallery"
   },
   "foods": {
     "title": "Foods",
