@@ -532,8 +532,32 @@ button:disabled {
 .voice-result-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
   cursor: pointer;
+}
+
+.voice-result-label input[type='checkbox'] {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.voice-result-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.voice-result-name {
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.voice-result-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.25;
 }
 
 .section-header {

@@ -1450,9 +1450,12 @@ function renderVoiceResults() {
     const li = document.createElement('li');
     li.className = 'list-item voice-result';
     li.innerHTML = `
-      <label class="voice-result-label">
+      <label>
         <input type="checkbox" checked data-index="${index}" />
-        <span>${escapeHtml(item.name)} — ${num(item.quantityGrams)}g · ${num(item.calories)} kcal</span>
+        <span class="voice-result-details">
+          <span class="voice-result-name">${escapeHtml(item.name)}</span>
+          <span class="voice-result-meta">${num(item.quantityGrams)}g · ${num(item.calories)} kcal</span>
+        </span>
       </label>
     `;
     list.appendChild(li);
@@ -1768,9 +1771,9 @@ async function init() {
     if (!scanner) return;
     Promise.resolve()
       .then(() => scanner.stop())
+      .then(() => scanner.clear())
       .catch(() => {})
       .then(() => {
-        scanner.clear();
         $('#scanner-region').innerHTML = '';
       })
       .catch(() => {
