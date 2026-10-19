@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v033": {
+        "i1": "App keeps the service awake while it's open in a tab"
+      },
       "v032": {
         "i1": "Edit meal grams inline by tapping the entry line"
       },
