@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v035": {
+        "i1": "Dictation reports the real cause (mic, permission, service) instead of a silent timeout"
+      },
       "v034": {
         "i1": "API key field has an info button with a link to get a key"
       },
@@ -244,6 +247,11 @@
     "resultsTitle": "Parsed items",
     "unsupported": "Voice input is not supported in this browser",
     "error": "Voice input failed",
+    "micDenied": "Microphone access is blocked — allow it in the site/browser settings",
+    "noMic": "No microphone available",
+    "noSpeech": "Nothing heard — check the mic and speak louder",
+    "serviceUnavailable": "Speech service is unreachable (network/VPN/browser)",
+    "networkError": "Speech service network error",
     "settingsTitle": "AI",
     "settingsHint": "Choose the AI provider and enter your API key. The key is stored only in this browser.",
     "provider": "Provider",
