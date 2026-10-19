@@ -20,6 +20,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v038": {
+        "i1": "Voice transcription automatically switches to an available Gemini model when the previous model is retired"
+      },
       "v037": {
         "i1": "Voice input now records and uploads audio when browser speech recognition is unavailable, with separate camera and gallery photo buttons"
       },
