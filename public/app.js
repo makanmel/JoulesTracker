@@ -456,6 +456,7 @@ function showDashboard(email) {
   currentUserEmail = email;
   authSection.classList.add('hidden');
   dashboardSection.classList.remove('hidden');
+  $('#mobile-nav').classList.remove('hidden');
   $('#user-area').classList.remove('hidden');
   $('#logout-btn').classList.remove('hidden');
   renderCurrentUser();
@@ -471,6 +472,7 @@ function showAuth() {
   currentUserEmail = null;
   authSection.classList.remove('hidden');
   dashboardSection.classList.add('hidden');
+  $('#mobile-nav').classList.add('hidden');
   $('#user-area').classList.add('hidden');
   $('#logout-btn').classList.add('hidden');
   setToken(null);
