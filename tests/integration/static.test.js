@@ -73,7 +73,7 @@ describe('Static frontend', () => {
     const hrefs = [...page.text.matchAll(/class="mobile-nav-link"[^>]*href="#([^"]+)"|href="#([^"]+)" class="mobile-nav-link"/g)].map(
       (m) => m[1] || m[2],
     );
-    expect(hrefs).toEqual(['summary-section', 'add-meal-section', 'foods-section', 'meals-section']);
+    expect(hrefs).toEqual(['summary-section', 'meals-section', 'add-meal-section', 'foods-section']);
     for (const id of hrefs) {
       expect(page.text).toContain(`id="${id}"`);
     }
