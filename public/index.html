@@ -240,14 +240,6 @@
                   <button type="button" id="voice-cancel" class="btn-secondary" data-i18n="voice.cancel">Cancel</button>
                 </div>
               </form>
-              <div id="voice-listening" class="voice-overlay hidden" role="dialog" aria-live="polite">
-                <div class="voice-card">
-                  <div class="voice-waves" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
-                  <p id="voice-status" class="voice-status" data-i18n="voice.listening">Listening...</p>
-                  <p id="voice-transcript" class="voice-transcript muted"></p>
-                  <button type="button" id="voice-stop" class="btn-secondary" data-i18n="voice.stop">Stop</button>
-                </div>
-              </div>
               <form id="meal-form" class="meal-form">
                 <div class="meal-form-row meal-form-primary-row">
                   <label class="meal-food-field"><span data-i18n="addMeal.food">Food</span>
@@ -340,18 +332,28 @@
             </section>
           </div>
         </div>
-
-        <nav id="mobile-nav" class="mobile-nav" aria-label="Sections" data-i18n-aria-label="nav.sections">
-          <a href="#summary-section" class="mobile-nav-link" data-i18n="nav.summary">Summary</a>
-          <a href="#add-meal-section" class="mobile-nav-link" data-i18n="nav.addMeal">Add</a>
-          <a href="#foods-section" class="mobile-nav-link" data-i18n="nav.foods">Foods</a>
-          <a href="#meals-section" class="mobile-nav-link" data-i18n="nav.meals">Meals</a>
-        </nav>
       </section>
-
-      <div id="toast" class="toast hidden"></div>
-      <div id="server-notice" class="server-notice hidden" role="status"><span data-i18n="app.serverWaking">The server is waking up, please wait…</span></div>
     </main>
+  </div>
+
+  <!-- Fixed overlays live outside .container: zoom makes an element the
+       containing block for position:fixed descendants, so they must stay
+       unzoomed to pin to the viewport on mobile browsers. -->
+  <nav id="mobile-nav" class="mobile-nav hidden" aria-label="Sections" data-i18n-aria-label="nav.sections">
+    <a href="#summary-section" class="mobile-nav-link" data-i18n="nav.summary">Summary</a>
+    <a href="#add-meal-section" class="mobile-nav-link" data-i18n="nav.addMeal">Add</a>
+    <a href="#foods-section" class="mobile-nav-link" data-i18n="nav.foods">Foods</a>
+    <a href="#meals-section" class="mobile-nav-link" data-i18n="nav.meals">Meals</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+  <div id="server-notice" class="server-notice hidden" role="status"><span data-i18n="app.serverWaking">The server is waking up, please wait…</span></div>
+  <div id="voice-listening" class="voice-overlay hidden" role="dialog" aria-live="polite">
+    <div class="voice-card">
+      <div class="voice-waves" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      <p id="voice-status" class="voice-status" data-i18n="voice.listening">Listening...</p>
+      <p id="voice-transcript" class="voice-transcript muted"></p>
+      <button type="button" id="voice-stop" class="btn-secondary" data-i18n="voice.stop">Stop</button>
+    </div>
   </div>
 
   <script type="module" src="app.js"></script>

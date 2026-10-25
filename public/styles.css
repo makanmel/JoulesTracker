@@ -38,8 +38,7 @@ body {
 
 body {
   margin: 0;
-  /* Compact UI: ~75% scale for fonts, paddings and borders alike. */
-  zoom: 0.75;
+  scroll-padding-top: 16px;
   -webkit-tap-highlight-color: transparent;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg);
@@ -54,6 +53,11 @@ body {
   max-width: 720px;
   margin: 0 auto;
   padding: 24px 16px;
+  /* Compact UI: ~75% scale for fonts, paddings and borders alike.
+     Keep zoom off <body>: zoom makes an element the containing block for
+     position:fixed descendants, which breaks viewport anchoring on mobile
+     browsers. Fixed overlays therefore live outside this container. */
+  zoom: 0.75;
 }
 
 #auth-section {
@@ -1576,7 +1580,8 @@ button:disabled {
     text-align: center;
   }
 
-  html {
+  html,
+  body {
     scroll-padding-top: 12px;
   }
 
@@ -1603,7 +1608,10 @@ button:disabled {
     display: flex;
     justify-content: space-around;
     align-items: stretch;
-    min-height: var(--mobile-nav-height);
+    /* Unzoomed sibling of .container: scale values to the previous rendered
+       size (var(--mobile-nav-height) is applied inside the zoomed container
+       for padding-bottom, so it keeps its 32px value there). */
+    min-height: calc(var(--mobile-nav-height) * 0.75);
     padding: 2px 4px calc(2px + env(safe-area-inset-bottom, 0px));
     background: var(--card);
     backdrop-filter: blur(var(--card-blur));
@@ -1613,14 +1621,14 @@ button:disabled {
 
   .mobile-nav-link {
     flex: 1 1 0;
-    min-width: var(--touch-target);
-    min-height: calc(var(--mobile-nav-height) - 4px);
+    min-width: calc(var(--touch-target) * 0.75);
+    min-height: calc((var(--mobile-nav-height) - 4px) * 0.75);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
-    padding: 4px 2px;
-    font-size: 0.75rem;
+    border-radius: 6px;
+    padding: 3px 2px;
+    font-size: 0.5625rem;
     font-weight: 600;
     color: var(--muted);
     text-decoration: none;
