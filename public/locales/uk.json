@@ -4,7 +4,7 @@
     "subtitle": "Трекер калорій та макронутрієнтів",
     "language": "Мова",
     "serverWaking": "Сервер прокидається, зачекайте…",
-    "usersStats": "{{online}} онлайн · {{total}} користувачів"
+    "usersStats": "{{total}} користувачів · {{online}} онлайн"
   },
   "nav": {
     "sections": "Розділи",
