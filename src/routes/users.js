@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../lib/prisma.js';
+import { onlineCount } from '../lib/presence.js';
 import { parseRequest, profileSchema } from '../lib/validation.js';
 import { authenticate } from '../middleware/auth.js';
 
@@ -25,6 +26,15 @@ function sanitizeProfile(user) {
 router.get('/profile', profileLimiter, authenticate, async (req, res, next) => {
   try {
     res.json(sanitizeProfile(req.user));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/stats', profileLimiter, authenticate, async (req, res, next) => {
+  try {
+    const registered = await prisma.user.count();
+    res.json({ online: onlineCount(), registered });
   } catch (err) {
     next(err);
   }

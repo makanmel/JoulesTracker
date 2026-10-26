@@ -1,6 +1,7 @@
 import { verifyToken } from '../lib/auth.js';
 import { AppError } from '../lib/errors.js';
 import { prisma } from '../lib/prisma.js';
+import { touchPresence } from '../lib/presence.js';
 
 export async function authenticate(req, res, next) {
   try {
@@ -15,6 +16,7 @@ export async function authenticate(req, res, next) {
       throw new AppError('User not found', 401);
     }
     req.user = user;
+    touchPresence(user.id);
     next();
   } catch (err) {
     next(err);

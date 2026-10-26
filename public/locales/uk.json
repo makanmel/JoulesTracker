@@ -3,7 +3,8 @@
     "title": "JoulesTracker",
     "subtitle": "Трекер калорій та макронутрієнтів",
     "language": "Мова",
-    "serverWaking": "Сервер прокидається, зачекайте…"
+    "serverWaking": "Сервер прокидається, зачекайте…",
+    "usersStats": "{{online}} онлайн · {{total}} користувачів"
   },
   "nav": {
     "sections": "Розділи",

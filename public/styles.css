@@ -330,6 +330,16 @@ button {
   white-space: nowrap;
 }
 
+.user-stats {
+  flex: none;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.user-stats:empty {
+  display: none;
+}
+
 .btn-secondary {
   background: var(--secondary);
   color: var(--text);

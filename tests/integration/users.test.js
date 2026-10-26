@@ -11,6 +11,24 @@ beforeEach(async () => {
   authHeader = `Bearer ${token}`;
 });
 
+describe('User stats endpoint', () => {
+  it('requires authentication', async () => {
+    const res = await request(app).get('/api/v1/users/stats');
+
+    expect(res.status).toBe(401);
+  });
+
+  it('reports registered and online user counts', async () => {
+    const res = await request(app).get('/api/v1/users/stats').set('Authorization', authHeader);
+
+    expect(res.status).toBe(200);
+    // One user registered by the beforeEach helper; the authenticated request
+    // marks them online.
+    expect(res.body.registered).toBe(1);
+    expect(res.body.online).toBeGreaterThanOrEqual(1);
+  });
+});
+
 describe('User profile endpoints', () => {
   it('returns an empty profile by default', async () => {
     const res = await request(app).get('/api/v1/users/profile').set('Authorization', authHeader);
