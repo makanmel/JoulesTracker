@@ -3,7 +3,8 @@
     "title": "JoulesTracker",
     "subtitle": "Calorie & macronutrient tracker",
     "language": "Language",
-    "serverWaking": "The server is waking up, please wait…"
+    "serverWaking": "The server is waking up, please wait…",
+    "usersStats": "{{online}} online · {{total}} users"
   },
   "nav": {
     "sections": "Sections",

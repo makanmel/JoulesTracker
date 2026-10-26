@@ -452,6 +452,21 @@ function renderCurrentUser() {
   $('#user-email').textContent = currentUserEmail ? t('auth.currentUser', { email: currentUserEmail }) : '';
 }
 
+let userStatsTimer = null;
+
+async function loadUserStats() {
+  const stats = await api('/users/stats', { wakeNotice: false }).catch(() => null);
+  const el = $('#user-stats');
+  if (!el) return;
+  el.textContent = stats ? t('app.usersStats', { online: stats.online, total: stats.registered }) : '';
+}
+
+function startUserStats() {
+  clearInterval(userStatsTimer);
+  loadUserStats();
+  userStatsTimer = setInterval(loadUserStats, 60 * 1000);
+}
+
 function showDashboard(email) {
   currentUserEmail = email;
   authSection.classList.add('hidden');
@@ -466,6 +481,7 @@ function showDashboard(email) {
   loadSummary(formatDate(new Date()));
   loadFoods();
   loadMeals(formatDate(new Date()));
+  startUserStats();
 }
 
 function showAuth() {
@@ -475,6 +491,9 @@ function showAuth() {
   $('#mobile-nav').classList.add('hidden');
   $('#user-area').classList.add('hidden');
   $('#logout-btn').classList.add('hidden');
+  clearInterval(userStatsTimer);
+  userStatsTimer = null;
+  $('#user-stats').textContent = '';
   setToken(null);
 }
 
