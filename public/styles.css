@@ -1752,3 +1752,27 @@ button:disabled {
     max-width: 1440px;
   }
 }
+
+.onboarding {
+  width: min(680px, calc(100% - 24px));
+  max-height: 90dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface, var(--bg));
+  color: var(--text);
+}
+.onboarding::backdrop { background: rgba(0, 0, 0, 0.65); }
+.onboarding-help { line-height: 1.65; white-space: pre-line; }
+.onboarding-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.onboarding .settings-pane { margin-top: 20px; }
+.onboarding #onboarding-error { color: var(--danger, #dc2626); }
+@media (max-width: 480px) {
+  .onboarding { padding: 16px; }
+  .onboarding .grid-form { grid-template-columns: 1fr; }
+  .onboarding-actions button { flex: 1 1 auto; }
+}
+
+.onboarding form button[type="submit"] { display: none; }

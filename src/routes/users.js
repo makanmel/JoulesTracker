@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../lib/prisma.js';
 import { onlineCount } from '../lib/presence.js';
-import { parseRequest, profileSchema } from '../lib/validation.js';
+import { parseRequest, profileSchema, onboardingSchema } from '../lib/validation.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
@@ -51,6 +51,19 @@ router.put('/profile', profileLimiter, authenticate, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+router.get('/onboarding', profileLimiter, authenticate, (req, res) => {
+  res.json({ state: req.user.onboardingState });
+});
+
+router.put('/onboarding', profileLimiter, authenticate, (req, res, next) => {
+  const { state } = parseRequest(onboardingSchema, req.body);
+  prisma.user.update({
+    where: { id: req.user.id },
+    data: { onboardingState: state },
+    select: { onboardingState: true },
+  }).then((user) => res.json({ state: user.onboardingState })).catch(next);
 });
 
 export default router;

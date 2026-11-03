@@ -63,3 +63,28 @@ describe('User profile endpoints', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('Account onboarding', () => {
+  it('requires authentication for reading and updating progress', async () => {
+    expect((await request(app).get('/api/v1/users/onboarding')).status).toBe(401);
+    expect((await request(app).put('/api/v1/users/onboarding').send({ state: 'done' })).status).toBe(401);
+  });
+
+  it('persists progress for only the authenticated account', async () => {
+    const initial = await request(app).get('/api/v1/users/onboarding').set('Authorization', authHeader);
+    expect(initial.body).toEqual({ state: '0' });
+    const saved = await request(app).put('/api/v1/users/onboarding').set('Authorization', authHeader).send({ state: 'done' });
+    expect(saved.status).toBe(200);
+    expect(saved.body).toEqual({ state: 'done' });
+    const loaded = await request(app).get('/api/v1/users/onboarding').set('Authorization', authHeader);
+    expect(loaded.body).toEqual({ state: 'done' });
+    const other = await registerAndLogin(app);
+    const separate = await request(app).get('/api/v1/users/onboarding').set('Authorization', `Bearer ${other.token}`);
+    expect(separate.body).toEqual({ state: '0' });
+  });
+
+  it('rejects invalid states', async () => {
+    const invalid = await request(app).put('/api/v1/users/onboarding').set('Authorization', authHeader).send({ state: '99' });
+    expect(invalid.status).toBe(400);
+  });
+});
