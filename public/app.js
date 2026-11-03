@@ -1,6 +1,7 @@
 import { t, initI18n, onLanguageChange } from './i18n.js';
 import { initTheme } from './theme.js';
 import { APP_VERSION, CHANGELOG } from './version.js';
+import { initOnboarding } from './onboarding.js';
 
 const API_BASE = '/api/v1';
 const SEARCH_DEBOUNCE_MS = 300;
@@ -51,6 +52,7 @@ removeCredentialsFromUrl();
 
 let accessToken = localStorage.getItem('joulesToken');
 let currentUserEmail = null;
+let onboarding = null;
 
 let toastTimer = null;
 
@@ -413,6 +415,7 @@ function saveVoiceSettings(e) {
   localStorage.setItem(AI_PROVIDER_KEY, $('#voice-provider').value);
   localStorage.setItem(AI_API_KEY_KEY, $('#voice-api-key').value.trim());
   showToast(t('voice.settingsSaved'));
+  document.dispatchEvent(new CustomEvent('setup-saved', { detail: 'ai' }));
 }
 
 const API_KEY_LINKS = {
@@ -482,6 +485,7 @@ function showDashboard(email) {
   loadFoods();
   loadMeals(formatDate(new Date()));
   startUserStats();
+  onboarding?.open();
 }
 
 function showAuth() {
@@ -495,6 +499,7 @@ function showAuth() {
   userStatsTimer = null;
   $('#user-stats').textContent = '';
   setToken(null);
+  onboarding?.close();
 }
 
 function switchTab(tab) {
@@ -876,7 +881,9 @@ async function handleSaveProfile(e) {
     await api('/users/profile', { method: 'PUT', body: JSON.stringify(body) });
     $('#profile-message').textContent = t('profile.saved');
     await loadTarget(formatDate(new Date()));
+    document.dispatchEvent(new CustomEvent('setup-saved', { detail: 'profile' }));
   } catch (err) {
+    document.dispatchEvent(new Event('setup-failed'));
     showToast(err.message, 'error');
   }
 }
@@ -1010,9 +1017,11 @@ async function handleSetTarget(e) {
       body: JSON.stringify(body),
     });
     showToast(t('target.updated'));
-    loadTarget(date);
+    await loadTarget(date);
+    document.dispatchEvent(new CustomEvent('setup-saved', { detail: 'target' }));
     loadSummary($('#summary-date').value);
   } catch (err) {
+    document.dispatchEvent(new Event('setup-failed'));
     showToast(err.message, 'error');
   }
 }
@@ -1666,6 +1675,7 @@ async function init() {
   initMobileNav();
   startKeepAlive();
   await initI18n();
+  onboarding = initOnboarding({ api, onError: (message) => showToast(message, 'error'), loadProfile, loadTarget, date: () => formatDate(new Date()), email: () => currentUserEmail });
   initAbout();
   onLanguageChange(() => renderAbout($('#about-version')?.textContent || `v${APP_VERSION}`));
   onLanguageChange(refreshDashboard);

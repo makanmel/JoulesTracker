@@ -71,6 +71,10 @@ export const dailyTargetSchema = z.object({
     .nullish(),
 });
 
+export const onboardingSchema = z.object({
+  state: z.enum(['0', '1', '2', '3', '4', 'done', 'later']),
+}).strict();
+
 export const profileSchema = z.object({
   weightKg: z.number().positive(),
   heightCm: z.number().positive(),
