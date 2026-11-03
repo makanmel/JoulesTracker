@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import { URL } from 'node:url';
+import { TextDecoder } from 'node:util';
+import { APP_VERSION, CHANGELOG } from '../public/version.js';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
@@ -167,4 +169,26 @@ test('account progress is loaded on another session and a failed write does not 
   await h.next(); await h.saved('target');
   assert.equal(h.store.get('first@example.com'), '3');
   assert.equal(h.nodes.get('onboarding-title').textContent, 'onboarding.aiTitle');
+});
+
+test('locales are valid UTF-8 and release notes match the application version', () => {
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  const lock = JSON.parse(readFileSync(new URL('../package-lock.json', import.meta.url), 'utf8'));
+  assert.equal(APP_VERSION, pkg.version);
+  assert.equal(lock.version, APP_VERSION);
+  assert.equal(lock.packages[''].version, APP_VERSION);
+  assert.equal(CHANGELOG[0].version, APP_VERSION);
+  for (const lang of ['en', 'uk']) {
+    const text = decoder.decode(readFileSync(new URL(`../public/locales/${lang}.json`, import.meta.url)));
+    assert.equal(text.includes(String.fromCharCode(0xfffd)), false);
+    const locale = JSON.parse(text);
+    for (const release of CHANGELOG) {
+      for (const key of release.items) {
+        const value = key.split('.').reduce((node, part) => node?.[part], locale);
+        assert.equal(typeof value, 'string');
+        assert.ok(value.length > 0);
+      }
+    }
+  }
 });
