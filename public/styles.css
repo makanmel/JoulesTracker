@@ -1404,8 +1404,9 @@ button:disabled {
 
 .settings-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -1776,3 +1777,15 @@ button:disabled {
 }
 
 .onboarding form button[type="submit"] { display: none; }
+
+.settings-head h2 { min-width: 0; overflow-wrap: anywhere; }
+.settings-head-side { flex-wrap: wrap; min-width: 0; }
+.settings-head-side #about-version,
+.settings-head-side #settings-close { flex-shrink: 0; }
+#onboarding-restart { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .settings-head { align-items: stretch; }
+  .settings-head h2 { flex-basis: 100%; }
+  .settings-head-side { width: 100%; }
+  #onboarding-restart { flex: 1 1 0; }
+}

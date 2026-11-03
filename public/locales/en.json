@@ -42,7 +42,13 @@
   "about": {
     "title": "About",
     "changes": {
-      "v039": {"i1": "New step-by-step setup guide for your profile, daily nutrition target and AI/API settings, with detailed instructions.", "i2": "Setup progress is saved to your account across devices. Restart the guide from Settings; API keys remain stored only in your browser."},
+      "v0310": {
+        "i1": "Fixed overlapping Settings buttons on mobile and Ukrainian release-note text encoding."
+      },
+      "v039": {
+        "i1": "New step-by-step setup guide for your profile, daily nutrition target and AI/API settings, with detailed instructions.",
+        "i2": "Setup progress is saved to your account across devices. Restart the guide from Settings; API keys remain stored only in your browser."
+      },
       "v038": {
         "i1": "Voice transcription automatically switches to an available Gemini model when the previous model is retired"
       },
