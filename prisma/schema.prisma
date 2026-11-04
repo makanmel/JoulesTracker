@@ -12,7 +12,8 @@ model User {
   id           String   @id @default(uuid())
   email        String   @unique
   onboardingState String @default("0")
-  passwordHash String
+  passwordHash String?
+  googleSubject String? @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

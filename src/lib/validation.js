@@ -5,12 +5,12 @@ const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export const registerSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email().toLowerCase(),
   password: z.string().min(8),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email().toLowerCase(),
   password: z.string().min(1),
 });
 

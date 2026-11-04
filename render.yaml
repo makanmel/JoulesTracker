@@ -26,3 +26,5 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-2.5-flash
+      - key: GOOGLE_CLIENT_ID
+        sync: false
