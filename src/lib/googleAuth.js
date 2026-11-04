@@ -1,5 +1,5 @@
 import { OAuth2Client } from 'google-auth-library';
-import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { AppError } from './errors.js';
@@ -23,13 +23,14 @@ export function readGoogleNonce(req) {
 }
 
 export async function verifyGoogleCredential(credential, nonce, clientId) {
-  if (!nonce || !clientId) throw new AppError('Google sign-in session expired. Please retry.', 401);
-  const challenge = await Promise.resolve().then(() => jwt.verify(nonce, secret)).catch(() => null);
-  if (challenge?.purpose !== 'google-login') throw new AppError('Google sign-in session expired. Please retry.', 401);
+  if (!nonce || !/^[a-f0-9]{64}$/.test(nonce) || !clientId) throw new AppError('Google sign-in session expired. Please retry.', 401);
   const ticket = await client.verifyIdToken({ idToken: credential, audience: clientId }).catch(() => null);
   const payload = ticket?.getPayload();
+  const tokenNonce = typeof payload?.nonce === 'string' ? payload.nonce : '';
+  const challenge = await Promise.resolve().then(() => jwt.verify(tokenNonce, secret)).catch(() => null);
+  if (challenge?.purpose !== 'google-login') throw new AppError('Google sign-in session expired. Please retry.', 401);
   const expected = Buffer.from(nonce);
-  const actual = Buffer.from(typeof payload?.nonce === 'string' ? payload.nonce : '');
+  const actual = Buffer.from(createHash('sha256').update(tokenNonce).digest('hex'));
   if (!payload || actual.length !== expected.length || !timingSafeEqual(actual, expected)
     || payload.email_verified !== true || !payload.sub || typeof payload.sub !== 'string'
     || !z.string().email().max(254).safeParse(payload.email).success) {

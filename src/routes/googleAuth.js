@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createHash } from 'node:crypto';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
@@ -17,7 +18,7 @@ router.get('/config', configLimiter, (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) return res.json({ enabled: false });
   const nonce = createGoogleNonce();
-  res.cookie(GOOGLE_NONCE_COOKIE, nonce, { ...googleCookieOptions(), maxAge: 10 * 60 * 1000 });
+  res.cookie(GOOGLE_NONCE_COOKIE, createHash('sha256').update(nonce).digest('hex'), { ...googleCookieOptions(), maxAge: 10 * 60 * 1000 });
   res.json({ enabled: true, clientId, nonce });
 });
 

@@ -1,6 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
+import { createHash } from 'node:crypto';
 import { prisma } from '../../src/lib/prisma.js';
 import { createApp } from '../../src/app.js';
 
@@ -96,7 +97,9 @@ describe('Google sign-in', () => {
 
   it('rejects expired nonce challenges', async () => {
     const nonce = jwt.sign({ purpose: 'google-login' }, process.env.JWT_SECRET || 'dev-secret', { expiresIn: -1 });
-    expect((await request(app).post('/api/v1/auth/google').set('Cookie', `joules_google_nonce=${nonce}`).send({ credential: 'token' })).status).toBe(401);
+    claims.nonce = nonce;
+    const hash = createHash('sha256').update(nonce).digest('hex');
+    expect((await request(app).post('/api/v1/auth/google').set('Cookie', `joules_google_nonce=${hash}`).send({ credential: 'token' })).status).toBe(401);
   });
 
   it('rejects mismatched nonce claims and unverified email', async () => {
