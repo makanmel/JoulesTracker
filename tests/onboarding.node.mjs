@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import { URL } from 'node:url';
 import { TextDecoder } from 'node:util';
 import { APP_VERSION, CHANGELOG } from '../public/version.js';
+import { recommendedTargets, macroGrams, parseBirthDate, formatBirthDate, initTargetSetup } from '../public/target-setup.js';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
@@ -191,4 +192,62 @@ test('locales are valid UTF-8 and release notes match the application version', 
       }
     }
   }
+});
+
+test('weight-based recommendations include all tracked targets and total 100%', () => {
+  const targets = recommendedTargets(80, 2000);
+  assert.equal(targets.proteinPct, 19.2);
+  assert.equal(targets.fatPct, 36);
+  assert.equal(targets.carbsPct, 44.8);
+  assert.equal(targets.proteinPct + targets.fatPct + targets.carbsPct, 100);
+  assert.equal(targets.fiber, 25);
+  assert.equal(targets.salt, 5);
+  assert.equal(targets.sugar, 50);
+  assert.equal(targets.saturated, 22.2);
+  assert.equal(macroGrams(2000, targets.proteinPct, 4), 96);
+  assert.equal(macroGrams(2000, targets.fatPct, 9), 80);
+  assert.equal(macroGrams(2500, 20, 4), 125);
+  for (const values of [[0, 2000], [80, 0], [80, 500], [Infinity, 2000], [80, Infinity]]) {
+    assert.equal(recommendedTargets(...values), null);
+  }
+  assert.equal(macroGrams(2000, '', 4), null);
+  assert.equal(macroGrams(2000, -10, 4), null);
+});
+
+test('birthdate entry is day/month/year and rejects impossible or future dates', () => {
+  const today = new Date(2026, 10, 4);
+  assert.equal(parseBirthDate('28/04/1979', today), '1979-04-28');
+  assert.equal(formatBirthDate('1979-04-28'), '28/04/1979');
+  assert.equal(parseBirthDate('29/02/2000', today), '2000-02-29');
+  for (const value of ['04/28/1979', '31/04/1979', '29/02/2001', '01/01/2999', '', '1979-04-28']) {
+    assert.equal(parseBirthDate(value, today), null);
+  }
+});
+
+test('target prefills preserve existing values, update grams and allow explicit reset', (context) => {
+  const nodes = new Map();
+  const previous = globalThis.document;
+  globalThis.document = {
+    getElementById(id) {
+      if (!nodes.has(id)) nodes.set(id, { value: '', textContent: '', listeners: {}, addEventListener(type, callback) { this.listeners[type] = callback; } });
+      return nodes.get(id);
+    },
+  };
+  context.after(() => { globalThis.document = previous; });
+  const setup = initTargetSetup({ t: (key, values = {}) => key + JSON.stringify(values) });
+  const get = (id) => globalThis.document.getElementById(id);
+  get('target-calories').value = '2500';
+  get('target-protein-pct').value = '25';
+  get('target-fiber').value = '30';
+  setup.setSuggestions({ weightKg: 80, tdee: 2000 }, true);
+  assert.equal(get('target-calories').value, '2500');
+  assert.equal(get('target-protein-pct').value, '25');
+  assert.equal(get('target-fiber').value, '30');
+  assert.equal(get('target-fat-pct').value, 28.8);
+  assert.equal(get('target-carbs-pct').value, 46.2);
+  assert.ok(get('target-protein-grams').textContent.includes('156.3'));
+  get('target-use-recommended').listeners.click();
+  assert.equal(get('target-calories').value, 2000);
+  assert.equal(get('target-protein-pct').value, 19.2);
+  assert.equal(get('target-fiber').value, 25);
 });

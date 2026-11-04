@@ -153,5 +153,5 @@ ${suggestion.textContent}`;
   });
   onLanguageChange(() => { if (dialog.open) render(); });
   document.getElementById('onboarding-restart').addEventListener('click', () => open(true));
-  return { open, close };
+  return { open, close, isOpen: () => dialog.open };
 }

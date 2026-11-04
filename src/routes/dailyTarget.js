@@ -69,6 +69,7 @@ router.get('/suggest', async (req, res, next) => {
       previousTargetCalories: previous?.targetCalories ?? null,
       bmr,
       tdee,
+      weightKg: user.weightKg,
     });
   } catch (err) {
     next(err);

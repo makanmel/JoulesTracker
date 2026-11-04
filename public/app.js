@@ -2,6 +2,7 @@ import { t, initI18n, onLanguageChange } from './i18n.js';
 import { initTheme } from './theme.js';
 import { APP_VERSION, CHANGELOG } from './version.js';
 import { initOnboarding } from './onboarding.js';
+import { initTargetSetup, parseBirthDate, formatBirthDate } from './target-setup.js';
 
 const API_BASE = '/api/v1';
 const SEARCH_DEBOUNCE_MS = 300;
@@ -53,6 +54,7 @@ removeCredentialsFromUrl();
 let accessToken = localStorage.getItem('joulesToken');
 let currentUserEmail = null;
 let onboarding = null;
+let targetSetup = null;
 
 let toastTimer = null;
 
@@ -859,7 +861,8 @@ async function loadProfile() {
     const profile = await api('/users/profile');
     $('#profile-weight').value = profile.weightKg ?? '';
     $('#profile-height').value = profile.heightCm ?? '';
-    $('#profile-birthdate').value = profile.birthDate ?? '';
+    $('#profile-birthdate').value = formatBirthDate(profile.birthDate);
+    $('#profile-birthdate').setCustomValidity('');
     $('#profile-gender').value = profile.gender ?? 'male';
     $('#profile-activity').value = profile.activityLevel ?? 'sedentary';
     $('#profile-message').textContent = '';
@@ -870,10 +873,17 @@ async function loadProfile() {
 
 async function handleSaveProfile(e) {
   e.preventDefault();
+  const birthDate = parseBirthDate($('#profile-birthdate').value);
+  if (!birthDate) {
+    $('#profile-birthdate').setCustomValidity(t('profile.birthdateInvalid'));
+    document.dispatchEvent(new Event('setup-failed'));
+    $('#profile-birthdate').reportValidity();
+    return;
+  }
   const body = {
     weightKg: parseFloat($('#profile-weight').value),
     heightCm: parseFloat($('#profile-height').value),
-    birthDate: $('#profile-birthdate').value,
+    birthDate,
     gender: $('#profile-gender').value,
     activityLevel: $('#profile-activity').value,
   };
@@ -954,9 +964,11 @@ async function loadTargetSuggestions(date) {
     const container = $('#target-suggestions');
     container.classList.toggle('hidden', !data.tdee);
     container.textContent = data.tdee ? t('target.tdeeAvailable', { calories: data.tdee, bmr: data.bmr }) : '';
+    targetSetup?.setSuggestions(data, onboarding?.isOpen());
   } catch (err) {
     // suggestions are optional
     $('#target-suggestions').classList.add('hidden');
+    targetSetup?.setSuggestions({}, false);
   }
 }
 
@@ -1675,6 +1687,9 @@ async function init() {
   initMobileNav();
   startKeepAlive();
   await initI18n();
+  targetSetup = initTargetSetup({ t });
+  onLanguageChange(() => targetSetup.update());
+  $('#profile-birthdate').addEventListener('input', (event) => event.target.setCustomValidity(''));
   onboarding = initOnboarding({ api, onError: (message) => showToast(message, 'error'), loadProfile, loadTarget, date: () => formatDate(new Date()), email: () => currentUserEmail });
   initAbout();
   onLanguageChange(() => renderAbout($('#about-version')?.textContent || `v${APP_VERSION}`));
