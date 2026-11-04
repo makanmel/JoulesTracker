@@ -1836,3 +1836,13 @@ button:disabled {
   .onboarding-actions { gap: 8px; }
   .onboarding-actions button { font-size: 0.85rem; padding-inline: 10px; }
 }
+
+.google-auth { display: grid; gap: 12px; margin-bottom: 20px; min-width: 0; }
+.google-auth h2, .google-auth p { margin: 0; }
+#google-button { min-height: 44px; width: 100%; min-width: 0; }
+#google-status { font-size: 0.85rem; }
+#google-link-form { margin-top: 8px; }
+#google-link-form[hidden], #google-retry[hidden] { display: none; }
+#email-auth { border-top: 1px solid var(--border); padding-top: 16px; }
+#email-auth summary { cursor: pointer; min-height: var(--touch-target); font-weight: 600; }
+#email-auth .tabs { margin-bottom: 16px; }

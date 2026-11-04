@@ -1,5 +1,6 @@
 import { t, initI18n, onLanguageChange } from './i18n.js';
 import { initTheme } from './theme.js';
+import { initGoogleSignIn } from './google-sign-in.js';
 import { APP_VERSION, CHANGELOG } from './version.js';
 import { initOnboarding } from './onboarding.js';
 import { initTargetSetup, parseBirthDate, formatBirthDate } from './target-setup.js';
@@ -54,6 +55,7 @@ removeCredentialsFromUrl();
 let accessToken = localStorage.getItem('joulesToken');
 let currentUserEmail = null;
 let onboarding = null;
+let googleSignIn = null;
 let targetSetup = null;
 
 let toastTimer = null;
@@ -473,6 +475,7 @@ function startUserStats() {
 }
 
 function showDashboard(email) {
+  googleSignIn?.clearPending();
   currentUserEmail = email;
   authSection.classList.add('hidden');
   dashboardSection.classList.remove('hidden');
@@ -491,6 +494,7 @@ function showDashboard(email) {
 }
 
 function showAuth() {
+  googleSignIn?.refresh();
   currentUserEmail = null;
   authSection.classList.remove('hidden');
   dashboardSection.classList.add('hidden');
@@ -1684,6 +1688,11 @@ async function init() {
   initMobileNav();
   startKeepAlive();
   await initI18n();
+  googleSignIn = initGoogleSignIn({ onSuccess: (data) => {
+    setToken(data.accessToken);
+    showDashboard(data.email);
+    showToast(t('auth.loggedIn'));
+  } });
   targetSetup = initTargetSetup({ t });
   onLanguageChange(() => targetSetup.update());
   $('#profile-birthdate').addEventListener('input', (event) => event.target.setCustomValidity(''));

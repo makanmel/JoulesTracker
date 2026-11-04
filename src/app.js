@@ -5,6 +5,7 @@ import foodRoutes from './routes/foods.js';
 import mealRoutes from './routes/meals.js';
 import dailyTargetRoutes from './routes/dailyTarget.js';
 import userRoutes from './routes/users.js';
+import googleAuthRoutes from './routes/googleAuth.js';
 import { authenticate } from './middleware/auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { rateLimit } from 'express-rate-limit';
@@ -36,6 +37,7 @@ export function createApp() {
 
   app.use('/api/v1', apiLimiter);
   app.use('/api/v1/auth', authRoutes);
+  app.use('/api/v1/auth/google', googleAuthRoutes);
   app.use('/api/v1/foods', authenticate, foodRoutes);
   app.use('/api/v1/meals', authenticate, mealRoutes);
   app.use('/api/v1/daily-target', authenticate, dailyTargetRoutes);

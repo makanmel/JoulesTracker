@@ -17,7 +17,7 @@ const currentUserLimiter = rateLimit({
 router.post('/register', async (req, res, next) => {
   try {
     const data = parseRequest(registerSchema, req.body);
-    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    const existing = await prisma.user.findFirst({ where: { email: { equals: data.email, mode: 'insensitive' } } });
     if (existing) {
       throw new AppError('Email already exists', 409);
     }
@@ -40,8 +40,8 @@ router.post('/register', async (req, res, next) => {
 router.post('/login', async (req, res, next) => {
   try {
     const data = parseRequest(loginSchema, req.body);
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
-    if (!user) {
+    const user = await prisma.user.findFirst({ where: { email: { equals: data.email, mode: 'insensitive' } } });
+    if (!user?.passwordHash) {
       throw new AppError('Invalid credentials', 401);
     }
     const valid = await comparePassword(data.password, user.passwordHash);

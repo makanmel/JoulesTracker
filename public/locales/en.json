@@ -42,6 +42,10 @@
   "about": {
     "title": "About",
     "changes": {
+      "v040": {
+        "i1": "Google sign-in is now the primary option, with email/password registration and login kept as a backup.",
+        "i2": "Existing password accounts can connect Google after password confirmation, preserving their data. Email/password accounts do not require email verification."
+      },
       "v0313": {
         "i1": "Aligned target inputs and min/exact/max controls on mobile and desktop, keeping macro gram hints below the inputs and giving desktop fields more space."
       },
@@ -167,7 +171,20 @@
     "loggedIn": "Logged in",
     "loggedOut": "Logged out",
     "registered": "Registered",
-    "currentUser": "{{email}}"
+    "currentUser": "{{email}}",
+    "welcome": "Welcome to JoulesTracker",
+    "googleHint": "Continue with Google to sign in or create an account. Email/password accounts remain available below.",
+    "googleLoading": "Loading Google sign-in…",
+    "googleReady": "Use the Google button, or choose email and password below.",
+    "googleUnavailable": "Google sign-in is not configured yet. Use email and password below.",
+    "googleFailed": "Google sign-in could not be completed. Retry, or use email and password.",
+    "googleRetry": "Retry Google sign-in",
+    "googleLinkRequired": "This email already has a password account. Confirm its password to connect Google without losing your data.",
+    "googleLinkHint": "Connecting Google keeps your existing password login and all your data. Enter the password for the account below to confirm.",
+    "googleLink": "Connect Google and sign in",
+    "googleLinkFailed": "Password confirmation failed or the Google session expired. Check your password, or retry Google sign-in.",
+    "googleExpired": "Your Google sign-in session expired. Please retry.",
+    "emailBackup": "Use email and password instead"
   },
   "summary": {
     "title": "Today's Summary",

@@ -180,6 +180,21 @@
       </section>
 
       <section id="auth-section" class="card">
+        <div class="google-auth">
+          <h2 data-i18n="auth.welcome">Welcome to JoulesTracker</h2>
+          <p class="muted" data-i18n="auth.googleHint">Continue with Google, or use email and password below.</p>
+          <div id="google-button"></div>
+          <p id="google-status" class="muted" role="status" aria-live="polite"></p>
+          <button type="button" id="google-retry" class="btn-secondary" data-i18n="auth.googleRetry" hidden>Retry Google sign-in</button>
+          <form id="google-link-form" class="auth-form" hidden>
+            <p class="muted" data-i18n="auth.googleLinkHint">Confirm your existing password to connect this account to Google.</p>
+            <span id="google-link-email" class="muted"></span>
+            <label><span data-i18n="auth.password">Password</span><input id="google-link-password" type="password" autocomplete="current-password" required /></label>
+            <button type="submit" id="google-link-submit" class="btn-primary" data-i18n="auth.googleLink">Connect Google and sign in</button>
+          </form>
+        </div>
+        <details id="email-auth">
+          <summary data-i18n="auth.emailBackup">Use email and password instead</summary>
         <div class="tabs">
           <button type="button" id="tab-login" class="tab active" data-i18n="auth.login">Login</button>
           <button type="button" id="tab-register" class="tab" data-i18n="auth.register">Register</button>
@@ -196,6 +211,7 @@
           <label><span data-i18n="auth.password">Password</span> <input type="password" name="password" autocomplete="new-password" minlength="8" required /></label>
           <button type="submit" class="btn-primary" data-i18n="auth.register">Register</button>
         </form>
+        </details>
       </section>
 
       <section id="dashboard-section" class="hidden">
