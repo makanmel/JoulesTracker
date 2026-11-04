@@ -60,6 +60,12 @@ body {
   zoom: 0.75;
 }
 
+/* Login screen reads too small at the compact 0.75 zoom — relax to 0.9
+   (20% larger) while the auth card is visible; reverts once it is hidden. */
+.container:has(#auth-section:not(.hidden)) {
+  zoom: 0.9;
+}
+
 #auth-section {
   max-width: 480px;
   margin: 0 auto;
