@@ -42,6 +42,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v041": {
+        "i1": "Enlarged the sign-in page by 20% for better readability."
+      },
       "v040": {
         "i1": "Google sign-in is now the primary option, with email/password registration and login kept as a backup.",
         "i2": "Existing password accounts can connect Google after password confirmation, preserving their data. Email/password accounts do not require email verification."
