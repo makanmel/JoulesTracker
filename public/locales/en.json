@@ -14,7 +14,7 @@
     "profileTitle": "1. Tell us about yourself",
     "profileHelp": "Enter your current weight in kilograms, height in centimetres and date of birth.\n\nGender is used by the energy-estimation formula.\n\nChoose activity based on a typical week: sedentary for mostly sitting, light for occasional exercise, moderate for regular exercise, and active or very active for physically demanding days.\n\nSave your profile to see an estimated maintenance calorie need (TDEE).\n\nThis is an estimate, not medical advice.",
     "targetTitle": "2. Choose your daily target",
-    "targetHelp": "Enter a daily calorie goal in kcal.\n\nYour profile’s maintenance estimate is shown in the Profile settings; use it as a starting point, or follow a target agreed with a healthcare professional.\n\nProtein, fat and carbohydrate percentages are optional; when all three are entered they are normalised to 100%.\n\nOptional fibre, salt, sugar and saturated-fat goals are in grams.\n\n“min” means at least, “=” means around, and “max” means at most.\n\nSave applies the target from today.",
+    "targetHelp": "Empty fields are prefilled from your saved profile: maintenance calories, protein at 1.2 g/kg, fat at 1 g/kg, and carbohydrates for the remaining energy. Live gram equivalents appear below the percentages.\n\nReview and adjust the starting values below before saving. “min” means at least, “=” means around and “max” means at most. Fibre, salt, sugar and saturated fat are in grams. Save applies the target from today.",
     "aiTitle": "3. Enable photo and voice recognition",
     "aiHelp": "Manual food logging works without an API key.\n\nFor AI scanning, choose Gemini or OpenAI.\n\nFor Gemini, open Google AI Studio (aistudio.google.com/apikey), sign in, create an API key and copy it.\n\nFor OpenAI, open platform.openai.com/api-keys, create a key and check billing/credits.\n\nUse the information button beside the API key for the provider link.\n\nPaste the key below and Save.\n\nThe key is kept in this browser (not synced between devices) and sent to our server to contact the provider.\n\nPhotos and dictated meal text are sent for recognition.\n\nNever share your key.\n\nProvider availability, quotas and charges vary.\n\nA server-provided key may already allow scanning without your own key.\n\nSaving here does not verify the key; try a scan afterwards.",
     "readyTitle": "You’re ready to track meals",
@@ -42,6 +42,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v0311": {
+        "i1": "Personalised target prefills, live macro grams, clearer date entry and a smaller, responsive setup guide without horizontal scrolling."
+      },
       "v0310": {
         "i1": "Fixed overlapping Settings buttons on mobile and Ukrainian release-note text encoding."
       },
@@ -135,7 +138,9 @@
     "activityActive": "Active",
     "activityVeryActive": "Very active",
     "save": "Save profile",
-    "saved": "Profile saved"
+    "saved": "Profile saved",
+    "birthdateFormat": "DD/MM/YYYY",
+    "birthdateInvalid": "Enter a valid past date as DD/MM/YYYY (for example, 28/04/1979)."
   },
   "themes": {
     "default": "Default",
@@ -213,7 +218,12 @@
     "pctNormalized": "Macro split was {{sum}}% - normalized to 100%",
     "display": "Current target: {{calories}} kcal",
     "none": "No target set",
-    "tdeeAvailable": "TDEE estimate: {{calories}} kcal (BMR {{bmr}})"
+    "tdeeAvailable": "TDEE estimate: {{calories}} kcal (BMR {{bmr}})",
+    "recommendation": "Maintenance estimate: {{calories}} kcal/day. At {{weight}} kg: protein 1.2 g/kg ≈ {{protein}} g/day; fat 1 g/kg ≈ {{fat}} g/day. Carbohydrates use the remaining calories.",
+    "recommendationMissing": "Save a complete profile to calculate maintenance calories and weight-based targets. If your calorie goal cannot accommodate the protein and fat amounts, review it with a professional.",
+    "useRecommended": "Use recommended values",
+    "gramsHint": "≈ {{grams}} g/day",
+    "defaultsNote": "Adjustable starting points for adults, not medical advice: fibre ≥25 g/day, salt ≤5 g/day; saturated fat and the app’s total logged sugar budget each use 10% of calories. The sugar budget is not a free-sugar recommendation: food totals also include naturally occurring sugar. Review these values for your needs. Existing entries are preserved; “Use recommended values” replaces the form, and Save applies it."
   },
   "addMeal": {
     "title": "Add Meal",

@@ -58,7 +58,7 @@
         <form id="profile-form" class="grid-form">
           <label><span data-i18n="profile.weight">Weight (kg)</span> <input type="text" inputmode="decimal" id="profile-weight" required /></label>
           <label><span data-i18n="profile.height">Height (cm)</span> <input type="text" inputmode="decimal" id="profile-height" required /></label>
-          <label><span data-i18n="profile.birthdate">Birthdate</span> <input type="date" id="profile-birthdate" required /></label>
+          <label><span data-i18n="profile.birthdate">Birthdate</span> <input type="text" inputmode="numeric" id="profile-birthdate" placeholder="DD/MM/YYYY" data-i18n-placeholder="profile.birthdateFormat" maxlength="10" autocomplete="bday" required /><small class="muted" data-i18n="profile.birthdateFormat">DD/MM/YYYY</small></label>
           <label><span data-i18n="profile.gender">Gender</span>
             <select id="profile-gender" required>
               <option value="male" data-i18n="profile.genderMale">Male</option>
@@ -83,6 +83,9 @@
         </div>
 
         <div class="settings-pane hidden" id="settings-pane-target" role="tabpanel">
+          <p id="target-recommendation" class="form-note muted"></p>
+          <button type="button" id="target-use-recommended" class="btn-secondary" data-i18n="target.useRecommended">Use recommended values</button>
+          <p class="muted target-defaults-note" data-i18n="target.defaultsNote"></p>
           <form id="target-form" class="grid-form">
             <div class="target-row">
               <label><span data-i18n="target.kcal">Target kcal</span> <input type="text" inputmode="decimal" id="target-calories" required /></label>
@@ -93,7 +96,7 @@
               </div>
             </div>
             <div class="target-row">
-              <label><span data-i18n="target.proteinPct">Protein %</span> <input type="text" inputmode="decimal" id="target-protein-pct" /></label>
+              <label><span data-i18n="target.proteinPct">Protein %</span> <input type="text" inputmode="decimal" id="target-protein-pct" /><small id="target-protein-grams" class="muted macro-grams" aria-live="polite"></small></label>
               <div class="mode-toggle" data-metric="protein" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" class="active" aria-pressed="true">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" aria-pressed="false">=</button>
@@ -101,7 +104,7 @@
               </div>
             </div>
             <div class="target-row">
-              <label><span data-i18n="target.fatPct">Fat %</span> <input type="text" inputmode="decimal" id="target-fat-pct" /></label>
+              <label><span data-i18n="target.fatPct">Fat %</span> <input type="text" inputmode="decimal" id="target-fat-pct" /><small id="target-fat-grams" class="muted macro-grams" aria-live="polite"></small></label>
               <div class="mode-toggle" data-metric="fat" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" aria-pressed="false">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" class="active" aria-pressed="true">=</button>
@@ -109,7 +112,7 @@
               </div>
             </div>
             <div class="target-row">
-              <label><span data-i18n="target.carbsPct">Carbs %</span> <input type="text" inputmode="decimal" id="target-carbs-pct" /></label>
+              <label><span data-i18n="target.carbsPct">Carbs %</span> <input type="text" inputmode="decimal" id="target-carbs-pct" /><small id="target-carbs-grams" class="muted macro-grams" aria-live="polite"></small></label>
               <div class="mode-toggle" data-metric="carbs" role="group" data-i18n-aria-label="target.mode" aria-label="Target mode">
                 <button type="button" data-mode="min" data-i18n-aria-label="target.modeMin" aria-label="At least" aria-pressed="false">min</button>
                 <button type="button" data-mode="exact" data-i18n-aria-label="target.modeExact" aria-label="Around" class="active" aria-pressed="true">=</button>

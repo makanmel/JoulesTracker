@@ -207,5 +207,6 @@ describe('Daily target endpoints', () => {
     expect(res.status).toBe(200);
     expect(res.body.bmr).toBe(Math.round(10 * 70 + 6.25 * 175 - 5 * 30 + 5));
     expect(res.body.tdee).toBe(Math.round(res.body.bmr * 1.55));
+    expect(res.body.weightKg).toBe(70);
   });
 });

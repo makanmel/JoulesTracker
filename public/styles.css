@@ -1758,6 +1758,8 @@ button:disabled {
   width: min(680px, calc(100% - 24px));
   max-height: 90dvh;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
   box-sizing: border-box;
   padding: 24px;
   border: 1px solid var(--border);
@@ -1766,7 +1768,7 @@ button:disabled {
   color: var(--text);
 }
 .onboarding::backdrop { background: rgba(0, 0, 0, 0.65); }
-.onboarding-help { line-height: 1.65; white-space: pre-line; }
+.onboarding-help { font-size: 0.875rem; line-height: 1.55; white-space: pre-line; }
 .onboarding-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .onboarding .settings-pane { margin-top: 20px; }
 .onboarding #onboarding-error { color: var(--danger, #dc2626); }
@@ -1788,4 +1790,27 @@ button:disabled {
   .settings-head h2 { flex-basis: 100%; }
   .settings-head-side { width: 100%; }
   #onboarding-restart { flex: 1 1 0; }
+}
+
+.onboarding .grid-form { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.onboarding .grid-form > *,
+.onboarding .inline-form > *,
+.onboarding input,
+.onboarding select { min-width: 0; max-width: 100%; }
+.onboarding input,
+.onboarding select { width: 100%; }
+.onboarding .target-row { flex-wrap: wrap; align-items: flex-start; }
+.onboarding .target-row label { flex: 1 1 120px; }
+.onboarding .mode-toggle { align-self: flex-start; margin-top: 24px; }
+.onboarding .mode-toggle button { width: auto; }
+.onboarding-actions button { white-space: normal; min-width: 0; max-width: 100%; }
+.onboarding .form-note { grid-column: 1 / -1; }
+.onboarding .onboarding-actions { position: sticky; bottom: -1px; padding: 12px 0; background: var(--card); }
+.macro-grams { font-size: 0.8rem; min-height: 1.2em; }
+.target-defaults-note { font-size: 0.8rem; line-height: 1.5; }
+#target-recommendation { line-height: 1.5; }
+@media (max-width: 480px) {
+  .onboarding .grid-form { grid-template-columns: minmax(0, 1fr); }
+  .onboarding-actions { gap: 8px; }
+  .onboarding-actions button { font-size: 0.85rem; padding-inline: 10px; }
 }
