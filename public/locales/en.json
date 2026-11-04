@@ -42,6 +42,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v0313": {
+        "i1": "Aligned target inputs and min/exact/max controls on mobile and desktop, keeping macro gram hints below the inputs and giving desktop fields more space."
+      },
       "v0312": {
         "i1": "Removed the redundant saved-target line from target settings and the setup guide to avoid confusion while editing values."
       },
