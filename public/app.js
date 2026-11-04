@@ -949,9 +949,6 @@ async function loadTarget(date) {
     $('#target-sugar').value = data.sugarGrams ?? '';
     const modes = data.modes ?? {};
     TARGET_MODE_KEYS.forEach((metric) => setTargetMode(metric, modes[metric] ?? DEFAULT_TARGET_MODES[metric]));
-    $('#target-display').textContent = data.targetCalories
-      ? t('target.display', { calories: data.targetCalories })
-      : t('target.none');
     await loadTargetSuggestions(date);
   } catch (err) {
     showToast(err.message, 'error');

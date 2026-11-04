@@ -42,6 +42,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v0312": {
+        "i1": "Removed the redundant saved-target line from target settings and the setup guide to avoid confusion while editing values."
+      },
       "v0311": {
         "i1": "Personalised target prefills, live macro grams, clearer date entry and a smaller, responsive setup guide without horizontal scrolling."
       },
