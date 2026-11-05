@@ -1706,6 +1706,7 @@ async function init() {
   loginForm.addEventListener('submit', handleLogin);
   registerForm.addEventListener('submit', handleRegister);
   $('#logout-btn').addEventListener('click', () => {
+    googleSignIn?.disableAutoSelect();
     showAuth();
     showToast(t('auth.loggedOut'));
   });

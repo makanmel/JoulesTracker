@@ -1,5 +1,7 @@
 import { t, onLanguageChange } from './i18n.js';
 
+const GOOGLE_HINT_KEY = 'joulesGoogleHint';
+
 export function initGoogleSignIn({ onSuccess }) {
   const get = (id) => document.getElementById(`google-${id}`);
   const fallback = document.getElementById('email-auth');
@@ -52,6 +54,7 @@ export function initGoogleSignIn({ onSuccess }) {
       return;
     }
     clearPending();
+    if (result.body.email) localStorage.setItem(GOOGLE_HINT_KEY, result.body.email);
     status('auth.googleReady');
     onSuccess(result.body);
   };
@@ -75,7 +78,8 @@ export function initGoogleSignIn({ onSuccess }) {
     window.google.accounts.id.initialize({
       client_id: config.clientId,
       nonce: config.nonce,
-      auto_select: false,
+      auto_select: true,
+      login_hint: localStorage.getItem(GOOGLE_HINT_KEY) || undefined,
       callback: ({ credential }) => exchange(credential),
     });
     window.google.accounts.id.renderButton(get('button'), {
@@ -110,5 +114,9 @@ export function initGoogleSignIn({ onSuccess }) {
   get('retry').addEventListener('click', refresh);
   onLanguageChange(() => { status(statusKey); renderButton(); });
   refresh();
-  return { refresh, clearPending };
+  return {
+    refresh,
+    clearPending,
+    disableAutoSelect() { window.google?.accounts?.id?.disableAutoSelect?.(); },
+  };
 }
