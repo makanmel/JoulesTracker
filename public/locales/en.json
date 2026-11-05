@@ -42,6 +42,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v042": {
+        "i1": "Google sign-in now remembers your last account and can sign you in automatically on return visits."
+      },
       "v041": {
         "i1": "Enlarged the sign-in page by 20% for better readability."
       },
