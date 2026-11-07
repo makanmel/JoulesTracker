@@ -42,6 +42,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v043": {
+        "i1": "Renamed database tables and columns to the standard snake_case convention for easier maintenance."
+      },
       "v042": {
         "i1": "Google sign-in now remembers your last account and can sign you in automatically on return visits."
       },

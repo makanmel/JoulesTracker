@@ -9,96 +9,101 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  onboardingState String @default("0")
-  passwordHash String?
-  googleSubject String? @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(uuid())
+  email           String   @unique
+  onboardingState String   @default("0") @map("onboarding_state")
+  passwordHash    String?  @map("password_hash")
+  googleSubject   String?  @unique @map("google_subject")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  weightKg        Float?
-  heightCm        Float?
-  birthDate       String? // ISO date YYYY-MM-DD
-  gender          String? // male | female
-  activityLevel   String? // sedentary | light | moderate | active | very_active
+  weightKg      Float? @map("weight_kg")
+  heightCm      Float? @map("height_cm")
+  birthDate     String? @map("birth_date") // ISO date YYYY-MM-DD
+  gender        String? // male | female
+  activityLevel String? @map("activity_level") // sedentary | light | moderate | active | very_active
 
   foods        Food[]
   meals        MealEntry[]
   dailyTargets DailyTarget[]
+
+  @@map("users")
 }
 
 model Food {
   id                  String  @id @default(uuid())
   name                String
-  nameUk              String?
-  caloriesPer100g     Float
-  proteinPer100g      Float   @default(0)
-  carbsPer100g        Float   @default(0)
-  fatPer100g          Float   @default(0)
-  fiberPer100g        Float   @default(0)
-  sugarPer100g        Float   @default(0)
-  saturatedFatPer100g Float   @default(0)
-  saltPer100g         Float   @default(0)
+  nameUk              String? @map("name_uk")
+  caloriesPer100g     Float   @map("calories_per_100g")
+  proteinPer100g      Float   @default(0) @map("protein_per_100g")
+  carbsPer100g        Float   @default(0) @map("carbs_per_100g")
+  fatPer100g          Float   @default(0) @map("fat_per_100g")
+  fiberPer100g        Float   @default(0) @map("fiber_per_100g")
+  sugarPer100g        Float   @default(0) @map("sugar_per_100g")
+  saturatedFatPer100g Float   @default(0) @map("saturated_fat_per_100g")
+  saltPer100g         Float   @default(0) @map("salt_per_100g")
   barcode             String?
   brand               String?
   category            String?
   source              String  @default("local") // local | openfoodfacts
-  isDefault           Boolean @default(false)
-  isPublic            Boolean @default(true)
+  isDefault           Boolean @default(false) @map("is_default")
+  isPublic            Boolean @default(true) @map("is_public")
 
-  createdById String?
+  createdById String? @map("created_by_id")
   createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   meals MealEntry[]
 
-  @@index([isDefault])
-  @@index([isPublic])
-  @@index([barcode])
+  @@index([isDefault], map: "foods_is_default_idx")
+  @@index([isPublic], map: "foods_is_public_idx")
+  @@index([barcode], map: "foods_barcode_idx")
+  @@map("foods")
 }
 
 model MealEntry {
   id                 String   @id @default(uuid())
-  userId             String
+  userId             String   @map("user_id")
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  foodId             String
+  foodId             String   @map("food_id")
   food               Food     @relation(fields: [foodId], references: [id], onDelete: Restrict)
-  quantityGrams      Float
-  mealDate           String
-  mealType           String // breakfast | lunch | dinner | snack
-  calculatedCalories Float
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  quantityGrams      Float    @map("quantity_grams")
+  mealDate           String   @map("meal_date")
+  mealType           String   @map("meal_type") // breakfast | lunch | dinner | snack
+  calculatedCalories Float    @map("calculated_calories")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
-  @@index([userId, mealDate])
+  @@index([userId, mealDate], map: "meal_entries_user_id_meal_date_idx")
+  @@map("meal_entries")
 }
 
 model DailyTarget {
   id             String @id @default(uuid())
-  userId         String
+  userId         String @map("user_id")
   user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  targetDate     String
-  targetCalories Float
+  targetDate     String @map("target_date")
+  targetCalories Float  @map("target_calories")
 
   // Macronutrient targets (optional): protein/carbs/fat as % of calories, fiber goal in g, salt limit in g
-  proteinPct Float?
-  carbsPct   Float?
-  fatPct     Float?
-  fiberGrams         Float?
-  saltGrams          Float?
-  sugarGrams         Float?
-  saturatedFatGrams  Float?
+  proteinPct Float? @map("protein_pct")
+  carbsPct   Float? @map("carbs_pct")
+  fatPct     Float? @map("fat_pct")
+  fiberGrams         Float? @map("fiber_grams")
+  saltGrams          Float? @map("salt_grams")
+  sugarGrams         Float? @map("sugar_grams")
+  saturatedFatGrams  Float? @map("saturated_fat_grams")
 
   // Target mode per metric: min | exact | max (JSON object, e.g. {"protein":"min","salt":"max"})
   modes              String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([userId, targetDate])
+  @@unique([userId, targetDate], map: "daily_targets_user_id_target_date_key")
+  @@map("daily_targets")
 }
 
 // Written by the audit_row_deletes() trigger on every DELETE against
@@ -106,13 +111,13 @@ model DailyTarget {
 // drift; it is never queried through Prisma by the app.
 model DeleteAudit {
   id              Int       @id @default(autoincrement())
-  tableName       String    @map("tableName")
-  rowCount        Int       @map("rowCount")
-  deletedAt       DateTime  @default(now()) @db.Timestamptz(3) @map("deletedAt")
-  applicationName String?   @map("applicationName")
-  clientAddr      String?   @map("clientAddr")
-  dbUser          String?   @map("dbUser")
-  sessionUser     String?   @map("sessionUser")
+  tableName       String    @map("table_name")
+  rowCount        Int       @map("row_count")
+  deletedAt       DateTime  @default(now()) @db.Timestamptz(3) @map("deleted_at")
+  applicationName String?   @map("application_name")
+  clientAddr      String?   @map("client_addr")
+  dbUser          String?   @map("db_user")
+  sessionUser     String?   @map("session_username")
 
-  @@map("_DeleteAudit")
+  @@map("delete_audit")
 }
