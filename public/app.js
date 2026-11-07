@@ -1214,6 +1214,18 @@ async function loadMeals(date) {
           });
           menu.appendChild(item);
         }
+        if (date !== formatDate(new Date())) {
+          const copyItem = document.createElement('button');
+          copyItem.type = 'button';
+          copyItem.className = 'meal-menu-item';
+          copyItem.setAttribute('role', 'menuitem');
+          copyItem.innerHTML = `<svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>${escapeHtml(t('meals.copyToToday'))}`;
+          copyItem.addEventListener('click', () => {
+            closeMealMenus();
+            copyMealToToday(meal);
+          });
+          menu.appendChild(copyItem);
+        }
         const deleteItem = document.createElement('button');
         deleteItem.type = 'button';
         deleteItem.className = 'meal-menu-item meal-menu-delete';
@@ -1334,6 +1346,53 @@ async function moveMeal(meal, mealType, date) {
     showToast(t('meals.moved'));
     loadSummary(date);
     loadMeals(date);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function copyMealToToday(meal) {
+  const today = formatDate(new Date());
+  try {
+    await api('/meals', {
+      method: 'POST',
+      body: JSON.stringify({
+        foodId: meal.food.id,
+        quantityGrams: meal.quantityGrams,
+        mealDate: today,
+        mealType: meal.mealType,
+      }),
+    });
+    showToast(t('meals.copied'));
+    if ($('#summary-date').value === today) {
+      loadSummary(today);
+      loadMeals(today);
+    }
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function previousDate(date) {
+  const [y, m, d] = date.split('-').map(Number);
+  return formatDate(new Date(Date.UTC(y, m - 1, d - 1)));
+}
+
+async function copyYesterdayMeals() {
+  const date = $('#summary-date').value;
+  const fromDate = previousDate(date);
+  try {
+    const result = await api('/meals/copy', {
+      method: 'POST',
+      body: JSON.stringify({ fromDate, toDate: date }),
+    });
+    if (result.copied > 0) {
+      showToast(t('meals.copiedDay', { count: result.copied }));
+      loadSummary(date);
+      loadMeals(date);
+    } else {
+      showToast(t('meals.copyEmpty'));
+    }
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -1763,6 +1822,8 @@ async function init() {
   $('#summary-prev-day').addEventListener('click', () => shiftSummaryDate(-1));
   $('#summary-next-day').addEventListener('click', () => shiftSummaryDate(1));
 
+  $('#meals-copy-day').addEventListener('click', copyYesterdayMeals);
+
   document.addEventListener('click', (event) => {
     if (!event.target.closest('.meal-menu') && !event.target.closest('.meal-actions-btn')) closeMealMenus();
     if (!event.target.closest('.list-item.actions-visible')) clearVisibleRowActions();
@@ -1886,3 +1947,7 @@ async function init() {
 }
 
 init();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}

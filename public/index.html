@@ -4,7 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#2563eb" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="JoulesTracker" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <title>JoulesTracker</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -237,7 +242,10 @@
             </section>
 
             <section id="meals-section" class="card area-meals">
-              <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10" /><circle cx="19" cy="19" r="2" /></svg><span data-i18n="meals.title">Meals</span></h2>
+              <div class="section-header">
+                <h2><svg class="section-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10" /><circle cx="19" cy="19" r="2" /></svg><span data-i18n="meals.title">Meals</span></h2>
+                <button type="button" id="meals-copy-day" class="btn-icon" data-i18n-aria-label="meals.copyYesterday" data-i18n-title="meals.copyYesterday" aria-label="Copy yesterday's meals" title="Copy yesterday's meals"><svg class="action-icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg></button>
+              </div>
               <div id="meals-list" class="list">
                 <p class="muted" data-i18n="meals.empty">No meals for selected date.</p>
               </div>

@@ -115,6 +115,63 @@ describe('Meal endpoints', () => {
     expect(res.body.mealType).toBe('dinner');
   });
 
+  it('copies all meals from one date to another', async () => {
+    await request(app)
+      .post('/api/v1/meals')
+      .set('Authorization', authHeader)
+      .send({ foodId: food.id, quantityGrams: 150, mealDate: '2026-09-21', mealType: 'lunch' });
+    await request(app)
+      .post('/api/v1/meals')
+      .set('Authorization', authHeader)
+      .send({ foodId: food.id, quantityGrams: 50, mealDate: '2026-09-21', mealType: 'snack' });
+
+    const res = await request(app)
+      .post('/api/v1/meals/copy')
+      .set('Authorization', authHeader)
+      .send({ fromDate: '2026-09-21', toDate: '2026-09-22' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.copied).toBe(2);
+
+    const target = await request(app)
+      .get('/api/v1/meals?date=2026-09-22')
+      .set('Authorization', authHeader);
+
+    expect(target.body.items.length).toBe(2);
+    expect(target.body.totals.calories).toBe(330);
+    expect(target.body.items[0].mealType).toBe('lunch');
+    expect(target.body.items[1].mealType).toBe('snack');
+  });
+
+  it('copy does not touch other users meals', async () => {
+    const other = await registerAndLogin(app);
+    await request(app)
+      .post('/api/v1/meals')
+      .set('Authorization', `Bearer ${other.token}`)
+      .send({ foodId: food.id, quantityGrams: 100, mealDate: '2026-09-21', mealType: 'lunch' });
+
+    const res = await request(app)
+      .post('/api/v1/meals/copy')
+      .set('Authorization', authHeader)
+      .send({ fromDate: '2026-09-21', toDate: '2026-09-22' });
+
+    expect(res.body.copied).toBe(0);
+  });
+
+  it('rejects copy when dates are equal or missing', async () => {
+    const same = await request(app)
+      .post('/api/v1/meals/copy')
+      .set('Authorization', authHeader)
+      .send({ fromDate: '2026-09-21', toDate: '2026-09-21' });
+    expect(same.status).toBe(400);
+
+    const missing = await request(app)
+      .post('/api/v1/meals/copy')
+      .set('Authorization', authHeader)
+      .send({ fromDate: '2026-09-21' });
+    expect(missing.status).toBe(400);
+  });
+
   it('blocks editing another user meal', async () => {
     const other = await registerAndLogin(app);
     const meal = await request(app)

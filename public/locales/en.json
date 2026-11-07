@@ -42,6 +42,10 @@
   "about": {
     "title": "About",
     "changes": {
+      "v050": {
+        "i1": "Meals can be copied between days: copy all of yesterday's meals with one tap, or send a single entry to today from its menu.",
+        "i2": "The app can now be installed on your phone or desktop (PWA) and opens faster thanks to offline caching."
+      },
       "v043": {
         "i1": "Renamed database tables and columns to the standard snake_case convention for easier maintenance."
       },
@@ -221,6 +225,11 @@
     "moved": "Meal moved",
     "updated": "Meal updated",
     "editGrams": "Edit grams",
+    "copyYesterday": "Copy yesterday's meals",
+    "copyToToday": "Copy to today",
+    "copied": "Meal copied to today",
+    "copiedDay": "Copied {{count}} meals",
+    "copyEmpty": "Nothing to copy",
     "entry": "<strong>{{grams}} g</strong> · {{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "groupTotal": "{{kcal}} {{protein}} {{fat}} {{carbs}} · {{fiber}} {{salt}} {{saturated}} {{sugar}}",
     "types": {
