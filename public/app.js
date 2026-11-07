@@ -1685,7 +1685,11 @@ function initMobileNav() {
       const target = document.querySelector(link.hash);
       if (!target) return;
       event.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // scrollIntoView lands at the wrong offset inside the zoomed .container;
+      // compute the target position in visual (zoomed) coordinates instead.
+      const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+      const top = target.getBoundingClientRect().top + window.scrollY - pad;
+      window.scrollTo({ top, behavior: 'smooth' });
       setActive(target.id);
     });
   });
@@ -1781,6 +1785,7 @@ async function init() {
   const setSettingsOpen = async (open) => {
     $('#settings-toggle').setAttribute('aria-expanded', String(open));
     $('#settings-section').classList.toggle('hidden', !open);
+    $('#mobile-nav').classList.toggle('hidden', open || !currentUserEmail);
     if (open) {
       await loadProfile();
       await loadTarget(formatDate(new Date()));

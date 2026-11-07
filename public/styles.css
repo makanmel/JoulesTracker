@@ -16,7 +16,7 @@
   --radius: 12px;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   --touch-target: 44px;
-  --mobile-nav-height: 32px;
+  --mobile-nav-height: 48px;
 }
 
 * {
@@ -1560,7 +1560,9 @@ button:disabled {
 
 @media (max-width: 767px) {
   .container {
-    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 16px);
+    /* .container is zoomed 0.75 while the fixed nav is not, so reserve the
+       real bar height divided by the zoom factor. */
+    padding-bottom: calc((var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px)) * 1.34 + 16px);
   }
 
   .summary-grid {
@@ -1616,7 +1618,7 @@ button:disabled {
   .toast {
     left: 16px;
     right: 16px;
-    bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 12px);
+    bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 8px);
     max-width: none;
     text-align: center;
   }
@@ -1649,11 +1651,8 @@ button:disabled {
     display: flex;
     justify-content: space-around;
     align-items: stretch;
-    /* Unzoomed sibling of .container: scale values to the previous rendered
-       size (var(--mobile-nav-height) is applied inside the zoomed container
-       for padding-bottom, so it keeps its 32px value there). */
-    min-height: calc(var(--mobile-nav-height) * 0.75);
-    padding: 2px 4px calc(2px + env(safe-area-inset-bottom, 0px));
+    min-height: var(--mobile-nav-height);
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
     background: var(--card);
     backdrop-filter: blur(var(--card-blur));
     border-top: 1px solid var(--border);
@@ -1663,13 +1662,13 @@ button:disabled {
   .mobile-nav-link {
     flex: 1 1 0;
     min-width: calc(var(--touch-target) * 0.75);
-    min-height: calc((var(--mobile-nav-height) - 4px) * 0.75);
+    min-height: calc(var(--mobile-nav-height) - 8px);
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 6px;
     padding: 3px 2px;
-    font-size: 0.5625rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     color: var(--muted);
     text-decoration: none;
