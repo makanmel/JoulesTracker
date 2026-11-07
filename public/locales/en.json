@@ -42,6 +42,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v051": {
+        "i1": "Fixed the bottom navigation on mobile: buttons scroll to the right section and are easier to tap."
+      },
       "v050": {
         "i1": "Meals can be copied between days: copy all of yesterday's meals with one tap, or send a single entry to today from its menu.",
         "i2": "The app can now be installed on your phone or desktop (PWA) and opens faster thanks to offline caching."
