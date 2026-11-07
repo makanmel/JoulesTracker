@@ -43,6 +43,13 @@ export const mealSchema = z.object({
 
 export const mealUpdateSchema = mealSchema.partial();
 
+export const mealCopySchema = z
+  .object({
+    fromDate: z.string().regex(dateRegex),
+    toDate: z.string().regex(dateRegex),
+  })
+  .refine((value) => value.fromDate !== value.toDate, 'fromDate and toDate must differ');
+
 const optionalNonNegative = z.number().nonnegative().nullish();
 
 const targetMode = z.enum(['min', 'exact', 'max']);

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
-import { parseRequest, mealSchema, mealUpdateSchema } from '../lib/validation.js';
+import { parseRequest, mealSchema, mealUpdateSchema, mealCopySchema } from '../lib/validation.js';
 import { calculateCalories } from '../lib/calculations.js';
 import { AppError } from '../lib/errors.js';
 
@@ -105,6 +105,32 @@ router.post('/', async (req, res, next) => {
       include: { food: true },
     });
     res.status(201).json(mealItemResponse(meal));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/copy', async (req, res, next) => {
+  try {
+    const data = parseRequest(mealCopySchema, req.body);
+    const source = await prisma.mealEntry.findMany({
+      where: { userId: req.user.id, mealDate: data.fromDate },
+    });
+    if (source.length === 0) {
+      res.status(201).json({ copied: 0 });
+      return;
+    }
+    const result = await prisma.mealEntry.createMany({
+      data: source.map((meal) => ({
+        userId: req.user.id,
+        foodId: meal.foodId,
+        quantityGrams: meal.quantityGrams,
+        mealDate: data.toDate,
+        mealType: meal.mealType,
+        calculatedCalories: meal.calculatedCalories,
+      })),
+    });
+    res.status(201).json({ copied: result.count });
   } catch (err) {
     next(err);
   }
