@@ -1688,8 +1688,9 @@ function initMobileNav() {
       // scrollIntoView lands at the wrong offset inside the zoomed .container;
       // compute the target position in visual (zoomed) coordinates instead.
       const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
-      const top = target.getBoundingClientRect().top + window.scrollY - pad;
+      const top = target.getBoundingClientRect().top + (window.scrollY || document.body.scrollTop) - pad;
       window.scrollTo({ top, behavior: 'smooth' });
+      document.body.scrollTo({ top, behavior: 'smooth' }); // no-op unless body is the scroller
       setActive(target.id);
     });
   });

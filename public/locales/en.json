@@ -42,6 +42,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v052": {
+        "i1": "App updates now load right away — the offline cache no longer serves outdated code after a release."
+      },
       "v051": {
         "i1": "Fixed the bottom navigation on mobile: buttons scroll to the right section and are easier to tap."
       },
