@@ -1,9 +1,10 @@
 // JoulesTracker service worker.
-// Precaches the app shell so it opens offline; serves shell requests
-// stale-while-revalidate so updates arrive on the next load.
-// API calls are network-only — meal data must never come from cache.
+// Precaches the app shell so it opens offline; shell requests go
+// network-first with cache fallback so deploys show up immediately
+// (stale-while-revalidate served outdated code on the load right after
+// a release). API calls are network-only — meal data never from cache.
 
-const CACHE = 'joules-shell-v1';
+const CACHE = 'joules-shell-v2';
 const SHELL = [
   '/',
   '/index.html',
@@ -57,18 +58,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Same-origin statics: network-first, fall back to cache when offline.
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request))
   );
 });
