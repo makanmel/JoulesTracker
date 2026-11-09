@@ -35,6 +35,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v056": {
+        "i1": "The “server is waking up” banner no longer flashes during brief network hiccups — it now appears only when the server is really unreachable."
+      },
       "v055": {
         "i1": "The installed app now runs full screen without the system status bar."
       },
