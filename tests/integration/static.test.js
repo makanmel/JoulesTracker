@@ -61,26 +61,6 @@ describe('Static frontend', () => {
     expect(viewport[1]).toContain('maximum-scale=1');
   });
 
-  it('serves a bottom navigation linking to every dashboard section', async () => {
-    const [page, script] = await Promise.all([request(app).get('/index.html'), request(app).get('/app.js')]);
-
-    expect(page.text).toContain('id="mobile-nav"');
-    // The nav must stay outside the zoomed .container: zoom makes an element
-    // the containing block for position:fixed descendants, breaking viewport
-    // anchoring on mobile browsers.
-    expect(page.text).toMatch(/<\/main>\s*<\/div>\s*(<!--.*?-->\s*)?<nav id="mobile-nav" class="mobile-nav hidden"/s);
-    expect(page.text).not.toMatch(/<section id="dashboard-section"[^>]*>\s*<nav id="mobile-nav"/);
-    const hrefs = [...page.text.matchAll(/class="mobile-nav-link"[^>]*href="#([^"]+)"|href="#([^"]+)" class="mobile-nav-link"/g)].map(
-      (m) => m[1] || m[2],
-    );
-    expect(hrefs).toEqual(['summary-section', 'meals-section', 'add-meal-section', 'foods-section']);
-    for (const id of hrefs) {
-      expect(page.text).toContain(`id="${id}"`);
-    }
-    expect(script.text).toContain("$('#mobile-nav').classList.remove('hidden')");
-    expect(script.text).toContain("$('#mobile-nav').classList.add('hidden')");
-  });
-
   it('keeps zoom on .container and every fixed overlay outside it', async () => {
     const [page, cssRes] = await Promise.all([request(app).get('/index.html'), request(app).get('/styles.css')]);
     const css = cssRes.text.replace(/\r\n/g, '\n');
@@ -91,7 +71,7 @@ describe('Static frontend', () => {
     const mainEnd = page.text.indexOf('</main>');
     const containerEnd = page.text.indexOf('</div>', mainEnd);
     const containerBody = page.text.slice(page.text.indexOf('<div class="container">'), containerEnd);
-    for (const id of ['mobile-nav', 'toast', 'server-notice', 'voice-listening']) {
+    for (const id of ['toast', 'server-notice', 'voice-listening']) {
       expect(containerBody).not.toContain(`id="${id}"`);
       expect(page.text).toContain(`id="${id}"`);
     }
@@ -104,8 +84,6 @@ describe('Static frontend', () => {
     expect(res.status).toBe(200);
     expect(css).toContain('--touch-target: 44px;');
     expect(css).toContain('@media (max-width: 767px)');
-    expect(css).toMatch(/\.mobile-nav \{\n\s+display: none;/);
-    expect(css).toMatch(/\.mobile-nav \{\n\s+position: fixed;/);
     expect(css).toMatch(/button \{[^}]*min-height: var\(--touch-target\);/);
     expect(css).toMatch(/input,\nselect \{[^}]*min-height: var\(--touch-target\);/);
     expect(css).toMatch(/html,\nbody \{[^}]*overflow-x: hidden;/);

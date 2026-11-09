@@ -45,20 +45,31 @@ function readAndClearAuthParams() {
   const url = new URL(window.location.href);
   const authCode = url.searchParams.get('authCode');
   const authError = url.searchParams.get('authError');
-  const hasParams = authCode || authError || url.searchParams.has('email') || url.searchParams.has('password');
+  const authHandoff = url.searchParams.get('handoff');
+  const hasParams = authCode || authError || authHandoff || url.searchParams.has('email') || url.searchParams.has('password');
   if (hasParams) {
     url.searchParams.delete('email');
     url.searchParams.delete('password');
     url.searchParams.delete('authCode');
     url.searchParams.delete('authError');
+    url.searchParams.delete('handoff');
     window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
   }
-  return { authCode, authError };
+  return { authCode, authError, authHandoff };
 }
 
 const authParams = readAndClearAuthParams();
 
 let accessToken = localStorage.getItem('joulesToken');
+
+// Sign-in may complete in a browser tab while the installed app keeps running
+// logged-out in its own window. Same-origin storage is shared, so when this
+// window becomes visible again with a changed token, reload to re-init.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && localStorage.getItem('joulesToken') !== accessToken) {
+    window.location.reload();
+  }
+});
 let currentUserEmail = null;
 let onboarding = null;
 let googleSignIn = null;
@@ -489,7 +500,6 @@ function showDashboard(email) {
   currentUserEmail = email;
   authSection.classList.add('hidden');
   dashboardSection.classList.remove('hidden');
-  $('#mobile-nav').classList.remove('hidden');
   $('#user-area').classList.remove('hidden');
   $('#logout-btn').classList.remove('hidden');
   renderCurrentUser();
@@ -508,7 +518,6 @@ function showAuth() {
   currentUserEmail = null;
   authSection.classList.remove('hidden');
   dashboardSection.classList.add('hidden');
-  $('#mobile-nav').classList.add('hidden');
   $('#user-area').classList.add('hidden');
   $('#logout-btn').classList.add('hidden');
   clearInterval(userStatsTimer);
@@ -1685,40 +1694,6 @@ function refreshDashboard() {
   loadMeals(date);
 }
 
-function initMobileNav() {
-  const links = [...document.querySelectorAll('.mobile-nav-link')];
-  if (!links.length) return;
-  const setActive = (id) => links.forEach((link) => link.classList.toggle('active', link.hash === `#${id}`));
-
-  links.forEach((link) => {
-    link.addEventListener('click', (event) => {
-      const target = document.querySelector(link.hash);
-      if (!target) return;
-      event.preventDefault();
-      // scrollIntoView lands at the wrong offset inside the zoomed .container;
-      // compute the target position in visual (zoomed) coordinates instead.
-      const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
-      const top = target.getBoundingClientRect().top + (window.scrollY || document.body.scrollTop) - pad;
-      window.scrollTo({ top, behavior: 'smooth' });
-      document.body.scrollTo({ top, behavior: 'smooth' }); // no-op unless body is the scroller
-      setActive(target.id);
-    });
-  });
-
-  if (!('IntersectionObserver' in window)) return;
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-      if (visible.length) setActive(visible[0].target.id);
-    },
-    { rootMargin: '-20% 0px -60% 0px', threshold: [0, 0.25, 0.5] },
-  );
-  links.forEach((link) => {
-    const target = document.querySelector(link.hash);
-    if (target) observer.observe(target);
-  });
-}
-
 function renderAbout(version) {
   const versionEl = $('#about-version');
   if (versionEl) versionEl.textContent = version;
@@ -1759,10 +1734,9 @@ function startKeepAlive() {
 
 async function init() {
   initTheme();
-  initMobileNav();
   startKeepAlive();
   await initI18n();
-  googleSignIn = initGoogleSignIn({ bootCode: authParams.authCode, bootError: authParams.authError, onSuccess: (data) => {
+  googleSignIn = initGoogleSignIn({ bootCode: authParams.authCode, bootError: authParams.authError, bootHandoff: authParams.authHandoff, onSuccess: (data) => {
     setToken(data.accessToken);
     showDashboard(data.email);
     showToast(t('auth.loggedIn'));
@@ -1796,7 +1770,6 @@ async function init() {
   const setSettingsOpen = async (open) => {
     $('#settings-toggle').setAttribute('aria-expanded', String(open));
     $('#settings-section').classList.toggle('hidden', !open);
-    $('#mobile-nav').classList.toggle('hidden', open || !currentUserEmail);
     if (open) {
       await loadProfile();
       await loadTarget(formatDate(new Date()));

@@ -2,7 +2,7 @@ import { t, onLanguageChange } from './i18n.js';
 
 const GOOGLE_HINT_KEY = 'joulesGoogleHint';
 
-export function initGoogleSignIn({ onSuccess, bootCode, bootError }) {
+export function initGoogleSignIn({ onSuccess, bootCode, bootError, bootHandoff }) {
   const get = (id) => document.getElementById(`google-${id}`);
   const fallback = document.getElementById('email-auth');
   // Installed PWAs must use redirect mode: the popup relies on postMessage to
@@ -30,14 +30,27 @@ export function initGoogleSignIn({ onSuccess, bootCode, bootError }) {
     fallback.open = true;
     get('retry').hidden = false;
   };
+  // An intent:// URL lets Android dispatch the link to the installed app
+  // (plain https links just navigate inside the current browser).
+  // handoff=1 marks round-trips back into a browser tab so we don't refire.
+  const intentUrl = (code) =>
+    `intent://${window.location.host}/?authCode=${encodeURIComponent(code)}&handoff=1#Intent;scheme=https;end`;
+  const fireIntent = (url) => {
+    // Hidden iframe navigation dispatches the intent where supported and
+    // fails silently elsewhere (unlike assigning window.location).
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = url;
+    document.body?.appendChild(iframe);
+    setTimeout(() => iframe.remove(), 10000);
+  };
   const showHandoff = (code) => {
     const handoff = get('handoff');
     const link = get('handoff-link');
     if (!handoff || !link || !window.location) return;
-    const target = new URL('/', window.location.origin);
-    target.searchParams.set('authCode', code);
-    link.href = target.toString();
+    link.href = intentUrl(code);
     handoff.hidden = false;
+    if (!bootHandoff) fireIntent(intentUrl(code));
   };
   const exchange = async (auth, password) => {
     if (submitting) return;
@@ -68,8 +81,8 @@ export function initGoogleSignIn({ onSuccess, bootCode, bootError }) {
     clearPending();
     if (result.body.email) localStorage.setItem(GOOGLE_HINT_KEY, result.body.email);
     status('auth.googleReady');
-    // A redirect sign-in finishes in the browser tab; offer a link that carries
-    // the session into the installed app (separate storage on real WebAPKs).
+    // A redirect sign-in finishes in the browser tab; carry the session into
+    // the installed app via an intent link (separate storage on real WebAPKs).
     if (result.body.handoffCode && !standalone()) showHandoff(result.body.handoffCode);
     onSuccess(result.body);
   };
