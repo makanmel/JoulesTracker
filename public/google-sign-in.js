@@ -2,13 +2,16 @@ import { t, onLanguageChange } from './i18n.js';
 
 const GOOGLE_HINT_KEY = 'joulesGoogleHint';
 
-export function initGoogleSignIn({ onSuccess }) {
+export function initGoogleSignIn({ onSuccess, bootCode, bootError }) {
   const get = (id) => document.getElementById(`google-${id}`);
   const fallback = document.getElementById('email-auth');
+  // Installed PWAs must use redirect mode: the popup relies on postMessage to
+  // window.opener, which doesn't exist when the OS opens sign-in in a browser.
+  const standalone = () => Boolean(window.matchMedia?.('(display-mode: standalone)').matches);
   let config = null;
   let preparing = null;
   let scriptPromise = null;
-  let pendingCredential = null;
+  let pendingAuth = null; // {credential} from the popup flow or {code} from a redirect round-trip
   let pendingExpiry = null;
   let submitting = false;
   let statusKey = 'auth.googleLoading';
@@ -18,7 +21,7 @@ export function initGoogleSignIn({ onSuccess }) {
   };
   const clearPending = () => {
     clearTimeout(pendingExpiry);
-    pendingCredential = null;
+    pendingAuth = null;
     get('link-form').reset();
     get('link-form').hidden = true;
   };
@@ -27,7 +30,16 @@ export function initGoogleSignIn({ onSuccess }) {
     fallback.open = true;
     get('retry').hidden = false;
   };
-  const exchange = async (credential, password) => {
+  const showHandoff = (code) => {
+    const handoff = get('handoff');
+    const link = get('handoff-link');
+    if (!handoff || !link || !window.location) return;
+    const target = new URL('/', window.location.origin);
+    target.searchParams.set('authCode', code);
+    link.href = target.toString();
+    handoff.hidden = false;
+  };
+  const exchange = async (auth, password) => {
     if (submitting) return;
     submitting = true;
     get('link-submit').disabled = true;
@@ -35,13 +47,13 @@ export function initGoogleSignIn({ onSuccess }) {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ credential, ...(password ? { password } : {}) }),
+      body: JSON.stringify({ ...auth, ...(password ? { password } : {}) }),
     }).then(async (res) => ({ ok: res.ok, status: res.status, body: await res.json() })).catch(() => null);
     submitting = false;
     get('link-submit').disabled = false;
     if (result?.body.code === 'GOOGLE_LINK_REQUIRED') {
       clearPending();
-      pendingCredential = credential;
+      pendingAuth = result.body.linkCode ? { code: result.body.linkCode } : auth;
       pendingExpiry = setTimeout(() => { clearPending(); fail('auth.googleExpired'); }, 10 * 60 * 1000);
       get('link-email').textContent = result.body.email;
       get('link-form').hidden = false;
@@ -56,6 +68,9 @@ export function initGoogleSignIn({ onSuccess }) {
     clearPending();
     if (result.body.email) localStorage.setItem(GOOGLE_HINT_KEY, result.body.email);
     status('auth.googleReady');
+    // A redirect sign-in finishes in the browser tab; offer a link that carries
+    // the session into the installed app (separate storage on real WebAPKs).
+    if (result.body.handoffCode && !standalone()) showHandoff(result.body.handoffCode);
     onSuccess(result.body);
   };
   const loadScript = () => {
@@ -78,9 +93,12 @@ export function initGoogleSignIn({ onSuccess }) {
     window.google.accounts.id.initialize({
       client_id: config.clientId,
       nonce: config.nonce,
-      auto_select: true,
+      // auto_select would trigger an immediate redirect loop in redirect mode.
+      auto_select: !standalone(),
+      ux_mode: standalone() ? 'redirect' : 'popup',
+      login_uri: standalone() ? `${window.location.origin}/api/v1/auth/google/redirect` : undefined,
       login_hint: localStorage.getItem(GOOGLE_HINT_KEY) || undefined,
-      callback: ({ credential }) => exchange(credential),
+      callback: ({ credential }) => exchange({ credential }),
     });
     window.google.accounts.id.renderButton(get('button'), {
       theme: 'outline', size: 'large', text: 'continue_with', shape: 'rectangular',
@@ -109,11 +127,13 @@ export function initGoogleSignIn({ onSuccess }) {
   };
   get('link-form').addEventListener('submit', (event) => {
     event.preventDefault();
-    if (pendingCredential && !submitting) exchange(pendingCredential, get('link-password').value);
+    if (pendingAuth && !submitting) exchange(pendingAuth, get('link-password').value);
   });
   get('retry').addEventListener('click', refresh);
   onLanguageChange(() => { status(statusKey); renderButton(); });
   refresh();
+  if (bootCode) exchange({ code: bootCode });
+  else if (bootError) fail('auth.googleFailed');
   return {
     refresh,
     clearPending,

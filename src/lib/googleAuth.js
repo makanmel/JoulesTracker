@@ -22,16 +22,22 @@ export function readGoogleNonce(req) {
   return req.headers.cookie?.split(';').map((part) => part.trim()).find((part) => part.startsWith(`${GOOGLE_NONCE_COOKIE}=`))?.slice(GOOGLE_NONCE_COOKIE.length + 1);
 }
 
-export async function verifyGoogleCredential(credential, nonce, clientId) {
-  if (!nonce || !/^[a-f0-9]{64}$/.test(nonce) || !clientId) throw new AppError('Google sign-in session expired. Please retry.', 401);
+export async function verifyGoogleCredential(credential, nonce, clientId, { allowMissingCookie = false } = {}) {
+  if ((!nonce && !allowMissingCookie) || (nonce && !/^[a-f0-9]{64}$/.test(nonce)) || !clientId) {
+    throw new AppError('Google sign-in session expired. Please retry.', 401);
+  }
   const ticket = await client.verifyIdToken({ idToken: credential, audience: clientId }).catch(() => null);
   const payload = ticket?.getPayload();
   const tokenNonce = typeof payload?.nonce === 'string' ? payload.nonce : '';
   const challenge = await Promise.resolve().then(() => jwt.verify(tokenNonce, secret)).catch(() => null);
   if (challenge?.purpose !== 'google-login') throw new AppError('Google sign-in session expired. Please retry.', 401);
-  const expected = Buffer.from(nonce);
-  const actual = Buffer.from(createHash('sha256').update(tokenNonce).digest('hex'));
-  if (!payload || actual.length !== expected.length || !timingSafeEqual(actual, expected)
+  // Popup mode double-checks the cookie (SameSite=strict survives same-site XHR);
+  // redirect mode can't — Google's POST is cross-site, so the signed nonce stands alone.
+  const nonceMatches = !nonce || timingSafeEqual(
+    Buffer.from(nonce),
+    Buffer.from(createHash('sha256').update(tokenNonce).digest('hex'))
+  );
+  if (!payload || !nonceMatches
     || payload.email_verified !== true || !payload.sub || typeof payload.sub !== 'string'
     || !z.string().email().max(254).safeParse(payload.email).success) {
     throw new AppError('Unable to verify Google sign-in. Please retry.', 401);

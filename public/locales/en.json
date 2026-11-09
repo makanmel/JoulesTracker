@@ -42,6 +42,11 @@
   "about": {
     "title": "About",
     "changes": {
+      "v053": {
+        "i1": "Google sign-in now finishes inside the installed app — after choosing your account you are signed in.",
+        "i2": "The bottom bar no longer shows two highlighted tabs after tapping a link.",
+        "i3": "Photo-scan results put the food name on its own line above the checkbox and portion field."
+      },
       "v052": {
         "i1": "App updates now load right away — the offline cache no longer serves outdated code after a release."
       },
@@ -203,6 +208,7 @@
     "googleLink": "Connect Google and sign in",
     "googleLinkFailed": "Password confirmation failed or the Google session expired. Check your password, or retry Google sign-in.",
     "googleExpired": "Your Google sign-in session expired. Please retry.",
+    "openInApp": "Open in the JoulesTracker app",
     "emailBackup": "Use email and password instead"
   },
   "summary": {

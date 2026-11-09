@@ -41,16 +41,22 @@ const tabRegister = $('#tab-register');
 const toast = $('#toast');
 const serverNotice = $('#server-notice');
 
-function removeCredentialsFromUrl() {
+function readAndClearAuthParams() {
   const url = new URL(window.location.href);
-  const containedCredentials = url.searchParams.has('email') || url.searchParams.has('password');
-  if (!containedCredentials) return;
-  url.searchParams.delete('email');
-  url.searchParams.delete('password');
-  window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  const authCode = url.searchParams.get('authCode');
+  const authError = url.searchParams.get('authError');
+  const hasParams = authCode || authError || url.searchParams.has('email') || url.searchParams.has('password');
+  if (hasParams) {
+    url.searchParams.delete('email');
+    url.searchParams.delete('password');
+    url.searchParams.delete('authCode');
+    url.searchParams.delete('authError');
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  }
+  return { authCode, authError };
 }
 
-removeCredentialsFromUrl();
+const authParams = readAndClearAuthParams();
 
 let accessToken = localStorage.getItem('joulesToken');
 let currentUserEmail = null;
@@ -199,16 +205,19 @@ function renderPhotoScanItems() {
     const li = document.createElement('li');
     li.className = 'list-item photo-scan-item';
 
+    const name = document.createElement('span');
+    name.className = 'photo-scan-item-name';
+    name.textContent = foodName(entry.food);
+
+    const controls = document.createElement('div');
+    controls.className = 'photo-scan-item-controls';
     const label = document.createElement('label');
     label.className = 'photo-scan-item-label';
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = true;
     checkbox.dataset.index = index;
-    const name = document.createElement('span');
-    name.className = 'photo-scan-item-name';
-    name.textContent = foodName(entry.food);
-    label.append(checkbox, name);
+    label.append(checkbox);
 
     const gramsInput = document.createElement('input');
     gramsInput.type = 'text';
@@ -226,7 +235,8 @@ function renderPhotoScanItems() {
       kcal.textContent = photoScanKcal(entry.food, parseFloat(gramsInput.value));
     });
 
-    li.append(label, gramsInput, kcal);
+    controls.append(label, gramsInput, kcal);
+    li.append(name, controls);
     list.appendChild(li);
   });
 }
@@ -1752,7 +1762,7 @@ async function init() {
   initMobileNav();
   startKeepAlive();
   await initI18n();
-  googleSignIn = initGoogleSignIn({ onSuccess: (data) => {
+  googleSignIn = initGoogleSignIn({ bootCode: authParams.authCode, bootError: authParams.authError, onSuccess: (data) => {
     setToken(data.accessToken);
     showDashboard(data.email);
     showToast(t('auth.loggedIn'));
