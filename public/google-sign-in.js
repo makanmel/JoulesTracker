@@ -7,7 +7,10 @@ export function initGoogleSignIn({ onSuccess, bootCode, bootError, bootHandoff }
   const fallback = document.getElementById('email-auth');
   // Installed PWAs must use redirect mode: the popup relies on postMessage to
   // window.opener, which doesn't exist when the OS opens sign-in in a browser.
-  const standalone = () => Boolean(window.matchMedia?.('(display-mode: standalone)').matches);
+  const standalone = () => Boolean(
+    window.matchMedia?.('(display-mode: standalone)').matches
+    || window.matchMedia?.('(display-mode: fullscreen)').matches
+  );
   let config = null;
   let preparing = null;
   let scriptPromise = null;
