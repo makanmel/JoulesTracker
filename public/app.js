@@ -114,11 +114,13 @@ function finishServerNotice() {
 }
 
 // fetch rejects (TypeError) when the Render instance is cold-starting; retry until it wakes.
-// The notice is shown only on actual network failures — slow AI requests must not trigger it.
+// A single failure is usually just a transient network blip (phone wake,
+// wifi/cell handoff) — the server is likely warm thanks to the keep-alive, so
+// only show the notice once the first retry has also failed.
 function fetchWithRetry(url, options, attempt = 0) {
   return fetch(url, options).catch(async (err) => {
     if (err instanceof TypeError && attempt < WAKE_RETRY_LIMIT) {
-      serverNotice.classList.remove('hidden');
+      if (attempt >= 1) serverNotice.classList.remove('hidden');
       await sleep(WAKE_RETRY_DELAY_MS);
       return fetchWithRetry(url, options, attempt + 1);
     }
