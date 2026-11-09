@@ -47,7 +47,10 @@ function readAndClearAuthParams() {
   const authError = url.searchParams.get('authError');
   const hasParams = authCode || authError || url.searchParams.has('email') || url.searchParams.has('password');
   if (hasParams) {
-    ['email', 'password', 'authCode', 'authError'].forEach((key) => url.searchParams.delete(key));
+    url.searchParams.delete('email');
+    url.searchParams.delete('password');
+    url.searchParams.delete('authCode');
+    url.searchParams.delete('authError');
     window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
   }
   return { authCode, authError };
