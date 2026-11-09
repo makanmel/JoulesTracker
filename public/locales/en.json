@@ -27,13 +27,6 @@
     "serverWaking": "The server is waking up, please wait…",
     "usersStats": "{{total}} users · {{online}} online"
   },
-  "nav": {
-    "sections": "Sections",
-    "summary": "Summary",
-    "meals": "Meals",
-    "addMeal": "Add",
-    "foods": "Foods"
-  },
   "settings": {
     "title": "Settings",
     "theme": "Theme",
@@ -42,6 +35,10 @@
   "about": {
     "title": "About",
     "changes": {
+      "v054": {
+        "i1": "After signing in with Google, the phone now offers to reopen the installed app — and when you return to the app it logs in by itself.",
+        "i2": "The bottom navigation bar was removed on mobile."
+      },
       "v053": {
         "i1": "Google sign-in now finishes inside the installed app — after choosing your account you are signed in.",
         "i2": "The bottom bar no longer shows two highlighted tabs after tapping a link.",
