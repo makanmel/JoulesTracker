@@ -9,7 +9,7 @@ const exists = (path) => existsSync(new URL(`../public/${path}`, import.meta.url
 test('manifest is valid and installable', () => {
   const manifest = JSON.parse(read('manifest.webmanifest'));
   assert.equal(manifest.name, 'JoulesTracker');
-  assert.equal(manifest.display, 'standalone');
+  assert.equal(manifest.display, 'fullscreen');
   assert.equal(manifest.start_url, '/');
   assert.equal(manifest.scope, '/');
   const pngIcons = manifest.icons.filter((icon) => icon.type === 'image/png');
