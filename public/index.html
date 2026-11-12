@@ -346,6 +346,13 @@
                 <div id="scanner-region" class="scanner-region"></div>
                 <button type="button" id="scanner-close" class="btn-secondary" data-i18n="foods.cancel">Cancel</button>
               </dialog>
+              <dialog id="camera-capture" class="scanner" aria-label="Take photo" data-i18n-aria-label="addMeal.takePhoto">
+                <div class="scanner-region"><video id="camera-video" autoplay playsinline muted></video></div>
+                <div class="photo-scan-actions">
+                  <button type="button" id="camera-cancel" class="btn-secondary" data-i18n="foods.cancel">Cancel</button>
+                  <button type="button" id="camera-shutter" class="btn-primary" data-i18n="photoScan.shutter">Take photo</button>
+                </div>
+              </dialog>
               <dialog id="photo-scan-modal" class="scanner photo-modal" aria-label="Recognize photo" data-i18n-aria-label="photoScan.title">
                 <img id="photo-scan-preview" class="photo-scan-preview" alt="" />
                 <p id="photo-scan-status" class="muted" data-i18n="photoScan.analyzing">Analyzing photo…</p>

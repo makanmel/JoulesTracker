@@ -204,6 +204,7 @@ function resizeImage(file, maxWidth, quality) {
 
 let photoScanAbort = null;
 let photoScanItems = [];
+let photoCameraStream = null;
 
 function photoScanKcal(food, grams) {
   if (food.caloriesPer100g == null || !(grams > 0)) return '';
@@ -375,6 +376,57 @@ async function handleScanPhoto(file) {
     photoScanAbort = null;
     if (modal.open) modal.close();
   }
+}
+
+// In-page camera capture: getUserMedia keeps the photo flow inside the browser.
+// The capture="environment" file input hands off to the native camera app, and
+// on low-RAM phones the OS kills the tab — the page reloads and the meal is lost.
+function releasePhotoCameraStream() {
+  photoCameraStream?.getTracks().forEach((track) => track.stop());
+  photoCameraStream = null;
+  const video = $('#camera-video');
+  if (video) video.srcObject = null;
+}
+
+function stopPhotoCamera() {
+  releasePhotoCameraStream();
+  const dialog = $('#camera-capture');
+  if (dialog.open) dialog.close();
+}
+
+async function openPhotoCamera() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    $('#scan-camera-input').click();
+    return;
+  }
+  const stream = await navigator.mediaDevices
+    .getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .catch(() => null);
+  if (!stream) {
+    showToast(t('foods.scanDenied'), 'error');
+    return;
+  }
+  photoCameraStream = stream;
+  const video = $('#camera-video');
+  video.srcObject = stream;
+  video.play().catch(() => {});
+  const dialog = $('#camera-capture');
+  if (!dialog.open) dialog.showModal();
+}
+
+function capturePhotoFrame() {
+  const video = $('#camera-video');
+  if (!video.videoWidth) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+    stopPhotoCamera();
+    handleScanPhoto(file);
+  }, 'image/jpeg', 0.95);
 }
 
 function formatDate(date) {
@@ -1910,7 +1962,7 @@ async function init() {
   $('#barcode-form').addEventListener('submit', handleBarcodeLookup);
   $('#barcode-input').addEventListener('input', debounce(lookupBarcode, SEARCH_DEBOUNCE_MS));
   $('#scan-barcode-btn').addEventListener('click', openBarcodeScanner);
-  $('#scan-camera-btn').addEventListener('click', () => $('#scan-camera-input').click());
+  $('#scan-camera-btn').addEventListener('click', openPhotoCamera);
   $('#scan-photo-btn').addEventListener('click', () => $('#scan-photo-input').click());
   ['#scan-camera-input', '#scan-photo-input'].forEach((selector) => {
     $(selector).addEventListener('change', (event) => {
@@ -1919,6 +1971,9 @@ async function init() {
       if (file) handleScanPhoto(file);
     });
   });
+  $('#camera-shutter').addEventListener('click', capturePhotoFrame);
+  $('#camera-cancel').addEventListener('click', stopPhotoCamera);
+  $('#camera-capture').addEventListener('close', releasePhotoCameraStream);
   $('#scanner-close').addEventListener('click', stopBarcodeScanner);
   $('#barcode-scanner').addEventListener('close', () => {
     const scanner = html5QrScanner;
