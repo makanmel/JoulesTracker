@@ -399,6 +399,24 @@ function closeMealMenus() {
   $$('.meal-actions-btn').forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
 }
 
+// Cards (overflow:hidden) and scrollable lists clip absolutely-positioned
+// menus, so flip the menu upward when it would overflow their bottom edge —
+// the old "last row" check missed mid-list rows near the card bottom.
+function openRowMenu(menu, rowEl, btn) {
+  const opening = menu.classList.contains('hidden');
+  closeMealMenus();
+  if (!opening) return;
+  menu.classList.remove('hidden');
+  const card = rowEl.closest('.card');
+  const list = rowEl.closest('.list');
+  let bottom = card ? card.getBoundingClientRect().bottom : Infinity;
+  if (list && getComputedStyle(list).overflowY !== 'visible') {
+    bottom = Math.min(bottom, list.getBoundingClientRect().bottom);
+  }
+  menu.classList.toggle('meal-menu-up', menu.getBoundingClientRect().bottom > bottom);
+  btn.setAttribute('aria-expanded', 'true');
+}
+
 function clearVisibleRowActions(except = null) {
   $$('.list-item.actions-visible').forEach((el) => {
     if (el !== except) el.classList.remove('actions-visible');
@@ -658,11 +676,7 @@ async function loadFoods(query = '') {
       });
       actionsBtn.addEventListener('click', (event) => {
         event.stopPropagation();
-        const opening = menu.classList.contains('hidden');
-        closeMealMenus();
-        menu.classList.toggle('meal-menu-up', !li.nextElementSibling);
-        menu.classList.toggle('hidden', !opening);
-        actionsBtn.setAttribute('aria-expanded', String(opening));
+        openRowMenu(menu, li, actionsBtn);
       });
       list.appendChild(li);
     });
@@ -1259,11 +1273,7 @@ async function loadMeals(date) {
         menu.appendChild(deleteItem);
         actionsBtn.addEventListener('click', (event) => {
           event.stopPropagation();
-          const opening = menu.classList.contains('hidden');
-          closeMealMenus();
-          menu.classList.toggle('meal-menu-up', !div.nextElementSibling);
-          menu.classList.toggle('hidden', !opening);
-          actionsBtn.setAttribute('aria-expanded', String(opening));
+          openRowMenu(menu, div, actionsBtn);
         });
         const entryBtn = div.querySelector('.meal-entry');
         entryBtn.addEventListener('click', () => startMealGramsEdit(meal, entryBtn, date));

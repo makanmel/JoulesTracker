@@ -35,6 +35,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v057": {
+        "i1": "Meal and food menus no longer get cut off at the card edge — they now open upward when there isn't room below, so Delete is always reachable."
+      },
       "v056": {
         "i1": "The “server is waking up” banner no longer flashes during brief network hiccups — it now appears only when the server is really unreachable."
       },
