@@ -386,6 +386,11 @@ function releasePhotoCameraStream() {
   photoCameraStream = null;
   const video = $('#camera-video');
   if (video) video.srcObject = null;
+  const zoomRow = $('#camera-zoom');
+  zoomRow.classList.add('hidden');
+  zoomRow.querySelectorAll('.camera-zoom-btn').forEach((btn) => {
+    btn.classList.remove('active', 'hidden');
+  });
 }
 
 function stopPhotoCamera() {
@@ -407,11 +412,47 @@ async function openPhotoCamera() {
     return;
   }
   photoCameraStream = stream;
+  setupPhotoCameraZoom(stream.getVideoTracks()[0]);
   const video = $('#camera-video');
   video.srcObject = stream;
   video.play().catch(() => {});
   const dialog = $('#camera-capture');
   if (!dialog.open) dialog.showModal();
+}
+
+// Zoom levels are offered only when the camera reports a zoom capability;
+// buttons outside the device's [min, max] range stay hidden.
+const CAMERA_ZOOM_LEVELS = [1, 2, 3];
+
+function setupPhotoCameraZoom(track) {
+  const zoomRow = $('#camera-zoom');
+  const zoom = track.getCapabilities?.().zoom;
+  if (!zoom || zoom.max <= zoom.min) return;
+  const levels = CAMERA_ZOOM_LEVELS.filter((level) => level >= zoom.min && level <= zoom.max);
+  if (levels.length < 2) return;
+  const buttons = [...zoomRow.querySelectorAll('.camera-zoom-btn')];
+  buttons.forEach((btn) => {
+    btn.classList.toggle('hidden', !levels.includes(Number(btn.dataset.zoom)));
+    btn.classList.remove('active');
+  });
+  const visible = buttons.filter((btn) => !btn.classList.contains('hidden'));
+  const current = track.getSettings?.().zoom ?? zoom.min;
+  const atOrBelow = visible.filter((btn) => Number(btn.dataset.zoom) <= current);
+  (atOrBelow.at(-1) ?? visible[0]).classList.add('active');
+  zoomRow.classList.remove('hidden');
+}
+
+function applyPhotoCameraZoom(level) {
+  const track = photoCameraStream?.getVideoTracks()[0];
+  if (!track) return;
+  track
+    .applyConstraints({ advanced: [{ zoom: level }] })
+    .then(() => {
+      $('#camera-zoom').querySelectorAll('.camera-zoom-btn').forEach((btn) => {
+        btn.classList.toggle('active', Number(btn.dataset.zoom) === level);
+      });
+    })
+    .catch(() => showToast(t('photoScan.zoomFailed'), 'error'));
 }
 
 function capturePhotoFrame() {
@@ -1973,6 +2014,10 @@ async function init() {
   });
   $('#camera-shutter').addEventListener('click', capturePhotoFrame);
   $('#camera-cancel').addEventListener('click', stopPhotoCamera);
+  $('#camera-zoom').addEventListener('click', (event) => {
+    const btn = event.target.closest('.camera-zoom-btn');
+    if (btn) applyPhotoCameraZoom(Number(btn.dataset.zoom));
+  });
   $('#camera-capture').addEventListener('close', releasePhotoCameraStream);
   $('#scanner-close').addEventListener('click', stopBarcodeScanner);
   $('#barcode-scanner').addEventListener('close', () => {

@@ -35,6 +35,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v059": {
+        "i1": "The meal-photo camera preview now fills the screen width on phones and offers 1x/2x/3x zoom when the device camera supports it."
+      },
       "v058": {
         "i1": "Meal photos are now taken inside the app's own camera view, so the page no longer reloads on phones where the camera app runs out of memory."
       },
@@ -383,6 +386,8 @@
   "photoScan": {
     "title": "Recognize photo",
     "shutter": "Capture",
+    "zoom": "Zoom",
+    "zoomFailed": "This camera does not support that zoom level",
     "processing": "Recognizing...",
     "analyzing": "Analyzing photo…",
     "recognized": "Recognized {{name}} · {{weight}} g",
