@@ -1119,6 +1119,39 @@ button:disabled {
   width: 100%;
 }
 
+#camera-capture {
+  width: min(98vw, 560px);
+}
+
+@media (orientation: portrait) {
+  #camera-capture .scanner-region {
+    aspect-ratio: 3 / 4;
+    max-height: 60vh;
+  }
+}
+
+.camera-zoom {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.camera-zoom-btn {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--secondary);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.camera-zoom-btn.active {
+  background: var(--primary);
+  color: var(--text-on-primary);
+  border-color: var(--primary);
+}
+
 .photo-modal {
   text-align: center;
 }

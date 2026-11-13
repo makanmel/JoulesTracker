@@ -348,6 +348,11 @@
               </dialog>
               <dialog id="camera-capture" class="scanner" aria-label="Take photo" data-i18n-aria-label="addMeal.takePhoto">
                 <div class="scanner-region"><video id="camera-video" autoplay playsinline muted></video></div>
+                <div id="camera-zoom" class="camera-zoom hidden" role="group" aria-label="Zoom" data-i18n-aria-label="photoScan.zoom">
+                  <button type="button" class="camera-zoom-btn" data-zoom="1">1×</button>
+                  <button type="button" class="camera-zoom-btn" data-zoom="2">2×</button>
+                  <button type="button" class="camera-zoom-btn" data-zoom="3">3×</button>
+                </div>
                 <div class="photo-scan-actions">
                   <button type="button" id="camera-cancel" class="btn-secondary" data-i18n="foods.cancel">Cancel</button>
                   <button type="button" id="camera-shutter" class="btn-primary" data-i18n="photoScan.shutter">Take photo</button>
