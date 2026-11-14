@@ -1125,18 +1125,72 @@ button:disabled {
 
 @media (orientation: portrait) {
   #camera-capture .scanner-region {
-    aspect-ratio: 3 / 4;
     max-height: 60vh;
   }
 }
 
-.camera-zoom {
+@media (orientation: landscape) {
+  #camera-capture {
+    width: auto;
+    max-width: 98vw;
+  }
+
+  #camera-capture[open] {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #camera-capture .scanner-region {
+    height: calc(100dvh - 48px);
+    width: auto;
+    margin: auto;
+    max-width: calc(100vw - 220px);
+  }
+
+  #camera-capture .camera-controls {
+    order: -1;
+    flex-direction: column;
+    margin-top: 0;
+    min-width: 64px;
+  }
+
+  #camera-capture .camera-group {
+    flex-direction: column;
+  }
+
+  #camera-capture .camera-ctl-btn {
+    flex: none;
+  }
+
+  #camera-capture .photo-scan-actions {
+    order: 2;
+    flex-direction: column-reverse;
+    margin-top: 0;
+  }
+
+  #camera-capture .photo-scan-actions .btn-secondary,
+  #camera-capture .photo-scan-actions .btn-primary {
+    flex: none;
+    min-width: 88px;
+  }
+}
+
+.camera-controls {
   display: flex;
   gap: 8px;
   margin-top: 12px;
+  align-items: stretch;
 }
 
-.camera-zoom-btn {
+.camera-group {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.camera-ctl-btn {
   flex: 1;
   padding: 8px;
   border: 1px solid var(--border);
@@ -1146,10 +1200,14 @@ button:disabled {
   cursor: pointer;
 }
 
-.camera-zoom-btn.active {
+.camera-ctl-btn.active {
   background: var(--primary);
   color: var(--text-on-primary);
   border-color: var(--primary);
+}
+
+#camera-torch {
+  flex: 0 0 44px;
 }
 
 .photo-modal {
