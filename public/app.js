@@ -205,6 +205,10 @@ function resizeImage(file, maxWidth, quality) {
 let photoScanAbort = null;
 let photoScanItems = [];
 let photoCameraStream = null;
+let cameraAspect = '34';
+let cameraTorchOn = false;
+let cameraZoomLevel = null;
+let cameraRestarting = false;
 
 function photoScanKcal(food, grams) {
   if (food.caloriesPer100g == null || !(grams > 0)) return '';
@@ -388,9 +392,12 @@ function releasePhotoCameraStream() {
   if (video) video.srcObject = null;
   const zoomRow = $('#camera-zoom');
   zoomRow.classList.add('hidden');
-  zoomRow.querySelectorAll('.camera-zoom-btn').forEach((btn) => {
+  zoomRow.querySelectorAll('.camera-ctl-btn').forEach((btn) => {
     btn.classList.remove('active', 'hidden');
   });
+  const torchBtn = $('#camera-torch');
+  torchBtn.classList.add('hidden');
+  torchBtn.classList.remove('active');
 }
 
 function stopPhotoCamera() {
@@ -411,13 +418,39 @@ async function openPhotoCamera() {
     showToast(t('foods.scanDenied'), 'error');
     return;
   }
+  cameraTorchOn = false;
+  cameraZoomLevel = null;
   photoCameraStream = stream;
-  setupPhotoCameraZoom(stream.getVideoTracks()[0]);
+  const track = stream.getVideoTracks()[0];
+  setupPhotoCameraZoom(track);
+  setupPhotoCameraTorch(track);
   const video = $('#camera-video');
   video.srcObject = stream;
   video.play().catch(() => {});
+  applyPhotoCameraAspect();
   const dialog = $('#camera-capture');
   if (!dialog.open) dialog.showModal();
+}
+
+// A rotation while the dialog is open can leave frames rendered sideways;
+// reacquiring the stream makes the camera deliver correctly rotated frames.
+async function restartPhotoCameraStream() {
+  if (cameraRestarting || !navigator.mediaDevices?.getUserMedia) return;
+  cameraRestarting = true;
+  const restart = await navigator.mediaDevices
+    .getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .catch(() => null);
+  if (restart) {
+    releasePhotoCameraStream();
+    photoCameraStream = restart;
+    const track = restart.getVideoTracks()[0];
+    setupPhotoCameraZoom(track);
+    setupPhotoCameraTorch(track);
+    const video = $('#camera-video');
+    video.srcObject = restart;
+    video.play().catch(() => {});
+  }
+  cameraRestarting = false;
 }
 
 // Zoom levels are offered only when the camera reports a zoom capability;
@@ -430,16 +463,21 @@ function setupPhotoCameraZoom(track) {
   if (!zoom || zoom.max <= zoom.min) return;
   const levels = CAMERA_ZOOM_LEVELS.filter((level) => level >= zoom.min && level <= zoom.max);
   if (levels.length < 2) return;
-  const buttons = [...zoomRow.querySelectorAll('.camera-zoom-btn')];
+  const buttons = [...zoomRow.querySelectorAll('.camera-ctl-btn')];
   buttons.forEach((btn) => {
     btn.classList.toggle('hidden', !levels.includes(Number(btn.dataset.zoom)));
     btn.classList.remove('active');
   });
   const visible = buttons.filter((btn) => !btn.classList.contains('hidden'));
-  const current = track.getSettings?.().zoom ?? zoom.min;
-  const atOrBelow = visible.filter((btn) => Number(btn.dataset.zoom) <= current);
-  (atOrBelow.at(-1) ?? visible[0]).classList.add('active');
+  // Phones that expose the ultrawide as zoom < 1 start on that module;
+  // snapping to 1x selects the higher-quality main sensor.
+  const desired = cameraZoomLevel && levels.includes(cameraZoomLevel)
+    ? cameraZoomLevel
+    : levels.includes(1)
+      ? 1
+      : Number(visible[0].dataset.zoom);
   zoomRow.classList.remove('hidden');
+  applyPhotoCameraZoom(desired);
 }
 
 function applyPhotoCameraZoom(level) {
@@ -448,20 +486,68 @@ function applyPhotoCameraZoom(level) {
   track
     .applyConstraints({ advanced: [{ zoom: level }] })
     .then(() => {
-      $('#camera-zoom').querySelectorAll('.camera-zoom-btn').forEach((btn) => {
+      cameraZoomLevel = level;
+      $('#camera-zoom').querySelectorAll('.camera-ctl-btn').forEach((btn) => {
         btn.classList.toggle('active', Number(btn.dataset.zoom) === level);
       });
     })
     .catch(() => showToast(t('photoScan.zoomFailed'), 'error'));
 }
 
+function setupPhotoCameraTorch(track) {
+  if (!track.getCapabilities?.().torch) return;
+  const torchBtn = $('#camera-torch');
+  torchBtn.classList.remove('hidden');
+  torchBtn.classList.toggle('active', cameraTorchOn);
+  if (cameraTorchOn) {
+    track.applyConstraints({ advanced: [{ torch: true }] }).catch(() => {});
+  }
+}
+
+function togglePhotoCameraTorch() {
+  const track = photoCameraStream?.getVideoTracks()[0];
+  if (!track) return;
+  const next = !cameraTorchOn;
+  track
+    .applyConstraints({ advanced: [{ torch: next }] })
+    .then(() => {
+      cameraTorchOn = next;
+      $('#camera-torch').classList.toggle('active', next);
+    })
+    .catch(() => {});
+}
+
+// The "3:4" mode means a tall frame in portrait and a wide 4:3 in landscape.
+function applyPhotoCameraAspect() {
+  const landscape = window.matchMedia('(orientation: landscape)').matches;
+  $('#camera-capture .scanner-region').style.aspectRatio =
+    cameraAspect === '11' ? '1 / 1' : landscape ? '4 / 3' : '3 / 4';
+  $('#camera-aspect').querySelectorAll('.camera-ctl-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.aspect === cameraAspect);
+  });
+}
+
 function capturePhotoFrame() {
   const video = $('#camera-video');
   if (!video.videoWidth) return;
+  // Crop the frame to the preview's aspect so the photo matches what was shown.
+  const region = $('#camera-capture .scanner-region');
+  const targetAspect = region.clientWidth / region.clientHeight || video.videoWidth / video.videoHeight;
+  let sx = 0;
+  let sy = 0;
+  let sw = video.videoWidth;
+  let sh = video.videoHeight;
+  if (sw / sh > targetAspect) {
+    sw = Math.round(sh * targetAspect);
+    sx = Math.round((video.videoWidth - sw) / 2);
+  } else {
+    sh = Math.round(sw / targetAspect);
+    sy = Math.round((video.videoHeight - sh) / 2);
+  }
   const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.width = sw;
+  canvas.height = sh;
+  canvas.getContext('2d').drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
   canvas.toBlob((blob) => {
     if (!blob) return;
     const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
@@ -2015,9 +2101,22 @@ async function init() {
   $('#camera-shutter').addEventListener('click', capturePhotoFrame);
   $('#camera-cancel').addEventListener('click', stopPhotoCamera);
   $('#camera-zoom').addEventListener('click', (event) => {
-    const btn = event.target.closest('.camera-zoom-btn');
+    const btn = event.target.closest('.camera-ctl-btn');
     if (btn) applyPhotoCameraZoom(Number(btn.dataset.zoom));
   });
+  $('#camera-aspect').addEventListener('click', (event) => {
+    const btn = event.target.closest('.camera-ctl-btn');
+    if (!btn) return;
+    cameraAspect = btn.dataset.aspect;
+    applyPhotoCameraAspect();
+  });
+  $('#camera-torch').addEventListener('click', togglePhotoCameraTorch);
+  const applyAspectAndRestart = () => {
+    applyPhotoCameraAspect();
+    if ($('#camera-capture').open) restartPhotoCameraStream();
+  };
+  window.addEventListener('orientationchange', applyAspectAndRestart);
+  window.matchMedia('(orientation: landscape)').addEventListener?.('change', applyAspectAndRestart);
   $('#camera-capture').addEventListener('close', releasePhotoCameraStream);
   $('#scanner-close').addEventListener('click', stopBarcodeScanner);
   $('#barcode-scanner').addEventListener('close', () => {

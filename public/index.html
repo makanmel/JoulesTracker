@@ -348,10 +348,17 @@
               </dialog>
               <dialog id="camera-capture" class="scanner" aria-label="Take photo" data-i18n-aria-label="addMeal.takePhoto">
                 <div class="scanner-region"><video id="camera-video" autoplay playsinline muted></video></div>
-                <div id="camera-zoom" class="camera-zoom hidden" role="group" aria-label="Zoom" data-i18n-aria-label="photoScan.zoom">
-                  <button type="button" class="camera-zoom-btn" data-zoom="1">1×</button>
-                  <button type="button" class="camera-zoom-btn" data-zoom="2">2×</button>
-                  <button type="button" class="camera-zoom-btn" data-zoom="3">3×</button>
+                <div class="camera-controls">
+                  <div id="camera-zoom" class="camera-group hidden" role="group" aria-label="Zoom" data-i18n-aria-label="photoScan.zoom">
+                    <button type="button" class="camera-ctl-btn" data-zoom="1">1×</button>
+                    <button type="button" class="camera-ctl-btn" data-zoom="2">2×</button>
+                    <button type="button" class="camera-ctl-btn" data-zoom="3">3×</button>
+                  </div>
+                  <div id="camera-aspect" class="camera-group" role="group" aria-label="Aspect" data-i18n-aria-label="photoScan.aspect">
+                    <button type="button" class="camera-ctl-btn active" data-aspect="34">3:4</button>
+                    <button type="button" class="camera-ctl-btn" data-aspect="11">1:1</button>
+                  </div>
+                  <button type="button" id="camera-torch" class="camera-ctl-btn hidden" aria-label="Flash" data-i18n-aria-label="photoScan.torch">🔦</button>
                 </div>
                 <div class="photo-scan-actions">
                   <button type="button" id="camera-cancel" class="btn-secondary" data-i18n="foods.cancel">Cancel</button>

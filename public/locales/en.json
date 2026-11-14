@@ -35,6 +35,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v0510": {
+        "i1": "The meal-photo camera now starts on the phone's main lens, adds a 3:4/1:1 aspect toggle and a flash button, and lays out its controls at the sides in landscape so the preview stays upright and large."
+      },
       "v059": {
         "i1": "The meal-photo camera preview now fills the screen width on phones and offers 1x/2x/3x zoom when the device camera supports it."
       },
@@ -387,6 +390,8 @@
     "title": "Recognize photo",
     "shutter": "Capture",
     "zoom": "Zoom",
+    "aspect": "Aspect ratio",
+    "torch": "Flash",
     "zoomFailed": "This camera does not support that zoom level",
     "processing": "Recognizing...",
     "analyzing": "Analyzing photo…",
