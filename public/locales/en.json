@@ -35,6 +35,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v0514": {
+        "i1": "The camera prefers an available rear camera with torch support. A single zoom button cycles through supported 1×, 2× and 3× levels."
+      },
       "v0513": {
         "i1": "Camera switching releases the active camera before opening another and restores it if switching fails. Camera controls sit above the preview in portrait and beside it in landscape. Torch uses the standard continuous-light constraint; device support still varies."
       },
