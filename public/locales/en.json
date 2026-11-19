@@ -35,6 +35,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v0512": {
+        "i1": "The flash button now always appears on the rear camera and verifies whether the light actually turned on, and camera switching reports an error instead of failing silently."
+      },
       "v0511": {
         "i1": "The meal-photo camera gains a switch-camera button that cycles between the device's front and back lenses, and the flash button now works on phones that only expose the older fill-light mode."
       },
@@ -396,6 +399,8 @@
     "aspect": "Aspect ratio",
     "torch": "Flash",
     "switchCamera": "Switch camera",
+    "torchFailed": "This camera does not support the flash",
+    "switchFailed": "Could not switch to the other camera",
     "zoomFailed": "This camera does not support that zoom level",
     "processing": "Recognizing...",
     "analyzing": "Analyzing photo…",
