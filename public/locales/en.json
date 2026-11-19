@@ -35,6 +35,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v0511": {
+        "i1": "The meal-photo camera gains a switch-camera button that cycles between the device's front and back lenses, and the flash button now works on phones that only expose the older fill-light mode."
+      },
       "v0510": {
         "i1": "The meal-photo camera now starts on the phone's main lens, adds a 3:4/1:1 aspect toggle and a flash button, and lays out its controls at the sides in landscape so the preview stays upright and large."
       },
@@ -392,6 +395,7 @@
     "zoom": "Zoom",
     "aspect": "Aspect ratio",
     "torch": "Flash",
+    "switchCamera": "Switch camera",
     "zoomFailed": "This camera does not support that zoom level",
     "processing": "Recognizing...",
     "analyzing": "Analyzing photo…",
