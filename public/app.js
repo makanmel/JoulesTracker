@@ -448,14 +448,20 @@ async function openPhotoCamera() {
 // reacquiring the stream makes the camera deliver correctly rotated frames.
 function switchPhotoCamera() {
   if (cameraDevices.length < 2 || cameraRestarting) return;
+  const prevIndex = cameraDeviceIndex;
   cameraDeviceIndex = (cameraDeviceIndex + 1) % cameraDevices.length;
   cameraZoomLevel = null;
   cameraTorchOn = false;
-  restartPhotoCameraStream();
+  restartPhotoCameraStream().then((ok) => {
+    if (!ok) {
+      cameraDeviceIndex = prevIndex;
+      showToast(t('photoScan.switchFailed'), 'error');
+    }
+  });
 }
 
 async function restartPhotoCameraStream() {
-  if (cameraRestarting || !navigator.mediaDevices?.getUserMedia) return;
+  if (cameraRestarting || !navigator.mediaDevices?.getUserMedia) return false;
   cameraRestarting = true;
   const device = cameraDevices[cameraDeviceIndex];
   const videoConstraints = device
@@ -475,6 +481,7 @@ async function restartPhotoCameraStream() {
     video.play().catch(() => {});
   }
   cameraRestarting = false;
+  return Boolean(restart);
 }
 
 // Zoom levels are offered only when the camera reports a zoom capability;
@@ -518,30 +525,49 @@ function applyPhotoCameraZoom(level) {
     .catch(() => showToast(t('photoScan.zoomFailed'), 'error'));
 }
 
-// Samsung devices often report fillLightMode ('flash' = torch on) instead of
-// the standard torch capability, so detection and application go through both.
+// Many devices (Samsung included) report no torch capability yet still accept
+// the constraint, or only expose the older fillLightMode ('flash' = torch on).
+// The button is offered optimistically on back cameras; tapping tries both
+// constraint forms and the result is verified via getSettings().
 function cameraTorchMode(track) {
   const caps = track.getCapabilities?.() ?? {};
   if (caps.torch) return 'torch';
-  if (caps.fillLightMode?.includes('flash')) return 'fillLightMode';
+  if (caps.fillLightMode?.some((m) => m === 'flash' || m === 'torch')) return 'fillLightMode';
   return null;
 }
 
-function applyPhotoCameraTorchConstraint(track, on) {
-  const mode = cameraTorchMode(track);
-  const constraint = mode === 'fillLightMode'
-    ? { fillLightMode: on ? 'flash' : 'off' }
-    : { torch: on };
-  return track.applyConstraints({ advanced: [constraint] });
+async function setPhotoCameraTorch(track, on) {
+  const constraints = [
+    { torch: on },
+    { fillLightMode: on ? 'flash' : 'off' },
+  ];
+  for (const constraint of constraints) {
+    const ok = await track
+      .applyConstraints({ advanced: [constraint] })
+      .then(() => {
+        const settings = track.getSettings?.() ?? {};
+        const lit = settings.torch === true
+          || settings.fillLightMode === 'flash'
+          || settings.fillLightMode === 'torch';
+        return lit === on;
+      })
+      .catch(() => false);
+    if (ok) return true;
+  }
+  return false;
 }
 
 function setupPhotoCameraTorch(track) {
-  if (!cameraTorchMode(track)) return;
+  const backFacing = track.getSettings?.().facingMode === 'environment';
+  if (!cameraTorchMode(track) && !backFacing) return;
   const torchBtn = $('#camera-torch');
   torchBtn.classList.remove('hidden');
   torchBtn.classList.toggle('active', cameraTorchOn);
   if (cameraTorchOn) {
-    applyPhotoCameraTorchConstraint(track, true).catch(() => {});
+    setPhotoCameraTorch(track, true).then((ok) => {
+      cameraTorchOn = ok;
+      torchBtn.classList.toggle('active', ok);
+    });
   }
 }
 
@@ -549,12 +575,14 @@ function togglePhotoCameraTorch() {
   const track = photoCameraStream?.getVideoTracks()[0];
   if (!track) return;
   const next = !cameraTorchOn;
-  applyPhotoCameraTorchConstraint(track, next)
-    .then(() => {
-      cameraTorchOn = next;
-      $('#camera-torch').classList.toggle('active', next);
-    })
-    .catch(() => {});
+  setPhotoCameraTorch(track, next).then((ok) => {
+    if (!ok) {
+      showToast(t('photoScan.torchFailed'), 'error');
+      return;
+    }
+    cameraTorchOn = next;
+    $('#camera-torch').classList.toggle('active', next);
+  });
 }
 
 // The "3:4" mode means a tall frame in portrait and a wide 4:3 in landscape.
