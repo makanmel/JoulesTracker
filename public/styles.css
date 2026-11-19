@@ -1206,7 +1206,8 @@ button:disabled {
   border-color: var(--primary);
 }
 
-#camera-torch {
+#camera-torch,
+#camera-switch {
   flex: 0 0 44px;
 }
 

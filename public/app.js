@@ -209,6 +209,8 @@ let cameraAspect = '34';
 let cameraTorchOn = false;
 let cameraZoomLevel = null;
 let cameraRestarting = false;
+let cameraDevices = [];
+let cameraDeviceIndex = 0;
 
 function photoScanKcal(food, grams) {
   if (food.caloriesPer100g == null || !(grams > 0)) return '';
@@ -398,6 +400,7 @@ function releasePhotoCameraStream() {
   const torchBtn = $('#camera-torch');
   torchBtn.classList.add('hidden');
   torchBtn.classList.remove('active');
+  $('#camera-switch').classList.add('hidden');
 }
 
 function stopPhotoCamera() {
@@ -430,15 +433,36 @@ async function openPhotoCamera() {
   applyPhotoCameraAspect();
   const dialog = $('#camera-capture');
   if (!dialog.open) dialog.showModal();
+  // Labels are only populated after permission, so enumerate post-acquire.
+  navigator.mediaDevices.enumerateDevices().then((devices) => {
+    if (photoCameraStream !== stream) return;
+    cameraDevices = devices.filter((d) => d.kind === 'videoinput' && d.deviceId);
+    const currentId = track.getSettings?.().deviceId;
+    const idx = cameraDevices.findIndex((d) => d.deviceId === currentId);
+    if (idx >= 0) cameraDeviceIndex = idx;
+    $('#camera-switch').classList.toggle('hidden', cameraDevices.length < 2);
+  }).catch(() => {});
 }
 
 // A rotation while the dialog is open can leave frames rendered sideways;
 // reacquiring the stream makes the camera deliver correctly rotated frames.
+function switchPhotoCamera() {
+  if (cameraDevices.length < 2 || cameraRestarting) return;
+  cameraDeviceIndex = (cameraDeviceIndex + 1) % cameraDevices.length;
+  cameraZoomLevel = null;
+  cameraTorchOn = false;
+  restartPhotoCameraStream();
+}
+
 async function restartPhotoCameraStream() {
   if (cameraRestarting || !navigator.mediaDevices?.getUserMedia) return;
   cameraRestarting = true;
+  const device = cameraDevices[cameraDeviceIndex];
+  const videoConstraints = device
+    ? { deviceId: { exact: device.deviceId } }
+    : { facingMode: 'environment' };
   const restart = await navigator.mediaDevices
-    .getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .getUserMedia({ video: videoConstraints, audio: false })
     .catch(() => null);
   if (restart) {
     releasePhotoCameraStream();
@@ -494,13 +518,30 @@ function applyPhotoCameraZoom(level) {
     .catch(() => showToast(t('photoScan.zoomFailed'), 'error'));
 }
 
+// Samsung devices often report fillLightMode ('flash' = torch on) instead of
+// the standard torch capability, so detection and application go through both.
+function cameraTorchMode(track) {
+  const caps = track.getCapabilities?.() ?? {};
+  if (caps.torch) return 'torch';
+  if (caps.fillLightMode?.includes('flash')) return 'fillLightMode';
+  return null;
+}
+
+function applyPhotoCameraTorchConstraint(track, on) {
+  const mode = cameraTorchMode(track);
+  const constraint = mode === 'fillLightMode'
+    ? { fillLightMode: on ? 'flash' : 'off' }
+    : { torch: on };
+  return track.applyConstraints({ advanced: [constraint] });
+}
+
 function setupPhotoCameraTorch(track) {
-  if (!track.getCapabilities?.().torch) return;
+  if (!cameraTorchMode(track)) return;
   const torchBtn = $('#camera-torch');
   torchBtn.classList.remove('hidden');
   torchBtn.classList.toggle('active', cameraTorchOn);
   if (cameraTorchOn) {
-    track.applyConstraints({ advanced: [{ torch: true }] }).catch(() => {});
+    applyPhotoCameraTorchConstraint(track, true).catch(() => {});
   }
 }
 
@@ -508,8 +549,7 @@ function togglePhotoCameraTorch() {
   const track = photoCameraStream?.getVideoTracks()[0];
   if (!track) return;
   const next = !cameraTorchOn;
-  track
-    .applyConstraints({ advanced: [{ torch: next }] })
+  applyPhotoCameraTorchConstraint(track, next)
     .then(() => {
       cameraTorchOn = next;
       $('#camera-torch').classList.toggle('active', next);
@@ -2111,6 +2151,7 @@ async function init() {
     applyPhotoCameraAspect();
   });
   $('#camera-torch').addEventListener('click', togglePhotoCameraTorch);
+  $('#camera-switch').addEventListener('click', switchPhotoCamera);
   const applyAspectAndRestart = () => {
     applyPhotoCameraAspect();
     if ($('#camera-capture').open) restartPhotoCameraStream();
