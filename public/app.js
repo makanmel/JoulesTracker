@@ -211,6 +211,8 @@ let cameraZoomLevel = null;
 let cameraRestarting = false;
 let cameraDevices = [];
 let cameraDeviceIndex = 0;
+let cameraSelecting = false;
+let cameraZoomLevels = [];
 
 function photoScanKcal(food, grams) {
   if (food.caloriesPer100g == null || !(grams > 0)) return '';
@@ -394,9 +396,8 @@ function releasePhotoCameraStream() {
   if (video) video.srcObject = null;
   const zoomRow = $('#camera-zoom');
   zoomRow.classList.add('hidden');
-  zoomRow.querySelectorAll('.camera-ctl-btn').forEach((btn) => {
-    btn.classList.remove('active', 'hidden');
-  });
+  cameraZoomLevels = [];
+  zoomRow.textContent = '1×';
   const torchBtn = $('#camera-torch');
   torchBtn.classList.add('hidden');
   torchBtn.classList.remove('active');
@@ -442,13 +443,38 @@ async function openPhotoCamera() {
     const idx = cameraDevices.findIndex((d) => d.deviceId === currentId);
     if (idx >= 0) cameraDeviceIndex = idx;
     $('#camera-switch').classList.toggle('hidden', cameraDevices.length < 2);
+    preferTorchPhotoCamera();
   }).catch(() => {});
 }
 
 // A rotation while the dialog is open can leave frames rendered sideways;
 // reacquiring the stream makes the camera deliver correctly rotated frames.
+async function preferTorchPhotoCamera() {
+  if (cameraSelecting || cameraRestarting || !photoCameraStream) return;
+  const qualifies = () => {
+    const track = photoCameraStream?.getVideoTracks()[0];
+    return track && track.getSettings?.().facingMode !== 'user'
+      && track.getCapabilities?.().torch === true;
+  };
+  if (qualifies()) return;
+  cameraSelecting = true;
+  const originalIndex = cameraDeviceIndex;
+  for (let index = 0; index < cameraDevices.length; index++) {
+    if (!$('#camera-capture').open) break;
+    if (index === originalIndex || /front|facetime|selfie/i.test(cameraDevices[index].label)) continue;
+    cameraDeviceIndex = index;
+    const opened = await restartPhotoCameraStream();
+    if (opened && qualifies()) break;
+  }
+  if ($('#camera-capture').open && !qualifies()) {
+    cameraDeviceIndex = originalIndex;
+    await restartPhotoCameraStream();
+  }
+  cameraSelecting = false;
+}
+
 function switchPhotoCamera() {
-  if (cameraDevices.length < 2 || cameraRestarting) return;
+  if (cameraDevices.length < 2 || cameraRestarting || cameraSelecting) return;
   const prevIndex = cameraDeviceIndex;
   cameraDeviceIndex = (cameraDeviceIndex + 1) % cameraDevices.length;
   cameraZoomLevel = null;
@@ -515,21 +541,18 @@ function setupPhotoCameraZoom(track) {
   if (!zoom || zoom.max <= zoom.min) return;
   const levels = CAMERA_ZOOM_LEVELS.filter((level) => level >= zoom.min && level <= zoom.max);
   if (levels.length < 2) return;
-  const buttons = [...zoomRow.querySelectorAll('.camera-ctl-btn')];
-  buttons.forEach((btn) => {
-    btn.classList.toggle('hidden', !levels.includes(Number(btn.dataset.zoom)));
-    btn.classList.remove('active');
-  });
-  const visible = buttons.filter((btn) => !btn.classList.contains('hidden'));
   // Phones that expose the ultrawide as zoom < 1 start on that module;
   // snapping to 1x selects the higher-quality main sensor.
-  const desired = cameraZoomLevel && levels.includes(cameraZoomLevel)
-    ? cameraZoomLevel
-    : levels.includes(1)
-      ? 1
-      : Number(visible[0].dataset.zoom);
+  cameraZoomLevels = levels;
+  const desired = levels.includes(cameraZoomLevel) ? cameraZoomLevel : levels[0];
   zoomRow.classList.remove('hidden');
   applyPhotoCameraZoom(desired);
+}
+
+function cyclePhotoCameraZoom() {
+  if (cameraRestarting || cameraSelecting || !cameraZoomLevels.length) return;
+  const index = cameraZoomLevels.indexOf(cameraZoomLevel);
+  applyPhotoCameraZoom(cameraZoomLevels[(index + 1) % cameraZoomLevels.length]);
 }
 
 function applyPhotoCameraZoom(level) {
@@ -538,10 +561,9 @@ function applyPhotoCameraZoom(level) {
   track
     .applyConstraints({ advanced: [{ zoom: level }] })
     .then(() => {
+      if (photoCameraStream?.getVideoTracks()[0] !== track) return;
       cameraZoomLevel = level;
-      $('#camera-zoom').querySelectorAll('.camera-ctl-btn').forEach((btn) => {
-        btn.classList.toggle('active', Number(btn.dataset.zoom) === level);
-      });
+      $('#camera-zoom').textContent = `${level}×`;
     })
     .catch(() => showToast(t('photoScan.zoomFailed'), 'error'));
 }
@@ -2176,10 +2198,7 @@ async function init() {
   });
   $('#camera-shutter').addEventListener('click', capturePhotoFrame);
   $('#camera-cancel').addEventListener('click', stopPhotoCamera);
-  $('#camera-zoom').addEventListener('click', (event) => {
-    const btn = event.target.closest('.camera-ctl-btn');
-    if (btn) applyPhotoCameraZoom(Number(btn.dataset.zoom));
-  });
+  $('#camera-zoom').addEventListener('click', cyclePhotoCameraZoom);
   $('#camera-aspect').addEventListener('click', (event) => {
     const btn = event.target.closest('.camera-ctl-btn');
     if (!btn) return;
@@ -2190,7 +2209,7 @@ async function init() {
   $('#camera-switch').addEventListener('click', switchPhotoCamera);
   const applyAspectAndRestart = () => {
     applyPhotoCameraAspect();
-    if ($('#camera-capture').open) restartPhotoCameraStream();
+    if ($('#camera-capture').open && !cameraSelecting) restartPhotoCameraStream();
   };
   window.addEventListener('orientationchange', applyAspectAndRestart);
   window.matchMedia('(orientation: landscape)').addEventListener?.('change', applyAspectAndRestart);
