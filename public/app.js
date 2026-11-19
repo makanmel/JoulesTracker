@@ -423,6 +423,7 @@ async function openPhotoCamera() {
   }
   cameraTorchOn = false;
   cameraZoomLevel = null;
+  $('#camera-shutter').disabled = false;
   photoCameraStream = stream;
   const track = stream.getVideoTracks()[0];
   setupPhotoCameraZoom(track);
@@ -463,15 +464,32 @@ function switchPhotoCamera() {
 async function restartPhotoCameraStream() {
   if (cameraRestarting || !navigator.mediaDevices?.getUserMedia) return false;
   cameraRestarting = true;
+  const previousSettings = photoCameraStream?.getVideoTracks()[0]?.getSettings?.() ?? {};
   const device = cameraDevices[cameraDeviceIndex];
   const videoConstraints = device
     ? { deviceId: { exact: device.deviceId } }
     : { facingMode: 'environment' };
-  const restart = await navigator.mediaDevices
-    .getUserMedia({ video: videoConstraints, audio: false })
-    .catch(() => null);
+  releasePhotoCameraStream();
+  $('#camera-switch').disabled = true;
+  $('#camera-shutter').disabled = true;
+  const acquire = (video) => navigator.mediaDevices
+    .getUserMedia({ video, audio: false })
+    .catch((error) => {
+      console.warn('Camera acquisition failed', error.name, error.message);
+      return null;
+    });
+  let restart = await acquire(videoConstraints);
+  const switched = Boolean(restart);
+  if (!restart && $('#camera-capture').open) {
+    restart = await acquire(previousSettings.deviceId
+      ? { deviceId: { exact: previousSettings.deviceId } }
+      : { facingMode: previousSettings.facingMode || 'environment' });
+  }
+  if (restart && !$('#camera-capture').open) {
+    restart.getTracks().forEach((track) => track.stop());
+    restart = null;
+  }
   if (restart) {
-    releasePhotoCameraStream();
     photoCameraStream = restart;
     const track = restart.getVideoTracks()[0];
     setupPhotoCameraZoom(track);
@@ -480,8 +498,11 @@ async function restartPhotoCameraStream() {
     video.srcObject = restart;
     video.play().catch(() => {});
   }
+  $('#camera-switch').classList.toggle('hidden', cameraDevices.length < 2);
+  $('#camera-switch').disabled = false;
+  $('#camera-shutter').disabled = !restart;
   cameraRestarting = false;
-  return Boolean(restart);
+  return switched && Boolean(restart);
 }
 
 // Zoom levels are offered only when the camera reports a zoom capability;
@@ -530,31 +551,18 @@ function applyPhotoCameraZoom(level) {
 // The button is offered optimistically on back cameras; tapping tries both
 // constraint forms and the result is verified via getSettings().
 function cameraTorchMode(track) {
-  const caps = track.getCapabilities?.() ?? {};
-  if (caps.torch) return 'torch';
-  if (caps.fillLightMode?.some((m) => m === 'flash' || m === 'torch')) return 'fillLightMode';
-  return null;
+  return track.getCapabilities?.().torch ? 'torch' : null;
 }
 
 async function setPhotoCameraTorch(track, on) {
-  const constraints = [
-    { torch: on },
-    { fillLightMode: on ? 'flash' : 'off' },
-  ];
-  for (const constraint of constraints) {
-    const ok = await track
-      .applyConstraints({ advanced: [constraint] })
-      .then(() => {
-        const settings = track.getSettings?.() ?? {};
-        const lit = settings.torch === true
-          || settings.fillLightMode === 'flash'
-          || settings.fillLightMode === 'torch';
-        return lit === on;
-      })
-      .catch(() => false);
-    if (ok) return true;
-  }
-  return false;
+  const applied = await track.applyConstraints({ torch: on, advanced: [{ torch: on }] })
+    .then(() => true)
+    .catch((error) => {
+      console.warn('Camera torch constraint failed', error.name, error.message);
+      return false;
+    });
+  if (!applied) return false;
+  return track.getSettings?.().torch === on;
 }
 
 function setupPhotoCameraTorch(track) {
