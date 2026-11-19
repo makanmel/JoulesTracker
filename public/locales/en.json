@@ -35,6 +35,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v0513": {
+        "i1": "Camera switching releases the active camera before opening another and restores it if switching fails. Camera controls sit above the preview in portrait and beside it in landscape. Torch uses the standard continuous-light constraint; device support still varies."
+      },
       "v0512": {
         "i1": "The flash button now always appears on the rear camera and verifies whether the light actually turned on, and camera switching reports an error instead of failing silently."
       },

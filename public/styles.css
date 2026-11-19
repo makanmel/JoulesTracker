@@ -1124,6 +1124,21 @@ button:disabled {
 }
 
 @media (orientation: portrait) {
+  #camera-capture[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #camera-capture .camera-controls {
+    order: -1;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+
+  #camera-capture .camera-group {
+    flex: 1 1 auto;
+  }
+
   #camera-capture .scanner-region {
     max-height: 60vh;
   }
@@ -1154,6 +1169,9 @@ button:disabled {
     flex-direction: column;
     margin-top: 0;
     min-width: 64px;
+    max-height: calc(100dvh - 64px);
+    overflow-y: auto;
+    flex-wrap: nowrap;
   }
 
   #camera-capture .camera-group {
@@ -1179,6 +1197,8 @@ button:disabled {
 
 .camera-controls {
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
   gap: 8px;
   margin-top: 12px;
   align-items: stretch;
@@ -1186,6 +1206,7 @@ button:disabled {
 
 .camera-group {
   display: flex;
+  min-width: 0;
   gap: 8px;
   flex: 1;
 }
