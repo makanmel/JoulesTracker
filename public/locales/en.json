@@ -35,6 +35,9 @@
   "about": {
     "title": "About",
     "changes": {
+      "v0515": {
+        "i1": "The torch button is shown only when the active camera reports torch support, including after switching cameras. Cameras without reported support no longer offer an unsupported torch control."
+      },
       "v0514": {
         "i1": "The camera prefers an available rear camera with torch support. A single zoom button cycles through supported 1×, 2× and 3× levels."
       },

@@ -573,7 +573,7 @@ function applyPhotoCameraZoom(level) {
 // The button is offered optimistically on back cameras; tapping tries both
 // constraint forms and the result is verified via getSettings().
 function cameraTorchMode(track) {
-  return track.getCapabilities?.().torch ? 'torch' : null;
+  return track.getCapabilities?.().torch === true ? 'torch' : null;
 }
 
 async function setPhotoCameraTorch(track, on) {
@@ -588,13 +588,18 @@ async function setPhotoCameraTorch(track, on) {
 }
 
 function setupPhotoCameraTorch(track) {
-  const backFacing = track.getSettings?.().facingMode === 'environment';
-  if (!cameraTorchMode(track) && !backFacing) return;
   const torchBtn = $('#camera-torch');
-  torchBtn.classList.remove('hidden');
+  const supported = Boolean(cameraTorchMode(track));
+  torchBtn.classList.toggle('hidden', !supported);
+  if (!supported) {
+    cameraTorchOn = false;
+    torchBtn.classList.remove('active');
+    return;
+  }
   torchBtn.classList.toggle('active', cameraTorchOn);
   if (cameraTorchOn) {
     setPhotoCameraTorch(track, true).then((ok) => {
+      if (photoCameraStream?.getVideoTracks()[0] !== track) return;
       cameraTorchOn = ok;
       torchBtn.classList.toggle('active', ok);
     });
@@ -603,9 +608,10 @@ function setupPhotoCameraTorch(track) {
 
 function togglePhotoCameraTorch() {
   const track = photoCameraStream?.getVideoTracks()[0];
-  if (!track) return;
+  if (!track || !cameraTorchMode(track)) return;
   const next = !cameraTorchOn;
   setPhotoCameraTorch(track, next).then((ok) => {
+    if (photoCameraStream?.getVideoTracks()[0] !== track) return;
     if (!ok) {
       showToast(t('photoScan.torchFailed'), 'error');
       return;
